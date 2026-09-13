@@ -2,7 +2,7 @@
 
 **Bitget AI Base Camp Hackathon S2** · Agentic Trading · **Cross-Asset Execution Agent**
 
-> When US cash equities sleep, Bitget US stock contracts and crypto still move. Crossfire is an LLM agent that senses **both books**, decides the hedge or rotation, and executes under a hard **Risk Cage**.
+> When US cash equities sleep, Bitget US stock contracts and crypto still move. Crossfire is an LLM agent that senses a **leveraged Dual Book** (US stock contracts ↔ USDT-M perps), decides the hedge or rotation, and executes under a hard **Risk Cage**.
 
 ## Demo (mock — no live orders)
 
@@ -23,7 +23,7 @@ Or open `dashboard.html` directly in a browser (needs network once for fonts + l
 
 | Panel | Role |
 |-------|------|
-| **Dual Book** | US stock contracts (amber) · crypto (cyan) |
+| **Dual Book** | Leveraged US stock contracts (amber, 5–20× mock) · USDT-M perps (cyan, 10–50× mock) |
 | **Bridge Core** | Active cross-hedge thesis, correlation, legs |
 | **Decision Cinema** | event → LLM thesis → risk → order → fill |
 | **Risk Cage** | sleeve equity, slots, daily DD halt, kill switch |
