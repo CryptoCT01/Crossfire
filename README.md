@@ -80,9 +80,9 @@ Secrets come **only** from environment / `.env`. Never hardcode keys. Never comm
 ## Hackathon
 
 - Track: Agentic Trading · Sub-theme: Cross-Asset Execution Agent
-- Builder: [@CryptoCTO1](https://github.com/CryptoCT01)
+- Builder: **cryptoT** ([@CryptoCTO1](https://github.com/CryptoCTO1))
 - Handbook: https://bitget-ai.gitbook.io/bitgetai_hackathons2
 
 ## License
 
-MIT License — Copyright (c) 2026 CryptoCT01
+MIT License — Copyright (c) 2026 cryptoT / CryptoCTO1
