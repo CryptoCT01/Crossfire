@@ -196,3 +196,68 @@ def marks_map(books: dict[str, Any] | None = None) -> dict[str, float]:
         if m is not None:
             out[row["symbol"]] = float(m)
     return out
+
+
+def fetch_candles(symbol: str, granularity: str = "15m", limit: int = 100) -> dict[str, Any]:
+    """Public mix candles — no API key. Returns normalized OHLC list or error."""
+    sym = str(symbol or "").strip().upper()
+    if not sym:
+        return {"ok": False, "error": "missing symbol", "candles": []}
+    if not sym.endswith("USDT"):
+        sym = sym + "USDT"
+    # Bitget v2 mix candles: granularity e.g. 1m,5m,15m,1H,4H,1D
+    gran = str(granularity or "15m").strip()
+    allowed = {"1m", "3m", "5m", "15m", "30m", "1H", "4H", "6H", "12H", "1D"}
+    if gran not in allowed:
+        gran = "15m"
+    try:
+        lim = max(1, min(200, int(limit)))
+    except (TypeError, ValueError):
+        lim = 100
+    url = (
+        f"{config.BITGET_BASE}/api/v2/mix/market/candles"
+        f"?symbol={sym}&productType={config.PRODUCT_TYPE}&granularity={gran}&limit={lim}"
+    )
+    try:
+        payload = _get(url)
+    except Exception as e:
+        return {"ok": False, "error": str(e), "symbol": sym, "granularity": gran, "candles": []}
+    if str(payload.get("code")) != "00000":
+        return {
+            "ok": False,
+            "error": str(payload.get("msg") or payload),
+            "symbol": sym,
+            "granularity": gran,
+            "candles": [],
+        }
+    raw = payload.get("data") or []
+    candles = []
+    for row in raw:
+        # [ts, open, high, low, close, baseVol, quoteVol]
+        if not isinstance(row, (list, tuple)) or len(row) < 5:
+            continue
+        try:
+            ts_ms = int(row[0])
+            candles.append(
+                {
+                    "t": ts_ms // 1000,
+                    "ts_ms": ts_ms,
+                    "o": float(row[1]),
+                    "h": float(row[2]),
+                    "l": float(row[3]),
+                    "c": float(row[4]),
+                    "vol": float(row[5]) if len(row) > 5 and row[5] not in (None, "") else None,
+                }
+            )
+        except (TypeError, ValueError):
+            continue
+    candles.sort(key=lambda x: x["t"])
+    return {
+        "ok": True,
+        "source": "bitget_public_mix_candles",
+        "symbol": sym,
+        "granularity": gran,
+        "count": len(candles),
+        "candles": candles,
+        "error": None,
+    }

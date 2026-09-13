@@ -9,7 +9,7 @@ import time
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -206,6 +206,59 @@ class Handler(BaseHTTPRequestHandler):
                             "mag7_symbols": config.POLICY["mag7_symbols"],
                             "btc_symbol": config.POLICY["btc_symbol"],
                         },
+                    },
+                )
+                return
+            if path == "/api/candles":
+                qs = parse_qs(urlparse(self.path).query)
+                sym = (qs.get("symbol") or [""])[0]
+                gran = (qs.get("granularity") or qs.get("tf") or ["15m"])[0]
+                lim_raw = (qs.get("limit") or ["100"])[0]
+                try:
+                    lim = int(lim_raw)
+                except ValueError:
+                    lim = 100
+                # Only allow known universe symbols (public, but avoid abuse)
+                allowed = set(config.ALL_SYMBOLS)
+                sym_u = str(sym).strip().upper()
+                if sym_u and not sym_u.endswith("USDT"):
+                    sym_u = sym_u + "USDT"
+                if sym_u not in allowed:
+                    _json(
+                        self,
+                        400,
+                        {
+                            "ok": False,
+                            "error": "symbol not in Crossfire universe",
+                            "symbol": sym_u or None,
+                            "candles": [],
+                        },
+                    )
+                    return
+                _json(self, 200, bitget_public.fetch_candles(sym_u, gran, lim))
+                return
+            if path == "/api/fills":
+                qs = parse_qs(urlparse(self.path).query)
+                try:
+                    n = max(1, min(500, int((qs.get("n") or ["100"])[0])))
+                except ValueError:
+                    n = 100
+                fills = store.read_jsonl_tail("fills.jsonl", n)
+                _json(
+                    self,
+                    200,
+                    {
+                        "ok": True,
+                        "count": len(fills),
+                        "fills": fills,
+                        "sleeve_connected": config.sleeve_connected(),
+                        "message": None
+                        if fills
+                        else (
+                            "No fills in logs/fills.jsonl — empty until sleeve executes"
+                            if config.sleeve_connected()
+                            else "No fills — sleeve DISCONNECTED (not simulated)"
+                        ),
                     },
                 )
                 return

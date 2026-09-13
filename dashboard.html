@@ -356,6 +356,107 @@ body::after{
   .bridge-svg{flex-basis:48px}
   .thesis{max-height:56px}
 }
+
+/* ===== PACK A — Overlay window system ===== */
+.ov-root{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:18px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .28s var(--ease),visibility .28s}
+.ov-root.open{opacity:1;visibility:visible;pointer-events:auto}
+.ov-backdrop{position:absolute;inset:0;background:rgba(2,4,10,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer}
+.ov-win{position:relative;z-index:2;width:min(1080px,96vw);max-height:min(88vh,920px);display:flex;flex-direction:column;border-radius:16px;border:1px solid rgba(255,255,255,.1);
+  background:linear-gradient(165deg,rgba(12,16,26,.96),rgba(5,8,14,.98));
+  box-shadow:0 0 0 1px rgba(232,184,74,.08),0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);
+  transform:translateY(18px) scale(.97);opacity:0;transition:transform .34s var(--ease),opacity .34s var(--ease);overflow:hidden}
+.ov-root.open .ov-win{transform:none;opacity:1}
+.ov-win.theatre{width:min(1240px,98vw);max-height:92vh}
+.ov-win.desk{width:min(920px,96vw)}
+.ov-win.court{width:min(760px,96vw)}
+.ov-chrome{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--line);flex-shrink:0;background:linear-gradient(90deg,rgba(232,184,74,.05),transparent 42%,rgba(62,232,240,.05))}
+.ov-mark{width:22px;height:22px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(232,184,74,.25))}
+.ov-title{font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:-.02em;min-width:0}
+.ov-title span.g{color:var(--gold)}.ov-title span.c{color:var(--cyan)}
+.ov-sub{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);margin-top:2px}
+.ov-acts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ov-x{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--fg2);cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ov-x:hover{color:var(--fg);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
+.ov-body{flex:1;min-height:0;overflow:auto;padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px}
+.ov-stat{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.ov-stat .l{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
+.ov-stat .v{font-family:var(--mono);font-weight:700;font-size:14px;margin-top:3px;letter-spacing:-.02em}
+#ovChart{width:100%;height:280px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.28);position:relative;overflow:hidden;flex:0 0 auto}
+#ovChart.tall{height:340px}
+.ov-note{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3);line-height:1.5}
+.ov-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.ov-tab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--fg3);cursor:pointer;transition:all .15s}
+.ov-tab.on{color:var(--gold);border-color:rgba(232,184,74,.4);background:rgba(232,184,74,.1)}
+.ov-tab.cyan.on{color:var(--cyan);border-color:rgba(62,232,240,.4);background:rgba(62,232,240,.1)}
+.expand-btn{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--fg3);cursor:pointer;transition:all .15s}
+.expand-btn:hover{color:var(--cyan);border-color:rgba(62,232,240,.35);background:rgba(62,232,240,.08)}
+.inst{cursor:pointer}
+.inst:hover{transform:translateY(-1px)}
+.hunt-rail{cursor:default}
+.hunt-track .hu,.hunt-track .hc{cursor:pointer}
+.hunt-track .hu:hover,.hunt-track .hc:hover{filter:brightness(1.25)}
+.hs.hb{cursor:pointer}
+.hs.hb:hover{border-color:rgba(232,184,74,.5);box-shadow:0 0 16px rgba(232,184,74,.12)}
+
+/* Heartbeat command pop */
+.hb-pop{position:fixed;z-index:75;min-width:220px;padding:10px;border-radius:12px;border:1px solid rgba(232,184,74,.28);
+  background:rgba(8,12,20,.96);backdrop-filter:blur(16px);box-shadow:0 16px 40px rgba(0,0,0,.45);
+  opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .2s,transform .2s,visibility .2s}
+.hb-pop.open{opacity:1;visibility:visible;transform:none}
+.hb-pop .hb-row{font-family:var(--mono);font-size:10px;color:var(--fg2);padding:5px 4px;display:flex;justify-content:space-between;gap:12px}
+.hb-pop .hb-row b{color:var(--gold)}
+.hb-pop .hb-acts{display:flex;gap:6px;margin-top:8px}
+
+/* Equity dual chart in theatre */
+#ovEqChart,#ovDdChart{width:100%;height:220px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.28)}
+.ov-split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:900px){.ov-split{grid-template-columns:1fr}}
+
+/* ===== PACK B — Market brain ===== */
+.brain{flex:0 0 auto;display:grid;grid-template-columns:minmax(160px,.9fr) minmax(220px,1.35fr) minmax(180px,1fr) minmax(200px,1.15fr) minmax(110px,.7fr);gap:6px;max-height:118px}
+.bp{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;backdrop-filter:blur(12px);overflow:hidden;padding:6px 8px 7px}
+.bp::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,rgba(255,255,255,.03) 48%,transparent 70%);transform:translateX(-140%);pointer-events:none}
+.bp:hover::before{animation:sheen 1.1s var(--ease)}
+.bp-h{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px;position:relative;z-index:1}
+.bp-t{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:-.02em}
+.bp-s{font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
+.bp-body{flex:1;min-height:0;overflow:hidden;position:relative;z-index:1;font-size:11px}
+.regime-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid var(--border)}
+.regime-pill.on{color:var(--green);border-color:rgba(61,255,156,.35);background:rgba(61,255,156,.08);box-shadow:0 0 16px rgba(61,255,156,.08)}
+.regime-pill.off{color:var(--red);border-color:rgba(255,93,108,.35);background:rgba(255,93,108,.08)}
+.regime-pill.mixed{color:var(--amber);border-color:rgba(240,160,48,.35);background:rgba(240,160,48,.08)}
+.regime-meta{font-family:var(--mono);font-size:8px;color:var(--fg3);letter-spacing:.06em;margin-top:5px;line-height:1.45}
+.heat{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+.heat-cell{aspect-ratio:1;border-radius:3px;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:var(--mono);font-size:6px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);transition:transform .12s,border-color .12s;min-height:14px}
+.heat-cell:hover{transform:scale(1.12);border-color:rgba(255,255,255,.28);z-index:2;color:#fff}
+.heat-cell.up{background:rgba(61,255,156,.18)}.heat-cell.up.strong{background:rgba(61,255,156,.38)}
+.heat-cell.dn{background:rgba(255,93,108,.18)}.heat-cell.dn.strong{background:rgba(255,93,108,.38)}
+.heat-cell.na{background:rgba(255,255,255,.03)}
+.lead-row,.sig-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 0;font-family:var(--mono);font-size:9px;cursor:pointer;border-radius:4px}
+.lead-row:hover,.sig-row:hover{background:rgba(255,255,255,.04)}
+.lead-row .sym.g,.sig-row .sym.g{color:var(--gold)}.lead-row .sym.c,.sig-row .sym.c{color:var(--cyan)}
+.breadth{display:flex;gap:6px;height:100%;align-items:stretch}
+.dial{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.02);padding:4px}
+.dial-ring{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:800;font-size:11px;
+  background:conic-gradient(var(--green) calc(var(--p,0)*1%), rgba(255,255,255,.06) 0);position:relative}
+.dial-ring::after{content:'';position:absolute;inset:5px;border-radius:50%;background:rgba(6,8,14,.95)}
+.dial-ring span{position:relative;z-index:1}
+.dial-l{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+
+@media(max-width:1280px){
+  .brain{grid-template-columns:1fr 1.2fr 1fr;max-height:none}
+  .brain .bp:nth-child(4),.brain .bp:nth-child(5){display:none}
+  #ovChart{height:220px}
+}
+@media(max-width:1100px){
+  .brain{grid-template-columns:1fr 1fr;max-height:none}
+}
+@media(max-width:700px){
+  .brain{grid-template-columns:1fr}
+  .ov-win{width:98vw;max-height:94vh}
+}
+
 </style>
 </head>
 <body>
@@ -387,7 +488,7 @@ body::after{
 </div>
 
 <div id="floor">
-  <div class="hunt-rail" aria-hidden="true"><div class="hunt-track" id="huntTrack"><span class="hd">AWAITING BITGET MARKS</span></div></div>
+  <div class="hunt-rail"><div class="hunt-track" id="huntTrack"><span class="hd">AWAITING BITGET MARKS</span></div></div>
 
   <div class="honest-banner disc" id="modeBanner"><span class="dot"></span><span id="modeBannerText">CONNECTING…</span></div>
 
@@ -416,6 +517,29 @@ body::after{
   </header>
 
   <div class="sess" id="sessRow"></div>
+
+  <section class="brain" id="brainRow" aria-label="Market brain">
+    <article class="bp">
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--gold)">Regime</div><div class="bp-s">Mag7 vs BTC/ETH</div></div></div>
+      <div class="bp-body" id="regimeBody"><div class="void mini"><div class="void-s">Warming…</div></div></div>
+    </article>
+    <article class="bp">
+      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Heat map</div><div class="bp-s">24h% · click → focus</div></div><button type="button" class="expand-btn" id="heatExpand">Expand</button></div>
+      <div class="bp-body" id="heatBody"></div>
+    </article>
+    <article class="bp">
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Lead / lag</div><div class="bp-s">buffered marks</div></div></div>
+      <div class="bp-body" id="leadBody"><div class="void mini"><div class="void-s">Warming up…</div></div></div>
+    </article>
+    <article class="bp">
+      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Signal stack</div><div class="bp-s">computed · local buffer</div></div></div>
+      <div class="bp-body" id="sigBody"><div class="void mini"><div class="void-s">Need more samples…</div></div></div>
+    </article>
+    <article class="bp">
+      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Breadth</div><div class="bp-s">% green 24h</div></div></div>
+      <div class="bp-body" id="breadthBody"></div>
+    </article>
+  </section>
 
   <section class="triad">
     <article class="panel us">
@@ -503,7 +627,7 @@ body::after{
   <section class="lower">
     <article class="panel cinema">
       <div class="ph">
-        <div class="ph-l"><span class="dot ok"></span><div><div class="ph-t" style="color:#e8edf4">Decision cinema</div><div class="ph-s">JSONL ticks · click a card to explain</div></div></div>
+        <div class="ph-l"><span class="dot ok"></span><div><div class="ph-t" style="color:#e8edf4">Decision cinema</div><div class="ph-s">JSONL ticks · click a card → Decision Court</div></div></div>
         <span class="chip" id="cineCount">0</span>
       </div>
       <div class="cin-body" id="cinema"></div>
@@ -546,6 +670,35 @@ body::after{
   <div class="dr-meta" id="drMeta"></div>
   <div class="dr-body" id="drBody">Select a cinema card.</div>
 </aside>
+<div class="ov-root" id="ovRoot" aria-hidden="true">
+  <div class="ov-backdrop" id="ovBackdrop"></div>
+  <div class="ov-win" id="ovWin" role="dialog" aria-modal="true">
+    <div class="ov-chrome">
+      <svg class="ov-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <path d="M4 6 L24 22" stroke="#e8b84a" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M24 6 L4 22" stroke="#3ee8f0" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="2.2" fill="#03050a" stroke="#e8edf4" stroke-width="1"/>
+      </svg>
+      <div style="min-width:0">
+        <div class="ov-title" id="ovTitle">Window</div>
+        <div class="ov-sub" id="ovSub">—</div>
+      </div>
+      <div class="ov-acts" id="ovActs"></div>
+      <button type="button" class="ov-x" id="ovClose" aria-label="Close">×</button>
+    </div>
+    <div class="ov-body" id="ovBody"></div>
+  </div>
+</div>
+<div class="hb-pop" id="hbPop" role="dialog">
+  <div class="hb-row"><span>Last heartbeat</span><b id="hbLast">—</b></div>
+  <div class="hb-row"><span>Next pulse</span><b id="hbNext">—</b></div>
+  <div class="hb-row"><span>Interval</span><b id="hbInt">—</b></div>
+  <div class="hb-acts">
+    <button type="button" class="btn tick" id="hbForce" style="flex:1">Force tick</button>
+    <button type="button" class="btn" id="hbClose" style="flex:0">Close</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -924,41 +1077,10 @@ function renderCinema(payload){
 }
 
 async function openExplain(tickId){
-  if(!tickId){ toast('No tick id yet', true); return; }
+  // Pack A — Decision Court supersedes side drawer
+  if(typeof openDecisionCourt === 'function') return openDecisionCourt(tickId);
   $('drawer').classList.add('open');
-  $('drBody').innerHTML = '<div class="void mini"><div class="void-s">Fetching explain…</div></div>';
-  $('drMeta').innerHTML = '';
-  const j = await api('/api/explain/' + encodeURIComponent(tickId));
-  if(!j.ok){
-    $('drBody').innerHTML = voidArt('NOT FOUND', escapeHtml(j.error||'tick missing'));
-    return;
-  }
-  const t = j.tick || j.decision || {};
-  $('drMeta').innerHTML = [
-    ['id', tickId],
-    ['action', t.action],
-    ['engine', t.engine],
-    ['trigger', t.trigger]
-  ].map(([k,v]) => `<span class="chip ${actionClass(v)}">${escapeHtml(k)} ${escapeHtml(v||'—')}</span>`).join('');
-  const legs = t.legs || [];
-  const checks = (t.risk_cage && t.risk_cage.checks) || [];
-  $('drBody').innerHTML = `
-    <div class="dr-sec"><h3>Thesis</h3><div>${escapeHtml(t.thesis||'—')}</div></div>
-    <div class="dr-sec"><h3>Tape</h3>
-      Mag7 ${escapeHtml(fmtPct(t.mag7_24h_pct))} · BTC ${escapeHtml(fmtPct(t.btc_24h_pct))} · Div ${escapeHtml(fmtPct(t.divergence_pct))}
-      · threshold ±${t.threshold_pct==null?'—':t.threshold_pct}%</div>
-    <div class="dr-sec"><h3>Legs</h3>${
-      legs.length
-        ? legs.map(x => `<div class="blot-line"><b>${escapeHtml(x.book||'')} ${escapeHtml(x.intent||'')}</b> ${escapeHtml(x.symbol||x.basket||'')}</div>`).join('')
-        : '<div class="blot-line">none — not invented</div>'
-    }</div>
-    <div class="dr-sec"><h3>Risk cage</h3>${
-      checks.length
-        ? checks.map(c => `<div class="blot-line"><b>${escapeHtml(c.rule)}</b> ${c.pass?'pass':'fail'}${c.detail? ' · '+escapeHtml(c.detail):''}</div>`).join('')
-        : '<div class="blot-line">' + escapeHtml((t.risk_cage && t.risk_cage.reason) || '—') + '</div>'
-    }</div>
-    <div class="dr-sec"><h3>Execution</h3><div class="dr-pre">${escapeHtml((t.execution && t.execution.message) || '—')}</div></div>
-    <div class="dr-sec"><h3>Raw</h3><div class="dr-pre">${escapeHtml(JSON.stringify(j, null, 2))}</div></div>`;
+  $('drBody').innerHTML = '<div class="void mini"><div class="void-s">Decision Court unavailable</div></div>';
 }
 
 function renderBlotter(j){
@@ -1192,6 +1314,7 @@ async function refreshBooks(){
   renderHunt();
   updateCoreChart();
   updateCorr();
+  if(typeof renderBrain === 'function') renderBrain();
 }
 
 async function refreshAll(){
@@ -1276,6 +1399,584 @@ function wireFilters(rootId, bookKey){
   });
 }
 
+
+/* ===== PACK A+B — Overlay system + Market brain ===== */
+S.histMax = 180;
+S.ov = { kind:null, chart:null, series:null, candle:null, eq:null, dd:null, blotterTab:'positions', blotterPayload:null, focusSym:null };
+S.brainReady = false;
+
+function closeOverlay(){
+  const root = $('ovRoot');
+  if(!root) return;
+  root.classList.remove('open');
+  root.setAttribute('aria-hidden','true');
+  const win = $('ovWin');
+  if(win) win.className = 'ov-win';
+  if(S.ov.chart){ try{ S.ov.chart.remove(); }catch(e){} }
+  if(S.ov.eq){ try{ S.ov.eq.remove(); }catch(e){} }
+  if(S.ov.dd){ try{ S.ov.dd.remove(); }catch(e){} }
+  S.ov.chart = S.ov.series = S.ov.candle = S.ov.eq = S.ov.dd = null;
+  S.ov.kind = null;
+  closeHbPop();
+}
+function openOverlay(kind, titleHtml, sub, bodyHtml, actsHtml, winClass){
+  closeHbPop();
+  // destroy previous chart instances before reusing body
+  if(S.ov.chart){ try{ S.ov.chart.remove(); }catch(e){} S.ov.chart=null; S.ov.series=null; S.ov.candle=null; }
+  if(S.ov.eq){ try{ S.ov.eq.remove(); }catch(e){} S.ov.eq=null; }
+  if(S.ov.dd){ try{ S.ov.dd.remove(); }catch(e){} S.ov.dd=null; }
+  S.ov.kind = kind;
+  const root = $('ovRoot');
+  const win = $('ovWin');
+  win.className = 'ov-win' + (winClass ? ' '+winClass : '');
+  $('ovTitle').innerHTML = titleHtml;
+  $('ovSub').textContent = sub || '';
+  $('ovActs').innerHTML = actsHtml || '';
+  $('ovBody').innerHTML = bodyHtml;
+  root.classList.add('open');
+  root.setAttribute('aria-hidden','false');
+  $('drawer').classList.remove('open');
+}
+
+function findRow(sym){
+  const u = String(sym||'').toUpperCase();
+  return S.booksUs.find(r=>r.symbol===u) || S.booksCr.find(r=>r.symbol===u) || null;
+}
+
+function chartOpts(el, h){
+  return {
+    width: el.clientWidth || 640,
+    height: h || 280,
+    layout:{ background:{type:'solid', color:'transparent'}, textColor:'rgba(232,237,244,.5)', fontFamily:"'JetBrains Mono', monospace", fontSize:10 },
+    grid:{ vertLines:{color:'rgba(255,255,255,.035)'}, horzLines:{color:'rgba(255,255,255,.035)'} },
+    rightPriceScale:{ borderColor:'rgba(255,255,255,.06)', scaleMargins:{top:0.12,bottom:0.12} },
+    timeScale:{ borderColor:'rgba(255,255,255,.06)', timeVisible:true, secondsVisible:false },
+    crosshair:{ vertLine:{color:'rgba(255,255,255,.14)'}, horzLine:{color:'rgba(255,255,255,.14)'} }
+  };
+}
+
+async function openFocusRoom(sym){
+  const row = findRow(sym);
+  if(!row){ toast('Symbol not in live books', true); return; }
+  S.ov.focusSym = row.symbol;
+  const side = row.side==='us' ? 'US contract' : 'Crypto perp';
+  const accent = row.side==='us' ? 'g' : 'c';
+  const pos = S.sleeve ? posFor(row.symbol) : null;
+  const hist = S.hist[row.symbol] || [];
+  const stats = `
+    <div class="ov-grid">
+      <div class="ov-stat"><div class="l">Mark</div><div class="v">${fmtPx(row.mark)}</div></div>
+      <div class="ov-stat"><div class="l">Bid</div><div class="v">${fmtPx(row.bid)}</div></div>
+      <div class="ov-stat"><div class="l">Ask</div><div class="v">${fmtPx(row.ask)}</div></div>
+      <div class="ov-stat"><div class="l">24h</div><div class="v ${pctClass(row.change24h_pct)}">${fmtPct(row.change24h_pct)}</div></div>
+      <div class="ov-stat"><div class="l">Range 24h</div><div class="v">${fmtPx(row.low24h)} – ${fmtPx(row.high24h)}</div></div>
+      <div class="ov-stat"><div class="l">Funding</div><div class="v">${row.funding_rate==null?'—':(Number(row.funding_rate)*100).toFixed(4)+'%'}</div></div>
+      <div class="ov-stat"><div class="l">Exch max lev</div><div class="v">${row.exchange_max_lev!=null?('≤'+row.exchange_max_lev+'×'):'—'}</div></div>
+      <div class="ov-stat"><div class="l">Live buffer</div><div class="v">${hist.length} samples</div></div>
+    </div>`;
+  const posBlock = pos
+    ? `<div class="dr-sec"><h3>Blotter position</h3><div class="dr-pre">${escapeHtml(JSON.stringify(pos,null,2))}</div></div>`
+    : `<div class="dr-sec"><h3>Position</h3><div class="blot-line">None — ${S.sleeve?'not in blotter for this symbol':'sleeve disconnected · not simulated'}</div></div>`;
+  const body = `
+    ${stats}
+    <div id="ovChart" class="tall"><div class="chart-empty" id="ovChartEmpty">Loading chart…</div></div>
+    <div class="ov-note" id="ovChartNote">Prefer Bitget public candles · fallback live mark buffer</div>
+    ${posBlock}`;
+  const acts = `
+    <button type="button" class="btn tick" id="ovWatchBridge">Watch in Bridge</button>
+    <button type="button" class="btn" id="ovFocusClose">Close</button>`;
+  openOverlay('focus',
+    `<span class="${accent}">${escapeHtml(shortSym(row.symbol))}</span> Focus Room`,
+    side + ' · Bitget USDT-FUTURES · real marks only',
+    body, acts, '');
+  $('ovWatchBridge').onclick = () => {
+    if(row.side==='us') S.focusUs = row.symbol; else S.focusCr = row.symbol;
+    renderBook($('usBook'), S.booksUs, 'us', S.usFilter);
+    renderBook($('crBook'), S.booksCr, 'crypto', S.crFilter);
+    updateCoreChart(); updateCorr();
+    toast('Bridge focus → ' + shortSym(S.focusUs) + ' · ' + shortSym(S.focusCr));
+  };
+  $('ovFocusClose').onclick = closeOverlay;
+  await paintFocusChart(row.symbol);
+}
+
+async function paintFocusChart(sym){
+  const el = $('ovChart');
+  const empty = $('ovChartEmpty');
+  const note = $('ovChartNote');
+  if(!el || typeof LightweightCharts === 'undefined'){
+    if(empty) empty.textContent = 'Chart library unavailable';
+    return;
+  }
+  let candles = null;
+  try{
+    const j = await api('/api/candles?symbol=' + encodeURIComponent(sym) + '&granularity=15m&limit=96');
+    if(j.ok && j.candles && j.candles.length >= 2) candles = j.candles;
+    else if(note) note.textContent = 'Candles unavailable (' + escapeHtml(j.error||'empty') + ') · showing live mark buffer';
+  }catch(e){
+    if(note) note.textContent = 'Candles fetch failed · live mark buffer';
+  }
+  if(S.ov.chart){ try{ S.ov.chart.remove(); }catch(e){} }
+  S.ov.chart = LightweightCharts.createChart(el, chartOpts(el, 340));
+  if(candles){
+    S.ov.candle = S.ov.chart.addCandlestickSeries({
+      upColor:'#3dff9c', downColor:'#ff5d6c', borderUpColor:'#3dff9c', borderDownColor:'#ff5d6c',
+      wickUpColor:'#3dff9c', wickDownColor:'#ff5d6c'
+    });
+    const data = candles.map(c => ({time:c.t, open:c.o, high:c.h, low:c.l, close:c.c}));
+    S.ov.candle.setData(data);
+    if(note) note.textContent = 'Bitget public mix candles · 15m · ' + candles.length + ' bars · real only';
+    if(empty) empty.classList.add('hide');
+  } else {
+    const hist = S.hist[sym] || [];
+    S.ov.series = S.ov.chart.addAreaSeries({
+      lineColor:'#e8b84a', topColor:'rgba(232,184,74,.22)', bottomColor:'rgba(232,184,74,.02)', lineWidth:2
+    });
+    if(hist.length >= 2){
+      let lastT = 0;
+      const data = hist.map(p => {
+        let t = p.t; if(t<=lastT) t = lastT+1; lastT=t;
+        return {time:t, value:p.v};
+      });
+      S.ov.series.setData(data);
+      if(empty) empty.classList.add('hide');
+      if(note) note.textContent = 'Live mark buffer · ' + hist.length + ' samples from /api/books · not OHLC candles';
+    } else {
+      if(empty){ empty.classList.remove('hide'); empty.textContent = 'Buffering live marks — need ≥2 samples'; }
+      if(note) note.textContent = 'Live mark buffer warming · polls /api/books';
+    }
+  }
+  S.ov.chart.timeScale().fitContent();
+  const ro = new ResizeObserver(() => {
+    if(S.ov.chart && el) S.ov.chart.applyOptions({ width: el.clientWidth, height: 340 });
+  });
+  ro.observe(el);
+}
+
+async function openDecisionCourt(tickId){
+  if(!tickId){ toast('No tick id yet', true); return; }
+  openOverlay('court',
+    'Decision <span class="c">Court</span>',
+    'Full dossier · /api/explain/' + tickId,
+    '<div class="void mini"><div class="void-s">Loading dossier…</div></div>',
+    '<button type="button" class="btn" id="ovCourtClose">Close</button>',
+    'court');
+  $('ovCourtClose').onclick = closeOverlay;
+  const j = await api('/api/explain/' + encodeURIComponent(tickId));
+  if(!j.ok){
+    $('ovBody').innerHTML = voidArt('DOSSIER UNAVAILABLE', escapeHtml(j.error||'tick not found'));
+    return;
+  }
+  const t = j.tick || j.decision || {};
+  const d = j.decision || {};
+  const tm = t.ts ? new Date(t.ts*1000).toLocaleString('en-GB',{hour12:false, timeZone:'Europe/London'}) + ' PT' : '—';
+  const legs = t.legs || d.legs || [];
+  const checks = ((t.risk_cage||d.risk_cage||{}).checks) || [];
+  const exec = (t.execution || d.execution || {});
+  const snap = t.session || {};
+  $('ovBody').innerHTML = `
+    <div class="ov-grid">
+      <div class="ov-stat"><div class="l">Time</div><div class="v" style="font-size:12px">${escapeHtml(tm)}</div></div>
+      <div class="ov-stat"><div class="l">Action</div><div class="v ${actionClass(t.action)}">${escapeHtml(t.action||'—')}</div></div>
+      <div class="ov-stat"><div class="l">Engine</div><div class="v">${escapeHtml(t.engine||'—')}</div></div>
+      <div class="ov-stat"><div class="l">Trigger</div><div class="v">${escapeHtml(t.trigger||'—')}</div></div>
+      <div class="ov-stat"><div class="l">Confidence</div><div class="v">${t.confidence==null?'—':t.confidence}</div></div>
+      <div class="ov-stat"><div class="l">Tick id</div><div class="v" style="font-size:10px">${escapeHtml(tickId)}</div></div>
+    </div>
+    <div class="dr-sec"><h3>Thesis</h3><div>${escapeHtml(t.thesis||'—')}</div></div>
+    <div class="dr-sec"><h3>Market snapshot</h3>
+      Mag7 ${escapeHtml(fmtPct(t.mag7_24h_pct))} · BTC ${escapeHtml(fmtPct(t.btc_24h_pct))} · Div ${escapeHtml(fmtPct(t.divergence_pct))}
+      · threshold ±${t.threshold_pct==null?'—':t.threshold_pct}%
+      ${snap.us_cash_status?(' · US cash '+escapeHtml(snap.us_cash_status)) : ''}
+    </div>
+    <div class="dr-sec"><h3>Risk verdict</h3>${
+      checks.length
+        ? checks.map(c => `<div class="blot-line"><b>${escapeHtml(c.rule)}</b> ${c.pass?'pass':'fail'}${c.detail?' · '+escapeHtml(c.detail):''}</div>`).join('')
+        : '<div class="blot-line">' + escapeHtml(((t.risk_cage||{}).reason) || '—') + '</div>'
+    }</div>
+    <div class="dr-sec"><h3>Legs / orders intent</h3>${
+      legs.length
+        ? legs.map(x => `<div class="blot-line"><b>${escapeHtml(x.book||'')} ${escapeHtml(x.intent||'')}</b> ${escapeHtml(x.symbol||x.basket||'')}</div>`).join('')
+        : '<div class="blot-line">none — not invented</div>'
+    }</div>
+    <div class="dr-sec"><h3>Execution / fills</h3><div class="dr-pre">${escapeHtml(exec.message || (Object.keys(exec).length?JSON.stringify(exec,null,2):'No execution payload — thesis only while sleeve disconnected'))}</div></div>
+    <div class="dr-sec"><h3>Raw dossier</h3><div class="dr-pre">${escapeHtml(JSON.stringify({tick:j.tick, decision:j.decision}, null, 2))}</div></div>`;
+}
+
+async function openEquityTheatre(){
+  openOverlay('equity',
+    'Equity & <span class="c">Drawdown</span> Theatre',
+    'Real sleeve snapshots · client-side drawdown from peaks',
+    '<div class="void mini"><div class="void-s">Loading /api/equity…</div></div>',
+    '<button type="button" class="btn" id="ovEqClose">Close</button>',
+    'theatre');
+  $('ovEqClose').onclick = closeOverlay;
+  const j = await api('/api/equity');
+  S.ov.equityPayload = j;
+  if(!j.connected || !(j.series||[]).length){
+    $('ovBody').innerHTML = voidArt(
+      'SLEEVE DISCONNECTED',
+      escapeHtml(j.message || 'Sleeve disconnected — equity theatre arms when sleeve connects')
+    ) + `<div class="ov-note" style="text-align:center">Zero fabricated equity · /api/equity series empty by design until BITGET_* keys + snapshots</div>`;
+    return;
+  }
+  const series = j.series || [];
+  // compute drawdown from peaks
+  let peak = -Infinity;
+  const eqPts = [], ddPts = [];
+  for(const p of series){
+    const t = Math.floor(Number(p.ts));
+    const v = Number(p.equity);
+    if(Number.isNaN(t) || Number.isNaN(v)) continue;
+    if(v > peak) peak = v;
+    const dd = peak > 0 ? ((v - peak) / peak) * 100 : 0;
+    eqPts.push({time:t, value:v});
+    ddPts.push({time:t, value:+dd.toFixed(4)});
+  }
+  const last = eqPts[eqPts.length-1];
+  const lastDd = ddPts[ddPts.length-1];
+  $('ovBody').innerHTML = `
+    <div class="ov-grid">
+      <div class="ov-stat"><div class="l">Points</div><div class="v">${eqPts.length}</div></div>
+      <div class="ov-stat"><div class="l">Last equity</div><div class="v">${last?fmtPx(last.value):'—'}</div></div>
+      <div class="ov-stat"><div class="l">Peak</div><div class="v">${peak>-Infinity?fmtPx(peak):'—'}</div></div>
+      <div class="ov-stat"><div class="l">Drawdown</div><div class="v ${lastDd&&lastDd.value<0?'dn':'up'}">${lastDd?lastDd.value.toFixed(2)+'%':'—'}</div></div>
+    </div>
+    <div class="ov-split">
+      <div><div class="ov-note" style="margin-bottom:4px">Equity curve</div><div id="ovEqChart"></div></div>
+      <div><div class="ov-note" style="margin-bottom:4px">Drawdown from peaks %</div><div id="ovDdChart"></div></div>
+    </div>
+    <div class="ov-note">Computed client-side from real /api/equity snapshots · not simulated</div>`;
+  if(typeof LightweightCharts === 'undefined') return;
+  const eqEl = $('ovEqChart'), ddEl = $('ovDdChart');
+  S.ov.eq = LightweightCharts.createChart(eqEl, chartOpts(eqEl, 220));
+  const eqS = S.ov.eq.addAreaSeries({ lineColor:'#3ee8f0', topColor:'rgba(62,232,240,.28)', bottomColor:'rgba(62,232,240,.02)', lineWidth:2 });
+  eqS.setData(eqPts);
+  S.ov.eq.timeScale().fitContent();
+  S.ov.dd = LightweightCharts.createChart(ddEl, chartOpts(ddEl, 220));
+  const ddS = S.ov.dd.addAreaSeries({ lineColor:'#ff5d6c', topColor:'rgba(255,93,108,.02)', bottomColor:'rgba(255,93,108,.25)', lineWidth:2 });
+  ddS.setData(ddPts);
+  S.ov.dd.timeScale().fitContent();
+}
+
+async function openBlotterDesk(){
+  openOverlay('blotter',
+    'Fills & <span class="g">Blotter</span> Desk',
+    'Positions · Orders · Fills — real /api/blotter only',
+    '<div class="void mini"><div class="void-s">Loading blotter…</div></div>',
+    `<button type="button" class="btn tick" id="ovExport">Export JSON</button>
+     <button type="button" class="btn" id="ovBlotClose">Close</button>`,
+    'desk');
+  $('ovBlotClose').onclick = closeOverlay;
+  const [blot, fillsApi] = await Promise.all([api('/api/blotter'), api('/api/fills?n=200')]);
+  // Prefer dedicated fills endpoint if blotter fills empty
+  if((!blot.fills || !blot.fills.length) && fillsApi.fills) blot.fills = fillsApi.fills;
+  S.ov.blotterPayload = blot;
+  S.ov.blotterTab = 'positions';
+  $('ovExport').onclick = () => {
+    const payload = S.ov.blotterPayload || blot;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'crossfire-blotter-' + Date.now() + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Exported real blotter JSON');
+  };
+  paintBlotterDesk(blot);
+}
+
+function paintBlotterDesk(j){
+  const disc = j.disconnected || !j.sleeve_connected;
+  const pos = disc ? [] : (j.positions||[]);
+  const orders = disc ? [] : (j.orders||[]);
+  const fills = j.fills||[];
+  const tab = S.ov.blotterTab || 'positions';
+  const rows = tab==='positions' ? pos : tab==='orders' ? orders : fills;
+  const list = rows.length
+    ? rows.slice().reverse().map(p => `<div class="blot-line">${escapeHtml(typeof p==='string'?p:JSON.stringify(p))}</div>`).join('')
+    : `<div class="blot-line">${disc && tab!=='fills' ? 'Sleeve disconnected — not simulated' : 'none'}</div>`;
+  $('ovBody').innerHTML = `
+    <div class="ov-grid">
+      <div class="ov-stat"><div class="l">Sleeve</div><div class="v" style="color:${disc?'var(--red)':'var(--green)'}">${disc?'OFF':'ON'}</div></div>
+      <div class="ov-stat"><div class="l">Positions</div><div class="v">${pos.length}</div></div>
+      <div class="ov-stat"><div class="l">Orders</div><div class="v">${orders.length}</div></div>
+      <div class="ov-stat"><div class="l">Fills</div><div class="v">${fills.length}</div></div>
+    </div>
+    <div class="ov-tabs">
+      <button type="button" class="ov-tab ${tab==='positions'?'on':''}" data-tab="positions">Positions</button>
+      <button type="button" class="ov-tab ${tab==='orders'?'on':''}" data-tab="orders">Orders</button>
+      <button type="button" class="ov-tab cyan ${tab==='fills'?'on':''}" data-tab="fills">Fills</button>
+    </div>
+    <div class="dr-sec"><h3>${escapeHtml(tab)} (${rows.length})</h3>${list}</div>
+    <div class="ov-note">${escapeHtml(j.message||'')} · Export downloads the live payload only</div>`;
+  $('ovBody').querySelectorAll('.ov-tab').forEach(btn => {
+    btn.onclick = () => { S.ov.blotterTab = btn.getAttribute('data-tab'); paintBlotterDesk(j); };
+  });
+}
+
+/* Heartbeat pop */
+function closeHbPop(){ const p=$('hbPop'); if(p) p.classList.remove('open'); }
+function openHbPop(){
+  const box = $('hsHbBox');
+  const pop = $('hbPop');
+  if(!box || !pop) return;
+  const r = box.getBoundingClientRect();
+  pop.style.top = (r.bottom + 8) + 'px';
+  pop.style.left = Math.min(r.left, window.innerWidth - 240) + 'px';
+  $('hbLast').textContent = S.lastHb
+    ? new Date(S.lastHb*1000).toLocaleTimeString('en-GB',{hour12:false,timeZone:'Europe/London'}) + ' PT'
+    : '—';
+  $('hbNext').textContent = S.nextHb
+    ? new Date(S.nextHb*1000).toLocaleTimeString('en-GB',{hour12:false,timeZone:'Europe/London'}) + ' PT'
+    : '—';
+  $('hbInt').textContent = (S.hbSec||300) + 's';
+  pop.classList.add('open');
+}
+
+/* ===== PACK B renderers ===== */
+function avgPct(rows, filterFn){
+  const xs = rows.filter(r => r.available && r.change24h_pct!=null && (!filterFn || filterFn(r))).map(r => Number(r.change24h_pct));
+  if(!xs.length) return null;
+  return xs.reduce((a,b)=>a+b,0)/xs.length;
+}
+
+function renderRegime(){
+  const el = $('regimeBody'); if(!el) return;
+  const mag = avgPct(S.booksUs, r => MAG7.has(r.symbol));
+  const btc = (S.booksCr.find(r=>r.symbol==='BTCUSDT')||{}).change24h_pct;
+  const eth = (S.booksCr.find(r=>r.symbol==='ETHUSDT')||{}).change24h_pct;
+  const crypto = (btc!=null && eth!=null) ? (Number(btc)+Number(eth))/2 : (btc!=null?Number(btc):eth!=null?Number(eth):null);
+  // Thresholds documented in UI: risk-on Mag7>+0.4 & crypto>+0.2; risk-off Mag7<-0.4 & crypto<-0.2; else mixed
+  let label='MIXED', cls='mixed';
+  if(mag!=null && crypto!=null){
+    if(mag > 0.4 && crypto > 0.2){ label='RISK-ON'; cls='on'; }
+    else if(mag < -0.4 && crypto < -0.2){ label='RISK-OFF'; cls='off'; }
+  }
+  el.innerHTML = `
+    <div class="regime-pill ${cls}">${label}</div>
+    <div class="regime-meta">Mag7 ${fmtPct(mag)} · BTC ${fmtPct(btc)} · ETH ${fmtPct(eth)}
+    <br>ON: Mag7&gt;+0.4% &amp; crypto&gt;+0.2% · OFF: Mag7&lt;-0.4% &amp; crypto&lt;-0.2% · else MIXED</div>`;
+}
+
+function heatClass(pct){
+  if(pct==null || Number.isNaN(Number(pct))) return 'na';
+  const n = Number(pct);
+  if(n >= 1) return 'up strong';
+  if(n > 0) return 'up';
+  if(n <= -1) return 'dn strong';
+  if(n < 0) return 'dn';
+  return 'na';
+}
+
+function renderHeat(){
+  const el = $('heatBody'); if(!el) return;
+  const rows = [...S.booksUs, ...S.booksCr];
+  if(!rows.length){ el.innerHTML = '<div class="void mini"><div class="void-s">No books</div></div>'; return; }
+  el.innerHTML = `<div class="heat">${rows.map(r => {
+    const cls = heatClass(r.change24h_pct);
+    const tip = shortSym(r.symbol)+' '+fmtPct(r.change24h_pct);
+    return `<div class="heat-cell ${cls}" data-sym="${escapeHtml(r.symbol)}" title="${escapeHtml(tip)}">${escapeHtml(shortSym(r.symbol).slice(0,3))}</div>`;
+  }).join('')}</div>`;
+  el.querySelectorAll('.heat-cell').forEach(c => {
+    c.onclick = () => openFocusRoom(c.getAttribute('data-sym'));
+  });
+}
+
+function movePct(hist, n){
+  if(!hist || hist.length < n) return null;
+  const a = hist[hist.length-n].v, b = hist[hist.length-1].v;
+  if(!a) return null;
+  return ((b/a)-1)*100;
+}
+
+function renderLeadLag(){
+  const el = $('leadBody'); if(!el) return;
+  const N = 12;
+  const scored = [...S.booksUs, ...S.booksCr].map(r => {
+    const h = S.hist[r.symbol]||[];
+    return {sym:r.symbol, side:r.side, move: movePct(h, Math.min(N, h.length)), n:h.length};
+  }).filter(x => x.move!=null);
+  if(scored.length < 4){
+    const need = Math.max(...[...S.booksUs,...S.booksCr].map(r => (S.hist[r.symbol]||[]).length), 0);
+    el.innerHTML = `<div class="void mini"><div class="void-s">Warming up — ${need}/${N} samples</div></div>`;
+    return;
+  }
+  scored.sort((a,b)=> Math.abs(b.move)-Math.abs(a.move));
+  el.innerHTML = scored.slice(0,5).map(x => `
+    <div class="lead-row" data-sym="${escapeHtml(x.sym)}">
+      <span class="sym ${x.side==='us'?'g':'c'}">${escapeHtml(shortSym(x.sym))}</span>
+      <span class="${pctClass(x.move)}">${fmtPct(x.move)} <span style="color:var(--fg3)">· ${x.n}smp</span></span>
+    </div>`).join('') + `<div class="ov-note" style="margin-top:2px">Last ${N} buffer samples · not prophecy</div>`;
+  el.querySelectorAll('.lead-row').forEach(r => r.onclick = () => openFocusRoom(r.getAttribute('data-sym')));
+}
+
+function rsi(vals, period){
+  if(!vals || vals.length < period+1) return null;
+  let gains=0, losses=0;
+  for(let i=vals.length-period; i<vals.length; i++){
+    const d = vals[i]-vals[i-1];
+    if(d>=0) gains+=d; else losses-=d;
+  }
+  if(losses===0) return 100;
+  const rs = (gains/period)/(losses/period);
+  return 100 - (100/(1+rs));
+}
+function roc(vals, period){
+  if(!vals || vals.length < period+1) return null;
+  const a = vals[vals.length-1-period], b = vals[vals.length-1];
+  if(!a) return null;
+  return ((b/a)-1)*100;
+}
+function volPct(vals, period){
+  if(!vals || vals.length < period+1) return null;
+  const rets = [];
+  for(let i=vals.length-period; i<vals.length; i++){
+    if(!vals[i-1]) continue;
+    rets.push(vals[i]/vals[i-1]-1);
+  }
+  if(rets.length < 3) return null;
+  const m = rets.reduce((a,b)=>a+b,0)/rets.length;
+  const v = rets.reduce((a,b)=>a+(b-m)*(b-m),0)/rets.length;
+  return Math.sqrt(v)*100;
+}
+
+function renderSignals(){
+  const el = $('sigBody'); if(!el) return;
+  const focus = [S.focusUs, S.focusCr, 'NVDAUSDT', 'ETHUSDT', 'TSLAUSDT'].filter((v,i,a)=>v && a.indexOf(v)===i);
+  const rows = focus.map(sym => {
+    const h = S.hist[sym]||[];
+    const vals = h.map(p=>p.v);
+    return {
+      sym, side: (findRow(sym)||{}).side || (MAG7.has(sym)||/AAPL|TSLA|NVDA|META|AMZN|MSFT|GOOGL|NFLX|AMD|COIN|MSTR|SPY/.test(sym)?'us':'crypto'),
+      rsi: rsi(vals, 14), roc: roc(vals, 8), vol: volPct(vals, 12), n: vals.length
+    };
+  }).filter(x => x.n >= 10);
+  if(!rows.length){
+    el.innerHTML = '<div class="void mini"><div class="void-s">Need ≥10 buffer samples</div></div>';
+    return;
+  }
+  el.innerHTML = rows.slice(0,4).map(x => `
+    <div class="sig-row" data-sym="${escapeHtml(x.sym)}">
+      <span class="sym ${x.side==='us'?'g':'c'}">${escapeHtml(shortSym(x.sym))}</span>
+      <span style="color:var(--fg2)">RSI ${x.rsi==null?'—':x.rsi.toFixed(0)} · ROC ${fmtPct(x.roc)} · σ ${x.vol==null?'—':x.vol.toFixed(2)}</span>
+    </div>`).join('') + `<div class="ov-note">computed · local buffer · not AI prophecy</div>`;
+  el.querySelectorAll('.sig-row').forEach(r => r.onclick = () => openFocusRoom(r.getAttribute('data-sym')));
+}
+
+function renderBreadth(){
+  const el = $('breadthBody'); if(!el) return;
+  const pctGreen = (rows) => {
+    const live = rows.filter(r => r.available && r.change24h_pct!=null);
+    if(!live.length) return null;
+    return 100 * live.filter(r => Number(r.change24h_pct) >= 0).length / live.length;
+  };
+  const us = pctGreen(S.booksUs), cr = pctGreen(S.booksCr);
+  const dial = (label, p, color) => {
+    const v = p==null ? 0 : p;
+    return `<div class="dial"><div class="dial-ring" style="--p:${v};background:conic-gradient(${color} ${v}%, rgba(255,255,255,.06) 0)"><span>${p==null?'—':Math.round(p)+'%'}</span></div><div class="dial-l">${label}</div></div>`;
+  };
+  el.innerHTML = `<div class="breadth">${dial('US', us, '#e8b84a')}${dial('CR', cr, '#3ee8f0')}</div>`;
+}
+
+function renderBrain(){
+  renderRegime();
+  renderHeat();
+  renderLeadLag();
+  renderSignals();
+  renderBreadth();
+  S.brainReady = true;
+}
+
+function openHeatExpand(){
+  const rows = [...S.booksUs, ...S.booksCr];
+  openOverlay('heat',
+    'Cross-asset <span class="c">Heat</span>',
+    '24h% grid · US × crypto · click cell → Focus Room',
+    `<div class="heat" style="grid-template-columns:repeat(8,1fr);gap:4px">${rows.map(r => {
+      const cls = heatClass(r.change24h_pct);
+      return `<div class="heat-cell ${cls}" data-sym="${escapeHtml(r.symbol)}" style="min-height:36px;font-size:9px;flex-direction:column;gap:2px"
+        title="${escapeHtml(shortSym(r.symbol)+' '+fmtPct(r.change24h_pct))}">
+        <b>${escapeHtml(shortSym(r.symbol))}</b><span class="${pctClass(r.change24h_pct)}">${fmtPct(r.change24h_pct)}</span></div>`;
+    }).join('')}</div>
+    <div class="ov-note">Green = up 24h · Red = down · Strong = |Δ|≥1% · Real Bitget change24h only</div>`,
+    '<button type="button" class="btn" id="ovHeatClose">Close</button>',
+    'theatre');
+  $('ovHeatClose').onclick = closeOverlay;
+  $('ovBody').querySelectorAll('.heat-cell').forEach(c => {
+    c.onclick = () => openFocusRoom(c.getAttribute('data-sym'));
+  });
+}
+
+/* Wire Pack A/B interactions (idempotent-ish) */
+function wirePack(){
+  if(wirePack._done) return;
+  wirePack._done = true;
+
+  $('ovBackdrop').addEventListener('click', closeOverlay);
+  $('ovClose').addEventListener('click', closeOverlay);
+  $('hbClose').addEventListener('click', closeHbPop);
+  $('hbForce').addEventListener('click', () => { closeHbPop(); doTick(); });
+  $('hsHbBox').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if($('hbPop').classList.contains('open')) closeHbPop(); else openHbPop();
+  });
+  document.addEventListener('click', (e) => {
+    const pop = $('hbPop');
+    if(pop && pop.classList.contains('open') && !pop.contains(e.target) && !$('hsHbBox').contains(e.target)) closeHbPop();
+  });
+
+  // Book row → Focus Room
+  ['usBook','crBook'].forEach(id => {
+    $(id).addEventListener('click', e => {
+      const inst = e.target.closest('.inst');
+      if(!inst) return;
+      openFocusRoom(inst.getAttribute('data-sym'));
+    });
+  });
+
+  // Hunt rail symbols
+  $('huntTrack').addEventListener('click', e => {
+    const span = e.target.closest('.hu, .hc');
+    if(!span) return;
+    const text = span.textContent || '';
+    const token = text.trim().split(/\s+/)[0];
+    if(!token) return;
+    const sym = token.endsWith('USDT') ? token : token + 'USDT';
+    openFocusRoom(sym);
+  });
+
+  // Expand controls
+  const blotPh = document.querySelector('#blotter')?.closest('.panel')?.querySelector('.ph');
+  if(blotPh && !blotPh.querySelector('#blotExpand')){
+    const b = document.createElement('button');
+    b.type='button'; b.className='expand-btn'; b.id='blotExpand'; b.textContent='Expand desk';
+    blotPh.appendChild(b);
+    b.onclick = openBlotterDesk;
+  }
+  const eqPh = document.querySelector('#eqChart')?.closest('.panel')?.querySelector('.ph');
+  if(eqPh && !eqPh.querySelector('#eqExpand')){
+    const b = document.createElement('button');
+    b.type='button'; b.className='expand-btn'; b.id='eqExpand'; b.textContent='Expand equity';
+    eqPh.appendChild(b);
+    b.onclick = openEquityTheatre;
+  }
+  // Also click equity chart area
+  const eqWrap = $('eqChart')?.parentElement;
+  if(eqWrap){
+    eqWrap.style.cursor = 'pointer';
+    eqWrap.title = 'Expand equity theatre';
+    eqWrap.addEventListener('click', openEquityTheatre);
+  }
+
+  const heatExpand = $('heatExpand');
+  if(heatExpand) heatExpand.onclick = openHeatExpand;
+
+  // Replace cinema explain with Decision Court
+  window.openExplain = openDecisionCourt;
+}
+
+
 $('enterBtn').addEventListener('click', enterFloor);
 $('drClose').addEventListener('click', () => $('drawer').classList.remove('open'));
 $('forceTick').addEventListener('click', doTick);
@@ -1285,7 +1986,11 @@ $('actKill').addEventListener('click', doKill);
 $('actExplain').addEventListener('click', () => openExplain(S.lastTickId));
 document.addEventListener('keydown', e => {
   if(e.key==='Enter' && !$('splash').classList.contains('go')) $('enterBtn').click();
-  if(e.key==='Escape') $('drawer').classList.remove('open');
+  if(e.key==='Escape'){
+    if($('hbPop') && $('hbPop').classList.contains('open')){ closeHbPop(); return; }
+    if($('ovRoot') && $('ovRoot').classList.contains('open')){ closeOverlay(); return; }
+    $('drawer').classList.remove('open');
+  }
 });
 wireFilters('usFilters','us');
 wireFilters('crFilters','cr');
@@ -1294,6 +1999,7 @@ window.addEventListener('resize', () => {
 });
 
 (async function boot(){
+  if(typeof wirePack === 'function') wirePack();
   if(location.hash === '#floor') enterFloor();
   try { await refreshAll(); await refreshBooks(); }
   catch(e){ $('splashTrust').textContent = 'Cannot reach server — start python3 server.py'; toast(String(e), true); }
