@@ -1,0 +1,24 @@
+# secrets & env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*secret*
+*credential*
+.altana*
+**/api_keys*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# local / internal (not for public judges pack)
+HANDOVER.md
+SUBMISSION-DRAFT.md
+logs/
+*.jsonl
+__pycache__/
+.venv/
