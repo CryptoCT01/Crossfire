@@ -2,68 +2,87 @@
 
 **Bitget AI Base Camp Hackathon S2** · Agentic Trading · **Cross-Asset Execution Agent**
 
-> When US cash equities sleep, Bitget US stock contracts and crypto still move. Crossfire is an LLM agent that senses a **leveraged Dual Book** (US stock contracts ↔ USDT-M perps), decides the hedge or rotation, and executes under a hard **Risk Cage**.
+When US cash equities sleep, Bitget **US stock USDT-M contracts** and **crypto perps** still move. Crossfire reads both books, runs a **5-minute agent heartbeat** (plus event wakes on large mark moves), decides under a hard **Risk Cage**, and logs every tick to append-only JSONL.
 
-## Demo (mock — no live orders)
+Repo: [github.com/CryptoCT01/Crossfire](https://github.com/CryptoCT01/Crossfire)
 
-Open the command deck:
+## Run
 
 ```bash
-cd path/to/crossfire
-python3 -m http.server 8765
-# then visit http://127.0.0.1:8765/dashboard.html
-# skip splash: http://127.0.0.1:8765/dashboard.html#floor
+cd path/to/Crossfire
+python3 server.py
+# Dashboard: http://127.0.0.1:8770/
+# Skip splash: http://127.0.0.1:8770/#floor
 ```
 
-Or open `dashboard.html` directly in a browser (needs network once for fonts + lightweight-charts).
+Optional: copy `.env.example` → `.env` (gitignored). Stdlib only — no `pip install` required for public mode.
 
-**Mock mode only in this build:** no private API keys, no order placement. Trade / kill controls toast *Mock only — live sleeve not connected*.
+## Modes (honest)
 
-## What’s on the deck
+| State | Meaning |
+|-------|---------|
+| **PUBLIC MARKS · SLEEVE DISCONNECTED** | Default. Real Bitget public tickers. No positions simulated. Kill switch disabled. |
+| **DEMO / LIVE sleeve** | Set `BITGET_API_KEY`, `BITGET_SECRET_KEY`, `BITGET_PASSPHRASE` + `CROSSFIRE_MODE=demo\|live`. Private hooks are stubbed until you enable live signing; UI stays honest. |
 
-| Panel | Role |
+Secrets come **only** from environment / `.env`. Never hardcode keys. Never commit `.env` or `logs/`.
+
+## Architecture
+
+| Piece | Role |
 |-------|------|
-| **Dual Book** | Leveraged US stock contracts (amber, 5–20× mock) · USDT-M perps (cyan, 10–50× mock) |
-| **Bridge Core** | Active cross-hedge thesis, correlation, legs |
-| **Decision Cinema** | event → LLM thesis → risk → order → fill |
-| **Risk Cage** | sleeve equity, slots, daily DD halt, kill switch |
+| `server.py` | Threading HTTP server on **8770** — dashboard + JSON APIs + background heartbeat |
+| `crossfire/bitget_public.py` | `USDT-FUTURES` tickers (batch) — no API key |
+| `crossfire/bitget_private.py` | Sleeve stubs; skipped when keys missing |
+| `crossfire/agent_engine.py` | Tick pipeline: books → policy/LLM → Risk Cage → JSONL |
+| `crossfire/config.py` | Universe, Risk Cage constants, env |
+| `logs/*.jsonl` | `ticks`, `decisions`, `fills`, `equity` (gitignored) |
+| `dashboard.html` | Ambassador command deck — **only** displays server state |
 
-## Thesis (short)
+### APIs
 
-Macro / weekend / after-hours shocks hit US stock contracts and crypto on different clocks. A single-asset bot leaves the other book stranded. Crossfire’s LLM owns the **cross-asset decision**; the Risk Cage owns blast radius (max slots, margin, daily DD, kill switch) on an **isolated sleeve**.
+- `GET /api/health` — process up, heartbeat config, mode
+- `GET /api/books` — real marks / 24h / bid / ask (short cache)
+- `GET /api/session` — US cash RTH heuristic (America/New_York), weekend, heartbeat timestamps
+- `GET /api/agent/state` — last decision, status, connect mode
+- `GET /api/agent/cinema` — last N real JSONL ticks
+- `GET /api/blotter` — positions/orders/fills **or** empty + DISCONNECTED
+- `GET /api/equity` — equity series from real snapshots (empty if sleeve disconnected)
+- `GET /api/explain/:tickId` — full explainability payload
+- `POST /api/agent/tick` — force out-of-band tick (real pipeline)
+- `POST /api/kill` — `{ "confirm": true }` only if sleeve connected; else **409**
+
+### Decision engine
+
+- **No LLM key** → transparent **policy** path, every decision labeled `engine: policy`. Mag7 24h avg vs BTC divergence → `HEDGE` thesis or `HOLD`. Still runs Risk Cage.
+- **LLM key present** → call model, label `engine: llm` + model name. On failure, fall back to policy (never invent transcripts).
+
+### Risk Cage (enforced in code)
+
+`max_slots=3`, `max_lev_us=20`, `max_lev_crypto=50`, `daily_dd_halt_pct=5`, sleeve / per-leg notional caps. Without a connected sleeve, hedge theses are **logged only** — no fake fills.
+
+### Heartbeat
+
+- Every **300s** (configurable) background tick
+- Event wake if any watched mark moves **≥ 1.5%** since last tick marks
+
+## Universe (Bitget `USDT-FUTURES`)
+
+**US:** AAPL TSLA NVDA META AMZN MSFT GOOGL NFLX AMD COIN MSTR SPY  
+**Crypto:** BTC ETH SOL XRP DOGE LINK AVAX BNB SUI DOT NEAR PEPE  
 
 ## Security
 
-- No API keys or secrets in this repository
-- Use `.env.example` as a template only; keep real credentials out of git and out of chat
-- Prefer Bitget **Agentic** / Demo credentials for any future live wiring
-- High-risk actions must require explicit confirmation
+- No secrets in the repository
+- Prefer Bitget **Agentic / Demo** credentials for any future live sleeve
+- Kill switch requires connected sleeve + explicit confirmation
+- Do not commit `.env`, `HANDOVER.md`, `SUBMISSION-DRAFT.md`, or `logs/`
 
 ## Hackathon
 
-- Track: Agentic Trading
-- Sub-theme: Cross-Asset Execution Agent
+- Track: Agentic Trading · Sub-theme: Cross-Asset Execution Agent
 - Builder: [@CryptoCTO1](https://github.com/CryptoCT01)
 - Handbook: https://bitget-ai.gitbook.io/bitgetai_hackathons2
 
 ## License
 
-MIT — see below.
-
-```
-MIT License
-
-Copyright (c) 2026 CryptoCT01
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
-```
+MIT License — Copyright (c) 2026 CryptoCT01
