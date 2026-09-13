@@ -14,7 +14,7 @@ MODE = (os.environ.get("CROSSFIRE_MODE") or "public").strip().lower()
 if MODE not in ("public", "demo", "live"):
     MODE = "public"
 
-PORT = int(os.environ.get("CROSSFIRE_PORT") or "8770")
+PORT = int(os.environ.get("CROSSFIRE_PORT") or "8780")
 HOST = os.environ.get("CROSSFIRE_HOST") or "127.0.0.1"
 
 # Heartbeat / event wake — same in every agent mode
@@ -252,7 +252,7 @@ def load_dotenv_if_present() -> None:
     OPENAI_API_KEY = (os.environ.get("OPENAI_API_KEY") or "").strip()
     ANTHROPIC_API_KEY = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
     LLM_MODEL = (os.environ.get("CROSSFIRE_LLM_MODEL") or "").strip()
-    PORT = int(os.environ.get("CROSSFIRE_PORT") or "8770")
+    PORT = int(os.environ.get("CROSSFIRE_PORT") or "8780")
     HOST = os.environ.get("CROSSFIRE_HOST") or "127.0.0.1"
     _SLEEVE_CAP = float(os.environ.get("CROSSFIRE_SLEEVE_CAP") or "2000")
     _LEG_CAP = float(os.environ.get("CROSSFIRE_LEG_CAP") or "500")

@@ -11,8 +11,8 @@ Repo: [github.com/CryptoCT01/Crossfire](https://github.com/CryptoCT01/Crossfire)
 ```bash
 cd path/to/Crossfire
 python3 server.py
-# Dashboard: http://127.0.0.1:8770/
-# Skip splash: http://127.0.0.1:8770/#floor
+# Dashboard: http://127.0.0.1:8780/
+# Skip splash: http://127.0.0.1:8780/#floor
 ```
 
 Optional: copy `.env.example` → `.env` (gitignored). Stdlib only — no `pip install` required for public mode.
@@ -30,7 +30,7 @@ Secrets come **only** from environment / `.env`. Never hardcode keys. Never comm
 
 | Piece | Role |
 |-------|------|
-| `server.py` | Threading HTTP server on **8770** — dashboard + JSON APIs + background heartbeat |
+| `server.py` | Threading HTTP server on **8780** — dashboard + JSON APIs + background heartbeat |
 | `crossfire/bitget_public.py` | `USDT-FUTURES` tickers (batch) — no API key |
 | `crossfire/bitget_private.py` | Sleeve stubs; skipped when keys missing |
 | `crossfire/agent_engine.py` | Tick pipeline: books → policy/LLM → Risk Cage → JSONL |
