@@ -22,3 +22,4 @@ logs/
 *.jsonl
 __pycache__/
 .venv/
+_design_ref/
