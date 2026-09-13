@@ -74,9 +74,12 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         "ok": True,
                         "service": "crossfire",
-                        "version": "0.2.0",
+                        "version": "0.2.1",
                         "mode": config.MODE,
                         "mode_pill": config.mode_pill(),
+                        "agent_mode": config.get_agent_mode(),
+                        "agent_profile": config.active_profile(),
+                        "risk": config.active_risk(),
                         "sleeve_connected": config.sleeve_connected(),
                         "llm_available": config.llm_available(),
                         "heartbeat_sec": config.HEARTBEAT_SEC,
@@ -199,13 +202,12 @@ class Handler(BaseHTTPRequestHandler):
                     self,
                     200,
                     {
-                        "risk": dict(config.RISK),
+                        "ok": True,
+                        "agent_mode": config.get_agent_mode(),
+                        "agent_profile": config.active_profile(),
+                        "risk": config.active_risk(),
                         "sleeve_connected": config.sleeve_connected(),
-                        "policy": {
-                            "divergence_threshold_pct": config.POLICY["divergence_threshold_pct"],
-                            "mag7_symbols": config.POLICY["mag7_symbols"],
-                            "btc_symbol": config.POLICY["btc_symbol"],
-                        },
+                        "policy": config.active_policy(),
                     },
                 )
                 return
@@ -303,6 +305,41 @@ class Handler(BaseHTTPRequestHandler):
                     agent_engine.schedule_next(result["tick"]["ts"])
                 _json(self, 200 if result.get("ok") else 409, result)
                 return
+            if path == "/api/agent/mode":
+                body = _read_json(self)
+                mode = body.get("mode")
+                try:
+                    prof = config.set_agent_mode(str(mode or ""))
+                except ValueError as e:
+                    _json(
+                        self,
+                        400,
+                        {
+                            "ok": False,
+                            "error": str(e),
+                            "allowed": ["normal", "aggressive"],
+                        },
+                    )
+                    return
+                _json(
+                    self,
+                    200,
+                    {
+                        "ok": True,
+                        "agent_mode": config.get_agent_mode(),
+                        "agent_profile": prof,
+                        "risk": config.active_risk(),
+                        "policy": config.active_policy(),
+                        "heartbeat_sec": config.HEARTBEAT_SEC,
+                        "message": (
+                            f"Agent mode → {prof['label']}: slots={prof['max_slots']}, "
+                            f"div±{prof['divergence_threshold_pct']}%, "
+                            f"dd halt {prof['daily_dd_halt_pct']}% · heartbeat still "
+                            f"{config.HEARTBEAT_SEC}s"
+                        ),
+                    },
+                )
+                return
             _json(self, 404, {"ok": False, "error": "not found", "path": path})
         except Exception as e:
             traceback.print_exc()
@@ -390,6 +427,7 @@ def main() -> None:
                 "mode_pill": config.mode_pill(),
                 "sleeve_connected": config.sleeve_connected(),
                 "llm_available": config.llm_available(),
+                "agent_mode": config.get_agent_mode(),
                 "heartbeat_sec": config.HEARTBEAT_SEC,
             }
         ),

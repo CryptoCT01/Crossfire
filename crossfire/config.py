@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import os
+import threading
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 LOGS_DIR = ROOT / "logs"
@@ -15,7 +17,7 @@ if MODE not in ("public", "demo", "live"):
 PORT = int(os.environ.get("CROSSFIRE_PORT") or "8770")
 HOST = os.environ.get("CROSSFIRE_HOST") or "127.0.0.1"
 
-# Heartbeat / event wake
+# Heartbeat / event wake — same in every agent mode
 HEARTBEAT_SEC = int(os.environ.get("CROSSFIRE_HEARTBEAT_SEC") or "300")
 EVENT_MOVE_PCT = float(os.environ.get("CROSSFIRE_EVENT_MOVE_PCT") or "1.5")
 BOOKS_CACHE_SEC = float(os.environ.get("CROSSFIRE_BOOKS_CACHE_SEC") or "4.0")
@@ -34,19 +36,112 @@ OPENAI_API_KEY = (os.environ.get("OPENAI_API_KEY") or "").strip()
 ANTHROPIC_API_KEY = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
 LLM_MODEL = (os.environ.get("CROSSFIRE_LLM_MODEL") or "").strip()
 
-# Risk Cage — hard constants
+# Shared notional caps (both agent modes)
+_SLEEVE_CAP = float(os.environ.get("CROSSFIRE_SLEEVE_CAP") or "2000")
+_LEG_CAP = float(os.environ.get("CROSSFIRE_LEG_CAP") or "500")
+_BASE_DIV = float(os.environ.get("CROSSFIRE_DIV_PCT") or "2.5")
+
+# Agent mode profiles — Risk Cage never removed; Aggressive only loosens gates
+AGENT_MODE_PROFILES: dict[str, dict[str, Any]] = {
+    "normal": {
+        "max_slots": 3,
+        "max_lev_us": 20,
+        "max_lev_crypto": 50,
+        "daily_dd_halt_pct": 5.0,
+        "sleeve_notional_cap_usdt": _SLEEVE_CAP,
+        "per_leg_notional_cap_usdt": _LEG_CAP,
+        "divergence_threshold_pct": _BASE_DIV,
+        "single_hedge_pair_bias": True,
+        "prefer_hold": True,
+        "label": "Normal",
+        "blurb": "Risk Cage spirit — prefer HOLD unless Mag7 vs BTC divergence is clear; single hedge-pair bias; tighter halt.",
+    },
+    "aggressive": {
+        "max_slots": 5,
+        "max_lev_us": 20,  # exchange ceiling
+        "max_lev_crypto": 50,  # exchange ceiling
+        "daily_dd_halt_pct": 8.0,
+        "sleeve_notional_cap_usdt": _SLEEVE_CAP,
+        "per_leg_notional_cap_usdt": _LEG_CAP,
+        # Looser gate → HEDGE/ROTATE more often; still a real threshold
+        "divergence_threshold_pct": max(0.8, round(_BASE_DIV * 0.6, 2)),
+        "single_hedge_pair_bias": False,
+        "prefer_hold": False,
+        "label": "Aggressive",
+        "blurb": "More slots, looser divergence gates, slightly looser daily halt — same 5m heartbeat. Not no-risk.",
+    },
+}
+
+_agent_lock = threading.Lock()
+_agent_mode = (os.environ.get("CROSSFIRE_AGENT_MODE") or "normal").strip().lower()
+if _agent_mode not in AGENT_MODE_PROFILES:
+    _agent_mode = "normal"
+
+
+def get_agent_mode() -> str:
+    with _agent_lock:
+        return _agent_mode
+
+
+def set_agent_mode(mode: str) -> dict[str, Any]:
+    """Switch live agent mode without restart. Returns active profile snapshot."""
+    m = (mode or "").strip().lower()
+    if m not in AGENT_MODE_PROFILES:
+        raise ValueError("mode must be 'normal' or 'aggressive'")
+    global _agent_mode
+    with _agent_lock:
+        _agent_mode = m
+        prof = dict(AGENT_MODE_PROFILES[m])
+    prof["mode"] = m
+    return prof
+
+
+def active_profile() -> dict[str, Any]:
+    with _agent_lock:
+        m = _agent_mode
+        prof = dict(AGENT_MODE_PROFILES[m])
+    prof["mode"] = m
+    return prof
+
+
+def active_risk() -> dict[str, Any]:
+    """Risk Cage params for the active agent mode (API + checks)."""
+    p = active_profile()
+    return {
+        "max_slots": p["max_slots"],
+        "max_lev_us": p["max_lev_us"],
+        "max_lev_crypto": p["max_lev_crypto"],
+        "daily_dd_halt_pct": p["daily_dd_halt_pct"],
+        "sleeve_notional_cap_usdt": p["sleeve_notional_cap_usdt"],
+        "per_leg_notional_cap_usdt": p["per_leg_notional_cap_usdt"],
+        "agent_mode": p["mode"],
+    }
+
+
+def active_policy() -> dict[str, Any]:
+    p = active_profile()
+    return {
+        "divergence_threshold_pct": p["divergence_threshold_pct"],
+        "mag7_symbols": list(POLICY["mag7_symbols"]),
+        "btc_symbol": POLICY["btc_symbol"],
+        "single_hedge_pair_bias": p["single_hedge_pair_bias"],
+        "prefer_hold": p["prefer_hold"],
+        "agent_mode": p["mode"],
+    }
+
+
+# Back-compat: RISK / POLICY dicts — prefer active_*() for live values
 RISK = {
     "max_slots": 3,
     "max_lev_us": 20,
     "max_lev_crypto": 50,
     "daily_dd_halt_pct": 5.0,
-    "sleeve_notional_cap_usdt": float(os.environ.get("CROSSFIRE_SLEEVE_CAP") or "2000"),
-    "per_leg_notional_cap_usdt": float(os.environ.get("CROSSFIRE_LEG_CAP") or "500"),
+    "sleeve_notional_cap_usdt": _SLEEVE_CAP,
+    "per_leg_notional_cap_usdt": _LEG_CAP,
 }
 
-# Policy thresholds (rule engine when no LLM)
 POLICY = {
-    "divergence_threshold_pct": float(os.environ.get("CROSSFIRE_DIV_PCT") or "2.5"),
+    "divergence_threshold_pct": _BASE_DIV,
     "mag7_symbols": [
         "AAPLUSDT",
         "TSLAUSDT",
@@ -93,8 +188,8 @@ ALL_SYMBOLS = US_UNIVERSE + CRYPTO_UNIVERSE
 
 # Exchange max leverage hints for watchlist display (not live position lev)
 EXCHANGE_MAX_LEV = {
-    **{s: RISK["max_lev_us"] for s in US_UNIVERSE},
-    **{s: RISK["max_lev_crypto"] for s in CRYPTO_UNIVERSE},
+    **{s: 20 for s in US_UNIVERSE},
+    **{s: 50 for s in CRYPTO_UNIVERSE},
 }
 
 
@@ -147,6 +242,7 @@ def load_dotenv_if_present() -> None:
     # Re-bind module globals after load
     global MODE, BITGET_API_KEY, BITGET_SECRET_KEY, BITGET_PASSPHRASE
     global OPENAI_API_KEY, ANTHROPIC_API_KEY, LLM_MODEL, PORT, HOST
+    global _agent_mode, _SLEEVE_CAP, _LEG_CAP, _BASE_DIV, RISK, POLICY
     MODE = (os.environ.get("CROSSFIRE_MODE") or "public").strip().lower()
     if MODE not in ("public", "demo", "live"):
         MODE = "public"
@@ -158,3 +254,22 @@ def load_dotenv_if_present() -> None:
     LLM_MODEL = (os.environ.get("CROSSFIRE_LLM_MODEL") or "").strip()
     PORT = int(os.environ.get("CROSSFIRE_PORT") or "8770")
     HOST = os.environ.get("CROSSFIRE_HOST") or "127.0.0.1"
+    _SLEEVE_CAP = float(os.environ.get("CROSSFIRE_SLEEVE_CAP") or "2000")
+    _LEG_CAP = float(os.environ.get("CROSSFIRE_LEG_CAP") or "500")
+    _BASE_DIV = float(os.environ.get("CROSSFIRE_DIV_PCT") or "2.5")
+    # Refresh profile notional/div from env
+    AGENT_MODE_PROFILES["normal"]["sleeve_notional_cap_usdt"] = _SLEEVE_CAP
+    AGENT_MODE_PROFILES["normal"]["per_leg_notional_cap_usdt"] = _LEG_CAP
+    AGENT_MODE_PROFILES["normal"]["divergence_threshold_pct"] = _BASE_DIV
+    AGENT_MODE_PROFILES["aggressive"]["sleeve_notional_cap_usdt"] = _SLEEVE_CAP
+    AGENT_MODE_PROFILES["aggressive"]["per_leg_notional_cap_usdt"] = _LEG_CAP
+    AGENT_MODE_PROFILES["aggressive"]["divergence_threshold_pct"] = max(
+        0.8, round(_BASE_DIV * 0.6, 2)
+    )
+    RISK["sleeve_notional_cap_usdt"] = _SLEEVE_CAP
+    RISK["per_leg_notional_cap_usdt"] = _LEG_CAP
+    POLICY["divergence_threshold_pct"] = _BASE_DIV
+    am = (os.environ.get("CROSSFIRE_AGENT_MODE") or "normal").strip().lower()
+    if am in AGENT_MODE_PROFILES:
+        with _agent_lock:
+            _agent_mode = am

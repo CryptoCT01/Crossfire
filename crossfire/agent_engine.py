@@ -51,12 +51,13 @@ def _avg_change(rows: list[dict[str, Any]], symbols: list[str]) -> float | None:
 
 def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any]) -> dict[str, Any]:
     """Enforce Risk Cage. Never invent clearance for live orders without sleeve."""
+    risk = config.active_risk()
     checks = []
     ok = True
     reason = "cleared"
 
     slots_used = len(sleeve.get("positions") or [])
-    max_slots = config.RISK["max_slots"]
+    max_slots = risk["max_slots"]
     checks.append(
         {
             "rule": "max_slots",
@@ -77,7 +78,7 @@ def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any]) -> dict[st
     checks.append(
         {
             "rule": "daily_dd_halt_pct",
-            "limit": config.RISK["daily_dd_halt_pct"],
+            "limit": risk["daily_dd_halt_pct"],
             "current": None,
             "pass": True,
             "detail": "equity UNAVAILABLE until sleeve connected",
@@ -99,36 +100,44 @@ def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any]) -> dict[st
         "ok": ok,
         "exec_allowed": exec_allowed,
         "reason": reason,
-        "risk": dict(config.RISK),
+        "risk": risk,
+        "agent_mode": config.get_agent_mode(),
         "checks": checks,
     }
 
 
 def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
     """Transparent rule path when no LLM key. Labels engine: policy."""
+    pol = config.active_policy()
+    prof = config.active_profile()
+    mode = config.get_agent_mode()
     us = books.get("us") or []
     crypto = books.get("crypto") or []
-    mag7 = _avg_change(us, config.POLICY["mag7_symbols"])
-    btc_row = next((r for r in crypto if r.get("symbol") == config.POLICY["btc_symbol"]), None)
+    mag7 = _avg_change(us, pol["mag7_symbols"])
+    btc_row = next((r for r in crypto if r.get("symbol") == pol["btc_symbol"]), None)
     btc = float(btc_row["change24h_pct"]) if btc_row and btc_row.get("change24h_pct") is not None else None
 
-    thr = config.POLICY["divergence_threshold_pct"]
+    thr = float(pol["divergence_threshold_pct"])
     divergence = None
     action = "HOLD"
     thesis = (
-        f"POLICY HOLD: Mag7 24h avg vs BTC divergence below {thr:.2f}% threshold "
+        f"POLICY HOLD [{mode.upper()}]: Mag7 24h avg vs BTC divergence below {thr:.2f}% threshold "
         f"(or insufficient marks)."
     )
     legs: list[dict[str, Any]] = []
 
     if mag7 is not None and btc is not None:
         divergence = mag7 - btc
+        # Aggressive: also consider ROTATE when divergence is strong and multi-slot bias
+        rotate_thr = thr * 1.35
         if abs(divergence) >= thr:
-            action = "HEDGE"
+            if mode == "aggressive" and abs(divergence) >= rotate_thr and not pol.get("prefer_hold"):
+                action = "ROTATE"
+            else:
+                action = "HEDGE"
             if divergence > 0:
-                # US Mag7 outperforming BTC → thesis: short US basket / long BTC hedge framing
                 thesis = (
-                    f"POLICY HEDGE: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
+                    f"POLICY {action} [{mode.upper()}]: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
                     f"(divergence {divergence:+.2f}% ≥ {thr:.2f}%). "
                     f"Rule: propose cross-hedge — reduce US-stock-contract risk / add BTC perp hedge. "
                     f"Thesis is rule-based, not LLM."
@@ -137,9 +146,21 @@ def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
                     {"book": "us", "intent": "REDUCE_OR_SHORT", "basket": "Mag7", "note": "policy"},
                     {"book": "crypto", "intent": "LONG_HEDGE", "symbol": "BTCUSDT", "note": "policy"},
                 ]
+                if mode == "aggressive" and not pol.get("single_hedge_pair_bias"):
+                    # Extra sleeve candidate — still thesis-only until sleeve executes
+                    eth = next((r for r in crypto if r.get("symbol") == "ETHUSDT"), None)
+                    if eth and eth.get("available"):
+                        legs.append(
+                            {
+                                "book": "crypto",
+                                "intent": "SATELLITE_HEDGE",
+                                "symbol": "ETHUSDT",
+                                "note": "aggressive multi-slot bias",
+                            }
+                        )
             else:
                 thesis = (
-                    f"POLICY HEDGE: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
+                    f"POLICY {action} [{mode.upper()}]: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
                     f"(divergence {divergence:+.2f}% ≤ -{thr:.2f}%). "
                     f"Rule: propose cross-hedge — BTC weakness vs US strength flip: "
                     f"trim BTC risk / add Mag7 contract hedge. Thesis is rule-based, not LLM."
@@ -148,9 +169,19 @@ def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
                     {"book": "crypto", "intent": "REDUCE_OR_SHORT", "symbol": "BTCUSDT", "note": "policy"},
                     {"book": "us", "intent": "LONG_HEDGE", "basket": "Mag7", "note": "policy"},
                 ]
+                if mode == "aggressive" and not pol.get("single_hedge_pair_bias"):
+                    legs.append(
+                        {
+                            "book": "us",
+                            "intent": "SATELLITE_HEDGE",
+                            "basket": "NVDA",
+                            "symbol": "NVDAUSDT",
+                            "note": "aggressive multi-slot bias",
+                        }
+                    )
         else:
             thesis = (
-                f"POLICY HOLD: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
+                f"POLICY HOLD [{mode.upper()}]: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
                 f"(divergence {divergence:+.2f}%, threshold ±{thr:.2f}%). No action."
             )
 
@@ -163,8 +194,10 @@ def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
         "btc_24h_pct": btc,
         "divergence_pct": divergence,
         "threshold_pct": thr,
+        "agent_mode": mode,
         "legs": legs,
-        "confidence": 0.55 if action == "HEDGE" else 0.7,
+        "confidence": 0.55 if action in ("HEDGE", "ROTATE") else 0.7,
+        "profile_label": prof.get("label"),
     }
 
 
@@ -186,7 +219,8 @@ def llm_decide(books: dict[str, Any]) -> dict[str, Any] | None:
             if r.get("available")
         ],
         "session": session_info.us_cash_session(),
-        "risk": config.RISK,
+        "risk": config.active_risk(),
+        "agent_mode": config.get_agent_mode(),
         "instruction": (
             "You are Crossfire cross-asset agent. Reply JSON only: "
             '{"action":"HOLD|HEDGE|ROTATE|REDUCE|FLAT","thesis":"...","legs":[],"confidence":0-1}'
@@ -366,6 +400,7 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
             "sleeve_connected": config.sleeve_connected(),
             "connect_mode": config.connect_mode_label(),
             "mode_pill": config.mode_pill(),
+            "agent_mode": config.get_agent_mode(),
             "books_ok": bool(books.get("ok")),
             "marks_sample": {
                 "AAPLUSDT": marks.get("AAPLUSDT"),
@@ -430,7 +465,10 @@ def get_state() -> dict[str, Any]:
     s["llm_available"] = config.llm_available()
     s["heartbeat_sec"] = config.HEARTBEAT_SEC
     s["event_move_pct"] = config.EVENT_MOVE_PCT
-    s["risk"] = dict(config.RISK)
+    s["agent_mode"] = config.get_agent_mode()
+    s["agent_profile"] = config.active_profile()
+    s["risk"] = config.active_risk()
+    s["policy"] = config.active_policy()
     if s.get("next_heartbeat_ts") is None:
         # schedule relative to now if never ticked
         now = time.time()

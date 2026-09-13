@@ -12,16 +12,18 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#03050a;--fg:#e8edf4;--fg2:#8b95a6;--fg3:#5c6678;
+  --bg:#03050a;--fg:#f4f7fb;--fg2:#c5cddc;--fg3:#9aa6bb;
   --gold:#e8b84a;--gold2:#f3d27a;--cyan:#3ee8f0;--cyan2:#7af4f8;
   --green:#3dff9c;--red:#ff5d6c;--amber:#f0a030;--purple:#b794ff;
-  --surface:rgba(8,12,20,.78);--surface2:rgba(12,16,26,.88);
-  --border:rgba(255,255,255,.07);--line:rgba(255,255,255,.045);
+  --surface:rgba(8,12,20,.82);--surface2:rgba(12,16,26,.90);
+  --border:rgba(255,255,255,.14);--line:rgba(255,255,255,.09);
   --mono:'JetBrains Mono',ui-monospace,monospace;
   --ui:'Manrope',system-ui,sans-serif;
   --display:'Syne',sans-serif;
   --orb:'Orbitron',var(--display),sans-serif;
   --ease:cubic-bezier(.2,.8,.2,1);
+  --scroll-thumb:linear-gradient(180deg,rgba(62,232,240,.75),rgba(232,184,74,.7));
+  --scroll-track:rgba(255,255,255,.04);
 }
 html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--ui);overflow:hidden}
 body{
@@ -161,13 +163,13 @@ body::after{
 .sess-chip.off{color:var(--fg3)}
 
 .triad{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(260px,1fr) minmax(340px,1.18fr) minmax(260px,1fr);gap:8px}
-.panel{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:12px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 0 1px rgba(0,0,0,.25);overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.panel{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:12px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(0,0,0,.3),0 0 28px rgba(0,0,0,.22);overflow:hidden;transition:border-color .3s,box-shadow .3s}
 .panel::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,rgba(255,255,255,.035) 48%,transparent 70%);transform:translateX(-140%);pointer-events:none;z-index:1}
 .panel:hover::before{animation:sheen 1.15s var(--ease)}
-.panel:hover{border-color:rgba(255,255,255,.12)}
-.panel.us{border-color:rgba(232,184,74,.16);box-shadow:inset 2px 0 0 var(--gold),inset 0 1px 0 rgba(255,255,255,.04)}
+.panel:hover{border-color:rgba(255,255,255,.22)}
+.panel.us{border-color:rgba(232,184,74,.28);box-shadow:inset 2px 0 0 var(--gold),inset 0 1px 0 rgba(255,255,255,.06)}
 .panel.us:hover{box-shadow:inset 2px 0 0 var(--gold),inset 0 1px 0 rgba(255,255,255,.04),0 0 22px rgba(232,184,74,.06)}
-.panel.cr{border-color:rgba(62,232,240,.16);box-shadow:inset -2px 0 0 var(--cyan),inset 0 1px 0 rgba(255,255,255,.04)}
+.panel.cr{border-color:rgba(62,232,240,.28);box-shadow:inset -2px 0 0 var(--cyan),inset 0 1px 0 rgba(255,255,255,.06)}
 .panel.cr:hover{box-shadow:inset -2px 0 0 var(--cyan),inset 0 1px 0 rgba(255,255,255,.04),0 0 22px rgba(62,232,240,.06)}
 .panel.core{border-color:rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(12,16,26,.92),rgba(6,8,14,.95))}
 .ph{display:flex;align-items:center;justify-content:space-between;padding:8px 11px 6px;flex-shrink:0;position:relative;z-index:2}
@@ -337,8 +339,69 @@ body::after{
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.bad{border-color:rgba(255,93,108,.45);color:var(--red)}
 
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--scroll-track);border-radius:8px}
+::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:8px;border:2px solid rgba(3,5,10,.55);background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{border-color:rgba(3,5,10,.25)}
+.scroll-region{position:relative;flex:1;min-height:0}
+.scroll-region > .scroll-pane{height:100%;overflow:auto;padding:0 8px 8px;scrollbar-width:thin;scrollbar-color:rgba(62,232,240,.65) rgba(255,255,255,.04)}
+.scroll-region::before,.scroll-region::after{
+  content:'';position:absolute;left:0;right:8px;height:18px;pointer-events:none;z-index:4;opacity:0;transition:opacity .2s;
+}
+.scroll-region::before{top:0;background:linear-gradient(180deg,rgba(3,5,10,.85),transparent)}
+.scroll-region::after{bottom:0;background:linear-gradient(0deg,rgba(3,5,10,.85),transparent)}
+.scroll-region.can-up::before,.scroll-region.can-down::after{opacity:1}
+.scroll-hint{
+  position:absolute;right:12px;bottom:10px;z-index:5;pointer-events:none;
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;border:1px solid rgba(62,232,240,.35);
+  color:var(--cyan2);background:rgba(3,5,10,.72);backdrop-filter:blur(8px);
+  box-shadow:0 0 12px rgba(62,232,240,.12);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s;
+}
+.scroll-region.show-hint .scroll-hint{opacity:1;transform:translateY(0)}
+.scroll-hint.gold{border-color:rgba(232,184,74,.4);color:var(--gold2);box-shadow:0 0 12px rgba(232,184,74,.12)}
+.book-body,.cin-body,.blotter-body,.cage-body,.eq-body,.ov-body,.dr-body,.thesis{
+  scrollbar-width:thin;scrollbar-color:rgba(62,232,240,.65) rgba(255,255,255,.04);
+}
+.info-btn{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;cursor:pointer;
+  border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.05);
+  color:var(--fg2);font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.info-btn:hover,.info-btn[aria-expanded="true"]{
+  color:var(--cyan2);border-color:rgba(62,232,240,.5);background:rgba(62,232,240,.1);
+  box-shadow:0 0 10px rgba(62,232,240,.15);
+}
+.info-pop{
+  position:fixed;z-index:90;max-width:min(340px,88vw);padding:12px 14px;border-radius:12px;
+  background:rgba(8,12,20,.96);border:1px solid rgba(62,232,240,.28);
+  box-shadow:0 16px 40px rgba(0,0,0,.55),0 0 0 1px rgba(232,184,74,.12);
+  backdrop-filter:blur(18px);display:none;
+}
+.info-pop.open{display:block;animation:rise .22s var(--ease)}
+.info-pop h4{font-family:var(--display);font-size:13px;font-weight:800;color:var(--fg);margin-bottom:6px;letter-spacing:-.02em}
+.info-pop p{font-size:12px;line-height:1.5;color:var(--fg2)}
+.info-pop .info-real{margin-top:8px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.mode-seg{
+  display:inline-flex;align-items:center;gap:0;padding:3px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.35);flex-shrink:0;
+}
+.mode-seg button{
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 11px;border-radius:999px;border:0;cursor:pointer;background:transparent;color:var(--fg3);
+  transition:all .18s var(--ease);
+}
+.mode-seg button.on.normal{background:rgba(62,232,240,.16);color:var(--cyan2);box-shadow:0 0 14px rgba(62,232,240,.12)}
+.mode-seg button.on.aggressive{background:rgba(232,184,74,.18);color:var(--gold2);box-shadow:0 0 14px rgba(232,184,74,.14)}
+.mode-seg button:hover:not(.on){color:var(--fg)}
+.mode-pill.agent-agg{border-color:rgba(232,184,74,.55);color:var(--gold2);background:rgba(232,184,74,.12)}
+.agent-mode-note{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg3);line-height:1.45;margin-top:2px}
+.agent-mode-note b{color:var(--gold)}
+.ph-s,.bp-s,.cg-l,.m-l,.lev-note,.regime-meta{color:var(--fg3)}
+.ph-t{color:var(--fg)}
+.hs-v,.m-v,.cg-v{color:var(--fg)}
+.chip{color:var(--fg2);border-color:rgba(255,255,255,.16)}
 
 @media(max-width:1280px){
   .triad{grid-template-columns:minmax(240px,1fr) minmax(300px,1.1fr) minmax(240px,1fr)}
@@ -415,7 +478,7 @@ body::after{
 
 /* ===== PACK B — Market brain ===== */
 .brain{flex:0 0 auto;display:grid;grid-template-columns:minmax(160px,.9fr) minmax(220px,1.35fr) minmax(180px,1fr) minmax(200px,1.15fr) minmax(110px,.7fr);gap:6px;max-height:118px}
-.bp{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;backdrop-filter:blur(12px);overflow:hidden;padding:6px 8px 7px}
+.bp{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;backdrop-filter:blur(12px);overflow:hidden;padding:6px 8px 7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .bp::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,rgba(255,255,255,.03) 48%,transparent 70%);transform:translateX(-140%);pointer-events:none}
 .bp:hover::before{animation:sheen 1.1s var(--ease)}
 .bp-h{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px;position:relative;z-index:1}
@@ -505,10 +568,15 @@ body::after{
       </div>
     </div>
     <div class="mode-pill disc" id="modePill">—</div>
+    <div class="mode-seg" id="agentModeSeg" title="Agent Risk Cage profile — heartbeat stays 5m in both">
+      <button type="button" class="on normal" data-mode="normal" id="modeNormalBtn">Normal</button>
+      <button type="button" class="aggressive" data-mode="aggressive" id="modeAggBtn">Aggressive</button>
+      <button type="button" class="info-btn" data-info="agent_mode" aria-label="About agent mode" style="margin:0 4px;width:20px;height:20px">i</button>
+    </div>
     <div class="hero-stats">
       <div class="hs gold"><div class="hs-l" id="hsAaplL">AAPL</div><div class="hs-v" id="hsAapl">—</div></div>
       <div class="hs cyan"><div class="hs-l" id="hsBtcL">BTC</div><div class="hs-v" id="hsBtc">—</div></div>
-      <div class="hs hb" id="hsHbBox"><div class="hs-l">Next heartbeat</div><div class="hs-v" id="hsHb">—</div></div>
+      <div class="hs hb" id="hsHbBox"><div class="hs-l" style="display:flex;align-items:center;gap:5px">Next heartbeat <button type="button" class="info-btn" data-info="heartbeat" aria-label="About Heartbeat" style="width:14px;height:14px;font-size:8px">i</button></div><div class="hs-v" id="hsHb">—</div></div>
       <div class="hs"><div class="hs-l">Engine</div><div class="hs-v" id="hsEng">—</div></div>
     </div>
     <button class="btn tick" id="forceTick" type="button" title="Force a real agent tick">Force Tick</button>
@@ -520,19 +588,19 @@ body::after{
 
   <section class="brain" id="brainRow" aria-label="Market brain">
     <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--gold)">Regime</div><div class="bp-s">Mag7 vs BTC/ETH</div></div></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--gold)">Regime</div><div class="bp-s">Mag7 vs BTC/ETH</div></div><button type="button" class="info-btn" data-info="regime" aria-label="About Regime">i</button></div>
       <div class="bp-body" id="regimeBody"><div class="void mini"><div class="void-s">Warming…</div></div></div>
     </article>
     <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Heat map</div><div class="bp-s">24h% · click → focus</div></div><button type="button" class="expand-btn" id="heatExpand">Expand</button></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--fg)">Heat map</div><div class="bp-s">24h% · click → focus</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="heat" aria-label="About Heat map">i</button><button type="button" class="expand-btn" id="heatExpand">Expand</button></div></div>
       <div class="bp-body" id="heatBody"></div>
     </article>
     <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Lead / lag</div><div class="bp-s">buffered marks</div></div></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Lead / lag</div><div class="bp-s">buffered marks</div></div><button type="button" class="info-btn" data-info="lead" aria-label="About Lead lag">i</button></div>
       <div class="bp-body" id="leadBody"><div class="void mini"><div class="void-s">Warming up…</div></div></div>
     </article>
     <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Signal stack</div><div class="bp-s">computed · local buffer</div></div></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--fg)">Signal stack</div><div class="bp-s">computed · local buffer</div></div><button type="button" class="info-btn" data-info="signal" aria-label="About Signal stack">i</button></div>
       <div class="bp-body" id="sigBody"><div class="void mini"><div class="void-s">Need more samples…</div></div></div>
     </article>
     <article class="bp">
@@ -545,7 +613,7 @@ body::after{
     <article class="panel us">
       <div class="ph">
         <div class="ph-l"><span class="dot g"></span><div><div class="ph-t">US stock book</div><div class="ph-s">Bitget USDT-FUTURES · exchange max lev</div></div></div>
-        <span class="chip" id="usCount">—</span>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="book_us" aria-label="About US book">i</button><span class="chip" id="usCount">—</span></div>
       </div>
       <div class="book-tools" id="usFilters">
         <button type="button" class="fchip on" data-filter="ALL">All</button>
@@ -559,8 +627,8 @@ body::after{
 
     <article class="panel core">
       <div class="ph">
-        <div class="ph-l"><span class="dot ok" id="coreDot"></span><div><div class="ph-t" style="color:#e8edf4">Bridge core</div><div class="ph-s">Last real decision · dual-book overlay</div></div></div>
-        <span class="chip" id="coreChip">—</span>
+        <div class="ph-l"><span class="dot ok" id="coreDot"></span><div><div class="ph-t" style="color:var(--fg)">Bridge core</div><div class="ph-s">Last real decision · dual-book overlay</div></div></div>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="bridge" aria-label="About Bridge core">i</button><span class="chip" id="coreChip">—</span></div>
       </div>
       <div class="core-body">
         <div class="core-status">
@@ -611,7 +679,7 @@ body::after{
     <article class="panel cr">
       <div class="ph">
         <div class="ph-l"><span class="dot c"></span><div><div class="ph-t">Crypto book</div><div class="ph-s">USDT-M perps · exchange max lev</div></div></div>
-        <span class="chip" id="crCount">—</span>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="book_crypto" aria-label="About Crypto book">i</button><span class="chip" id="crCount">—</span></div>
       </div>
       <div class="book-tools" id="crFilters">
         <button type="button" class="fchip on" data-filter="ALL">All</button>
@@ -627,16 +695,16 @@ body::after{
   <section class="lower">
     <article class="panel cinema">
       <div class="ph">
-        <div class="ph-l"><span class="dot ok"></span><div><div class="ph-t" style="color:#e8edf4">Decision cinema</div><div class="ph-s">JSONL ticks · click a card → Decision Court</div></div></div>
-        <span class="chip" id="cineCount">0</span>
+        <div class="ph-l"><span class="dot ok"></span><div><div class="ph-t" style="color:var(--fg)">Decision cinema</div><div class="ph-s">JSONL ticks · click a card → Decision Court</div></div></div>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="cinema" aria-label="About Decision cinema">i</button><span class="chip" id="cineCount">0</span></div>
       </div>
       <div class="cin-body" id="cinema"></div>
     </article>
 
     <article class="panel">
       <div class="ph">
-        <div class="ph-l"><span class="dot bad" id="blotDot"></span><div><div class="ph-t" style="color:#e8edf4">Blotter</div><div class="ph-s">Positions · orders · fills</div></div></div>
-        <span class="chip warn" id="blotChip">—</span>
+        <div class="ph-l"><span class="dot bad" id="blotDot"></span><div><div class="ph-t" style="color:var(--fg)">Blotter</div><div class="ph-s">Positions · orders · fills</div></div></div>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="blotter" aria-label="About Blotter">i</button><span class="chip warn" id="blotChip">—</span></div>
       </div>
       <div class="blotter-body" id="blotter"></div>
     </article>
@@ -644,7 +712,7 @@ body::after{
     <article class="panel cage">
       <div class="ph">
         <div class="ph-l"><span class="dot" style="background:#ff5d6c;box-shadow:0 0 8px #ff5d6c"></span><div><div class="ph-t" style="color:#ff8a94">Equity · Risk cage</div><div class="ph-s">Sleeve snapshots · hard limits</div></div></div>
-        <span class="chip" id="eqChip">—</span>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="risk" aria-label="About Risk cage">i</button><button type="button" class="info-btn" data-info="equity" aria-label="About Equity" title="Equity">i</button><span class="chip" id="eqChip">—</span></div>
       </div>
       <div class="eq-stack">
         <div style="position:relative;flex:0 0 78px">
@@ -699,6 +767,11 @@ body::after{
   </div>
 </div>
 
+<div class="info-pop" id="infoPop" role="dialog" aria-modal="false">
+  <h4 id="infoPopTitle">—</h4>
+  <p id="infoPopBody"></p>
+  <div class="info-real" id="infoPopReal"></div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -716,7 +789,78 @@ const S = {
   eqChart: null, eqSeries: null,
   coreChart: null, sGold: null, sCyan: null,
   cinemaSeen: new Set(),
-  booksUs: [], booksCr: []
+  booksUs: [], booksCr: [],
+  agentMode: 'normal',
+  risk: null,
+  policy: null
+};
+
+const INFO_COPY = {
+  book_us: {
+    title: 'Dual Book · US',
+    body: 'Live Bitget USDT-FUTURES marks for US stock contracts. Lev chips show exchange max caps, not open leverage. Use filters to focus Mag7 or the agent’s current US leg.',
+    real: 'Real marks · /api/books'
+  },
+  book_crypto: {
+    title: 'Dual Book · Crypto',
+    body: 'Live Bitget USDT-M perp marks for the crypto sleeve. Same honesty rule: no synthetic ticks. Focus / Meme filters only reshape the visible book.',
+    real: 'Real marks · /api/books'
+  },
+  bridge: {
+    title: 'Bridge Core',
+    body: 'The cross-asset decision surface: last real tick action, Mag7 vs BTC divergence, thesis, and a dual-series overlay from buffered live marks. Force Tick runs a full pipeline pulse now.',
+    real: 'Real decisions · no fake fills'
+  },
+  cinema: {
+    title: 'Decision Cinema',
+    body: 'Chronological JSONL ticks from the agent. Click a card for Decision Court explainability. Empty until the first heartbeat — we never invent a past.',
+    real: 'logs/ticks.jsonl'
+  },
+  risk: {
+    title: 'Risk Cage',
+    body: 'Hard limits that survive every mood: slots, leverage ceilings, daily drawdown halt, notional caps. Aggressive loosens gates — it does not remove the cage. Kill stays disabled until the sleeve is connected.',
+    real: 'Active cage · /api/risk'
+  },
+  equity: {
+    title: 'Equity',
+    body: 'Sleeve equity snapshots only. When the private sleeve is disconnected the curve stays empty on purpose — never a demo line.',
+    real: 'logs/equity.jsonl · sleeve only'
+  },
+  blotter: {
+    title: 'Blotter',
+    body: 'Positions, open orders, and fills from the private sleeve. Public mode shows an honest void until BITGET_* keys connect — nothing is simulated here.',
+    real: 'Private sleeve · /api/blotter'
+  },
+  regime: {
+    title: 'Regime',
+    body: 'Mag7 vs BTC/ETH posture from live 24h changes. A compass for cross-asset risk-on / risk-off — not a trade signal by itself.',
+    real: 'Computed from live books'
+  },
+  heat: {
+    title: 'Heat map',
+    body: 'Universe 24h% intensity grid. Click a cell to focus that symbol in the Dual Book and Bridge. Colour is magnitude, not prediction.',
+    real: 'Real 24h% from Bitget'
+  },
+  lead: {
+    title: 'Lead / lag',
+    body: 'Who moved first in the local mark buffer. Useful for spotting which side of the bridge is pulling — still observational, not an order.',
+    real: 'Local buffer of live marks'
+  },
+  signal: {
+    title: 'Signal stack',
+    body: 'Lightweight RSI / ROC / vol readouts from the same live buffer. Displayed for situational awareness; the agent’s policy/LLM remains the decision engine.',
+    real: 'Computed · local buffer'
+  },
+  heartbeat: {
+    title: 'Heartbeat',
+    body: 'The agent pulses every 5 minutes in both Normal and Aggressive, plus event wakes on sharp mark moves. Force Tick is an on-demand pulse — same Risk Cage rules.',
+    real: 'Always 5m · event wakes on'
+  },
+  agent_mode: {
+    title: 'Agent mode',
+    body: 'Normal keeps the classic cage: 3 slots, tighter Mag7↔BTC gate, 5% daily halt. Aggressive opens more slots, loosens divergence gates, and raises the halt to 8% — same 5m heartbeat, still no fake fills, still blocked if the sleeve is disconnected.',
+    real: 'POST /api/agent/mode · live switch'
+  }
 };
 
 const $ = (id) => document.getElementById(id);
@@ -899,6 +1043,34 @@ function renderBook(el, rows, side, filter){
   }
 }
 
+function setAgentModeUI(mode){
+  const m = (mode||'normal').toLowerCase();
+  S.agentMode = m;
+  const n = $('modeNormalBtn');
+  const a = $('modeAggBtn');
+  if(n && a){
+    n.classList.toggle('on', m==='normal');
+    a.classList.toggle('on', m==='aggressive');
+  }
+  const mp = $('modePill');
+  if(mp) mp.classList.toggle('agent-agg', m==='aggressive');
+}
+async function setAgentMode(mode){
+  try{
+    const j = await api('/api/agent/mode', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({mode})
+    });
+    if(!j.ok){ toast(j.error || 'Mode switch failed', true); return; }
+    S.agentMode = j.agent_mode || mode;
+    S.risk = j.risk || S.risk;
+    S.policy = j.policy || S.policy;
+    setAgentModeUI(S.agentMode);
+    if(j.risk) renderRisk(j.risk, S.sleeve);
+    toast(j.message || ('Mode → ' + S.agentMode));
+  }catch(e){ toast(String(e), true); }
+}
 function setModeUI(pill, sleeve){
   const mp = $('modePill');
   const ban = $('modeBanner');
@@ -906,12 +1078,13 @@ function setModeUI(pill, sleeve){
   mp.textContent = pill || '—';
   mp.classList.toggle('disc', !sleeve);
   mp.classList.toggle('live', /LIVE/i.test(pill||'') && sleeve);
+  mp.classList.toggle('agent-agg', S.agentMode === 'aggressive');
   ban.classList.toggle('disc', !sleeve);
   ban.classList.toggle('live', !!sleeve);
   txt.textContent = sleeve
-    ? ((pill||'LIVE') + ' · Real marks · Risk Cage armed')
-    : ((pill||'PUBLIC MARKS') + ' · Public marks only · No simulated positions');
-  $('footMode').textContent = pill || 'PUBLIC MARKS';
+    ? ((pill||'LIVE') + ' · Real marks · Risk Cage armed · ' + (S.agentMode||'normal').toUpperCase())
+    : ((pill||'PUBLIC MARKS') + ' · Public marks only · No simulated positions · ' + (S.agentMode||'normal').toUpperCase());
+  $('footMode').textContent = (pill || 'PUBLIC MARKS') + ' · ' + (S.agentMode||'normal').toUpperCase();
   ['killBtn','actKill'].forEach(id => {
     const k = $(id);
     k.disabled = !sleeve;
@@ -937,9 +1110,17 @@ function renderRisk(risk, sleeve){
     }
   }
   const halt = risk.daily_dd_halt_pct;
+  const mode = (risk.agent_mode || S.agentMode || 'normal').toLowerCase();
+  const div = (S.policy && S.policy.divergence_threshold_pct != null)
+    ? S.policy.divergence_threshold_pct
+    : null;
+  const modeColor = mode === 'aggressive' ? 'var(--gold2)' : 'var(--cyan2)';
   g.innerHTML = `
+    <div class="agent-mode-note">Cage profile · <b style="color:${modeColor}">${mode.toUpperCase()}</b>
+      · ${mode==='aggressive'?'more slots · looser gates · halt 8% · same 5m HB':'3 slots · tighter HOLD bias · halt 5% · same 5m HB'}
+      ${div!=null?` · div ±${div}%`:''}</div>
     <div class="cage-grid">
-      <div class="cg"><div class="cg-l">Max slots</div><div class="cg-v">${maxSlots}</div></div>
+      <div class="cg"><div class="cg-l">Max slots</div><div class="cg-v" style="color:${modeColor}">${maxSlots}</div></div>
       <div class="cg"><div class="cg-l">Halt threshold</div><div class="cg-v" style="color:#ff8a94">${halt==null?'—':halt+'%'}</div></div>
       <div class="cg"><div class="cg-l">Max lev US / CR</div><div class="cg-v">${risk.max_lev_us||'—'}× / ${risk.max_lev_crypto||'—'}×</div></div>
       <div class="cg"><div class="cg-l">Sleeve cap</div><div class="cg-v">$${risk.sleeve_notional_cap_usdt ?? '—'}</div></div>
@@ -960,6 +1141,7 @@ function renderRisk(risk, sleeve){
       </div>
       <span>${sleeve?'Ready':'Disabled'}</span>
     </div>`;
+  requestAnimationFrame(refreshScrollAffordances);
 }
 
 function updateFocusFromDecision(d){
@@ -993,6 +1175,10 @@ function renderState(st){
   S.hbSec = st.heartbeat_sec || S.hbSec;
   S.sleeve = !!st.sleeve_connected;
   S.lastTickId = (d && d.tick_id) || st.last_tick_id || S.lastTickId;
+  if(st.agent_mode) S.agentMode = st.agent_mode;
+  if(st.policy) S.policy = st.policy;
+  if(st.risk) S.risk = st.risk;
+  setAgentModeUI(S.agentMode);
   setModeUI(st.mode_pill, S.sleeve);
   if(st.risk) renderRisk(st.risk, S.sleeve);
 
@@ -1328,8 +1514,13 @@ async function refreshAll(){
     api('/api/risk')
   ]);
   if(risk && risk.risk) state.risk = state.risk || risk.risk;
+  if(risk && risk.policy) state.policy = state.policy || risk.policy;
+  if(risk && risk.agent_mode) state.agent_mode = state.agent_mode || risk.agent_mode;
+  if(health.agent_mode) state.agent_mode = state.agent_mode || health.agent_mode;
+  if(health.risk) state.risk = state.risk || health.risk;
   $('splashTrust').textContent =
     (health.ok ? 'Server OK · ' : 'Server issue · ') + (health.mode_pill || '') +
+    ' · agent ' + ((state.agent_mode||health.agent_mode||'normal')+'').toUpperCase() +
     ' · HB ' + (health.heartbeat_sec||300) + 's · sleeve ' + (health.sleeve_connected?'ON':'OFF');
   if(health.next_heartbeat_ts) S.nextHb = health.next_heartbeat_ts;
   if(health.heartbeat_sec) S.hbSec = health.heartbeat_sec;
@@ -1338,6 +1529,7 @@ async function refreshAll(){
   renderSession(sess);
   renderCinema(cinema);
   renderEquity(equity);
+  requestAnimationFrame(refreshScrollAffordances);
 }
 
 function tickClock(){
@@ -1977,6 +2169,113 @@ function wirePack(){
 }
 
 
+
+/* ===== Visibility: scroll affordances + info popovers + agent mode ===== */
+function wrapScrollRegion(el, hintClass){
+  if(!el || el.dataset.scrollWrapped === '1') return el && el.closest('.scroll-region');
+  const parent = el.parentElement;
+  const wrap = document.createElement('div');
+  wrap.className = 'scroll-region';
+  parent.insertBefore(wrap, el);
+  wrap.appendChild(el);
+  el.classList.add('scroll-pane');
+  // book-body already had padding — keep
+  const hint = document.createElement('div');
+  hint.className = 'scroll-hint' + (hintClass ? ' '+hintClass : '');
+  hint.textContent = 'Scroll';
+  wrap.appendChild(hint);
+  el.dataset.scrollWrapped = '1';
+  const sync = () => {
+    const canDown = el.scrollHeight > el.clientHeight + 4;
+    const atTop = el.scrollTop <= 2;
+    const atBot = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    wrap.classList.toggle('can-up', canDown && !atTop);
+    wrap.classList.toggle('can-down', canDown && !atBot);
+    wrap.classList.toggle('show-hint', canDown && atTop);
+  };
+  el.addEventListener('scroll', sync, {passive:true});
+  wrap._syncScroll = sync;
+  sync();
+  return wrap;
+}
+function refreshScrollAffordances(){
+  document.querySelectorAll('.scroll-region').forEach(w => {
+    if(typeof w._syncScroll === 'function') w._syncScroll();
+  });
+}
+function ensureScrollWraps(){
+  wrapScrollRegion($('usBook'), 'gold');
+  wrapScrollRegion($('crBook'));
+  wrapScrollRegion($('cinema'));
+  wrapScrollRegion($('blotter'));
+  wrapScrollRegion($('riskGrid'));
+  // overlays / thesis
+  const th = $('thesisBox');
+  if(th && th.dataset.scrollWrapped !== '1'){
+    th.dataset.scrollWrapped = '1';
+    th.addEventListener('scroll', ()=>{}, {passive:true});
+  }
+  refreshScrollAffordances();
+}
+
+function closeInfoPop(){
+  const pop = $('infoPop');
+  if(!pop) return;
+  pop.classList.remove('open');
+  document.querySelectorAll('.info-btn[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
+}
+function openInfoPop(btn){
+  const key = btn.getAttribute('data-info');
+  const copy = INFO_COPY[key];
+  if(!copy) return;
+  const pop = $('infoPop');
+  const was = btn.getAttribute('aria-expanded') === 'true';
+  closeInfoPop();
+  if(was) return;
+  $('infoPopTitle').textContent = copy.title;
+  $('infoPopBody').textContent = copy.body;
+  $('infoPopReal').textContent = copy.real;
+  btn.setAttribute('aria-expanded','true');
+  pop.classList.add('open');
+  const r = btn.getBoundingClientRect();
+  const pw = Math.min(340, window.innerWidth * 0.88);
+  let left = Math.min(window.innerWidth - pw - 12, Math.max(12, r.left + r.width/2 - pw/2));
+  let top = r.bottom + 10;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  pop.style.width = pw + 'px';
+  // flip up if needed
+  requestAnimationFrame(() => {
+    const pr = pop.getBoundingClientRect();
+    if(pr.bottom > window.innerHeight - 10){
+      pop.style.top = Math.max(10, r.top - pr.height - 10) + 'px';
+    }
+  });
+}
+function wireInfoAndMode(){
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.info-btn');
+    if(btn){
+      e.preventDefault();
+      e.stopPropagation();
+      openInfoPop(btn);
+      return;
+    }
+    if($('infoPop') && $('infoPop').classList.contains('open') && !e.target.closest('#infoPop')){
+      closeInfoPop();
+    }
+  });
+  const seg = $('agentModeSeg');
+  if(seg){
+    seg.addEventListener('click', e => {
+      const b = e.target.closest('button[data-mode]');
+      if(!b) return;
+      const mode = b.getAttribute('data-mode');
+      if(mode && mode !== S.agentMode) setAgentMode(mode);
+    });
+  }
+}
+
 $('enterBtn').addEventListener('click', enterFloor);
 $('drClose').addEventListener('click', () => $('drawer').classList.remove('open'));
 $('forceTick').addEventListener('click', doTick);
@@ -1987,6 +2286,7 @@ $('actExplain').addEventListener('click', () => openExplain(S.lastTickId));
 document.addEventListener('keydown', e => {
   if(e.key==='Enter' && !$('splash').classList.contains('go')) $('enterBtn').click();
   if(e.key==='Escape'){
+    if($('infoPop') && $('infoPop').classList.contains('open')){ closeInfoPop(); return; }
     if($('hbPop') && $('hbPop').classList.contains('open')){ closeHbPop(); return; }
     if($('ovRoot') && $('ovRoot').classList.contains('open')){ closeOverlay(); return; }
     $('drawer').classList.remove('open');
@@ -2000,12 +2300,16 @@ window.addEventListener('resize', () => {
 
 (async function boot(){
   if(typeof wirePack === 'function') wirePack();
+  wireInfoAndMode();
+  ensureScrollWraps();
   if(location.hash === '#floor') enterFloor();
   try { await refreshAll(); await refreshBooks(); }
   catch(e){ $('splashTrust').textContent = 'Cannot reach server — start python3 server.py'; toast(String(e), true); }
+  ensureScrollWraps();
   setInterval(tickClock, 250);
   setInterval(refreshBooks, 6000);
   setInterval(refreshAll, 12000);
+  setInterval(refreshScrollAffordances, 2000);
   tickClock();
 })();
 
