@@ -19,6 +19,17 @@ HOST = os.environ.get("CROSSFIRE_HOST") or "127.0.0.1"
 
 # Heartbeat / event wake — same in every agent mode
 HEARTBEAT_SEC = int(os.environ.get("CROSSFIRE_HEARTBEAT_SEC") or "300")
+
+# Agent loop — False = no auto ticks / event wakes / LLM spend
+def _env_bool(name: str, default: bool = True) -> bool:
+    v = (os.environ.get(name) or "").strip().lower()
+    if not v:
+        return default
+    return v in ("1", "true", "yes", "on")
+
+AGENT_ENABLED = _env_bool("CROSSFIRE_AGENT_ENABLED", True)
+_agent_enabled_lock = __import__("threading").Lock()
+
 EVENT_MOVE_PCT = float(os.environ.get("CROSSFIRE_EVENT_MOVE_PCT") or "1.5")
 BOOKS_CACHE_SEC = float(os.environ.get("CROSSFIRE_BOOKS_CACHE_SEC") or "4.0")
 
@@ -31,7 +42,10 @@ BITGET_API_KEY = (os.environ.get("BITGET_API_KEY") or "").strip()
 BITGET_SECRET_KEY = (os.environ.get("BITGET_SECRET_KEY") or "").strip()
 BITGET_PASSPHRASE = (os.environ.get("BITGET_PASSPHRASE") or "").strip()
 
-# Optional LLM
+# Optional LLM (OpenRouter preferred; OpenAI/Anthropic as fallbacks)
+OPENROUTER_API_KEY = (os.environ.get("OPENROUTER_API_KEY") or "").strip()
+_or_base = (os.environ.get("OPENROUTER_BASE") or "https://openrouter.ai/api/v1").strip().rstrip("/")
+OPENROUTER_BASE = _or_base or "https://openrouter.ai/api/v1"
 OPENAI_API_KEY = (os.environ.get("OPENAI_API_KEY") or "").strip()
 ANTHROPIC_API_KEY = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
 LLM_MODEL = (os.environ.get("CROSSFIRE_LLM_MODEL") or "").strip()
@@ -197,8 +211,20 @@ def sleeve_connected() -> bool:
     return bool(BITGET_API_KEY and BITGET_SECRET_KEY and BITGET_PASSPHRASE)
 
 
+
+def agent_enabled() -> bool:
+    with _agent_enabled_lock:
+        return bool(AGENT_ENABLED)
+
+
+def set_agent_enabled(on: bool) -> bool:
+    global AGENT_ENABLED
+    with _agent_enabled_lock:
+        AGENT_ENABLED = bool(on)
+        return AGENT_ENABLED
+
 def llm_available() -> bool:
-    return bool(OPENAI_API_KEY or ANTHROPIC_API_KEY)
+    return bool(OPENROUTER_API_KEY or OPENAI_API_KEY or ANTHROPIC_API_KEY)
 
 
 def connect_mode_label() -> str:
@@ -241,7 +267,7 @@ def load_dotenv_if_present() -> None:
             os.environ[k] = v
     # Re-bind module globals after load
     global MODE, BITGET_API_KEY, BITGET_SECRET_KEY, BITGET_PASSPHRASE
-    global OPENAI_API_KEY, ANTHROPIC_API_KEY, LLM_MODEL, PORT, HOST
+    global OPENROUTER_API_KEY, OPENROUTER_BASE, OPENAI_API_KEY, ANTHROPIC_API_KEY, LLM_MODEL, PORT, HOST, AGENT_ENABLED
     global _agent_mode, _SLEEVE_CAP, _LEG_CAP, _BASE_DIV, RISK, POLICY
     MODE = (os.environ.get("CROSSFIRE_MODE") or "public").strip().lower()
     if MODE not in ("public", "demo", "live"):
@@ -249,9 +275,13 @@ def load_dotenv_if_present() -> None:
     BITGET_API_KEY = (os.environ.get("BITGET_API_KEY") or "").strip()
     BITGET_SECRET_KEY = (os.environ.get("BITGET_SECRET_KEY") or "").strip()
     BITGET_PASSPHRASE = (os.environ.get("BITGET_PASSPHRASE") or "").strip()
+    OPENROUTER_API_KEY = (os.environ.get("OPENROUTER_API_KEY") or "").strip()
+    _or_base = (os.environ.get("OPENROUTER_BASE") or "https://openrouter.ai/api/v1").strip().rstrip("/")
+    OPENROUTER_BASE = _or_base or "https://openrouter.ai/api/v1"
     OPENAI_API_KEY = (os.environ.get("OPENAI_API_KEY") or "").strip()
     ANTHROPIC_API_KEY = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
     LLM_MODEL = (os.environ.get("CROSSFIRE_LLM_MODEL") or "").strip()
+    AGENT_ENABLED = _env_bool("CROSSFIRE_AGENT_ENABLED", True)
     PORT = int(os.environ.get("CROSSFIRE_PORT") or "8780")
     HOST = os.environ.get("CROSSFIRE_HOST") or "127.0.0.1"
     _SLEEVE_CAP = float(os.environ.get("CROSSFIRE_SLEEVE_CAP") or "2000")

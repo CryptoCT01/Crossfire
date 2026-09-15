@@ -11,6 +11,7 @@ from typing import Any
 
 from . import bitget_private, bitget_public, config
 from . import logging_store as store
+from . import perception
 from . import session_info
 
 def _ssl_context():
@@ -27,6 +28,7 @@ _state_lock = threading.Lock()
 _state: dict[str, Any] = {
     "status": "IDLE",
     "last_decision": None,
+    "last_context": None,
     "last_tick_id": None,
     "last_heartbeat_ts": None,
     "next_heartbeat_ts": None,
@@ -201,40 +203,212 @@ def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def llm_decide(books: dict[str, Any]) -> dict[str, Any] | None:
-    """Call LLM if key present. Returns None on failure (caller falls back to policy)."""
-    if not config.llm_available():
-        return None
+_RULEBOOK_CACHE: str | None = None
+_RULEBOOK_FALLBACK = (
+    "You are Crossfire cross-asset agent. Follow Risk Cage. "
+    "Reply JSON only: "
+    '{"action":"HOLD|HEDGE|ROTATE|REDUCE|FLAT","thesis":"...","legs":[],'
+    '"confidence":0-1,"rules_fired":[]}'
+)
 
-    # Compact context — never send secrets
-    summary = {
+
+def _load_rulebook() -> str:
+    """Load 13-rule tick rulebook once; short fallback if missing."""
+    global _RULEBOOK_CACHE
+    if _RULEBOOK_CACHE is not None:
+        return _RULEBOOK_CACHE
+    path = config.ROOT / "prompts" / "crossfire_tick_rules_v1.md"
+    try:
+        text = path.read_text(encoding="utf-8").strip()
+        if text:
+            _RULEBOOK_CACHE = text
+            return _RULEBOOK_CACHE
+    except OSError:
+        pass
+    _RULEBOOK_CACHE = _RULEBOOK_FALLBACK
+    return _RULEBOOK_CACHE
+
+
+def _safe_err(exc: BaseException) -> str:
+    """Format LLM errors without leaking secrets from exception strings."""
+    msg = str(exc)
+    for secret in (
+        config.OPENROUTER_API_KEY,
+        config.OPENAI_API_KEY,
+        config.ANTHROPIC_API_KEY,
+    ):
+        if secret and secret in msg:
+            msg = msg.replace(secret, "[redacted]")
+    return f"LLM call failed: {type(exc).__name__}: {msg}"
+
+
+def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Compact tick JSON for the LLM — never secrets."""
+    pol = config.active_policy()
+    us = books.get("us") or []
+    crypto = books.get("crypto") or []
+    mag7 = _avg_change(us, pol["mag7_symbols"])
+    btc_row = next((r for r in crypto if r.get("symbol") == pol["btc_symbol"]), None)
+    btc = (
+        float(btc_row["change24h_pct"])
+        if btc_row and btc_row.get("change24h_pct") is not None
+        else None
+    )
+    divergence = (mag7 - btc) if mag7 is not None and btc is not None else None
+
+    positions_summary: list[dict[str, Any]] = []
+    if config.sleeve_connected():
+        try:
+            sleeve = bitget_private.positions()
+            for p in sleeve.get("positions") or []:
+                if not isinstance(p, dict):
+                    continue
+                positions_summary.append(
+                    {
+                        "symbol": p.get("symbol") or p.get("symbolName"),
+                        "side": p.get("side") or p.get("holdSide"),
+                        "size": p.get("size") or p.get("total"),
+                        "unrealized_pnl": p.get("unrealizedPL") or p.get("unrealized_pnl"),
+                    }
+                )
+        except Exception:
+            positions_summary = []
+
+    payload: dict[str, Any] = {
         "us": [
             {"s": r["symbol"], "m": r.get("mark"), "c24": r.get("change24h_pct")}
-            for r in (books.get("us") or [])
+            for r in us
             if r.get("available")
         ],
         "crypto": [
             {"s": r["symbol"], "m": r.get("mark"), "c24": r.get("change24h_pct")}
-            for r in (books.get("crypto") or [])
+            for r in crypto
             if r.get("available")
         ],
         "session": session_info.us_cash_session(),
         "risk": config.active_risk(),
         "agent_mode": config.get_agent_mode(),
-        "instruction": (
-            "You are Crossfire cross-asset agent. Reply JSON only: "
-            '{"action":"HOLD|HEDGE|ROTATE|REDUCE|FLAT","thesis":"...","legs":[],"confidence":0-1}'
+        "sleeve_connected": config.sleeve_connected(),
+        "positions": positions_summary,
+        "derived": {
+            "mag7_24h_pct": mag7,
+            "btc_24h_pct": btc,
+            "divergence_pct": divergence,
+            "threshold_pct": float(pol["divergence_threshold_pct"]),
+        },
+        "reply_schema": (
+            "Reply JSON only: "
+            '{"action":"HOLD|HEDGE|ROTATE|REDUCE|FLAT","thesis":"...","legs":[],'
+            '"confidence":0-1,"rules_fired":[]}'
         ),
     }
+    if context:
+        # Drop any accidental secret-looking keys
+        safe_ctx = {
+            k: v
+            for k, v in context.items()
+            if not any(s in str(k).lower() for s in ("key", "secret", "pass", "token", "auth"))
+        }
+        if safe_ctx:
+            payload["context"] = safe_ctx
+    return payload
 
+
+def _parse_llm_json(content: str) -> dict[str, Any]:
+    content = (content or "").strip()
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        start = content.find("{")
+        end = content.rfind("}")
+        if start >= 0 and end > start:
+            return json.loads(content[start : end + 1])
+        raise
+
+
+def _llm_result(model: str, parsed: dict[str, Any]) -> dict[str, Any]:
+    out = {
+        "engine": "llm",
+        "model": model,
+        "action": str(parsed.get("action") or "HOLD").upper(),
+        "thesis": str(parsed.get("thesis") or ""),
+        "legs": parsed.get("legs") or [],
+        "confidence": float(parsed.get("confidence") or 0.5),
+        "raw_ok": True,
+    }
+    if "rules_fired" in parsed:
+        out["rules_fired"] = parsed.get("rules_fired")
+    return out
+
+
+def llm_decide(
+    books: dict[str, Any], context: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
+    """Call LLM if key present. Prefer OpenRouter; fall back OpenAI/Anthropic.
+    Returns None if no key; on call failure returns fallback True with error.
+    """
+    if not config.llm_available():
+        return None
+
+    system = _load_rulebook()
+    user_payload = _tick_user_payload(books, context)
+    user_content = json.dumps(user_payload, separators=(",", ":"))
+
+    # --- OpenRouter (preferred) ---
+    if config.OPENROUTER_API_KEY:
+        model = config.LLM_MODEL or "deepseek/deepseek-v4.1-flash"
+        body = {
+            "model": model,
+            "temperature": 0.2,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_content},
+            ],
+            "response_format": {"type": "json_object"},
+        }
+        url = f"{config.OPENROUTER_BASE}/chat/completions"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {config.OPENROUTER_API_KEY}",
+                "User-Agent": "Crossfire/0.2",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=45, context=_ssl_context()) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            content = payload["choices"][0]["message"]["content"]
+            parsed = _parse_llm_json(content)
+            return _llm_result(model, parsed)
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            TimeoutError,
+            OSError,
+            KeyError,
+            ValueError,
+            TypeError,
+            json.JSONDecodeError,
+        ) as e:
+            return {
+                "engine": "llm",
+                "model": model,
+                "error": _safe_err(e),
+                "fallback": True,
+            }
+
+    # --- OpenAI (secondary) ---
     if config.OPENAI_API_KEY:
         model = config.LLM_MODEL or "gpt-4o-mini"
         body = {
             "model": model,
             "temperature": 0.2,
             "messages": [
-                {"role": "system", "content": "Cross-asset trading agent. JSON only."},
-                {"role": "user", "content": json.dumps(summary)},
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_content},
             ],
             "response_format": {"type": "json_object"},
         }
@@ -252,30 +426,33 @@ def llm_decide(books: dict[str, Any]) -> dict[str, Any] | None:
             with urllib.request.urlopen(req, timeout=30, context=_ssl_context()) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
             content = payload["choices"][0]["message"]["content"]
-            parsed = json.loads(content)
+            parsed = _parse_llm_json(content)
+            return _llm_result(model, parsed)
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            TimeoutError,
+            OSError,
+            KeyError,
+            ValueError,
+            TypeError,
+            json.JSONDecodeError,
+        ) as e:
             return {
                 "engine": "llm",
                 "model": model,
-                "action": str(parsed.get("action") or "HOLD").upper(),
-                "thesis": str(parsed.get("thesis") or ""),
-                "legs": parsed.get("legs") or [],
-                "confidence": float(parsed.get("confidence") or 0.5),
-                "raw_ok": True,
-            }
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, KeyError, ValueError, TypeError) as e:
-            return {
-                "engine": "llm",
-                "model": model,
-                "error": f"LLM call failed: {e}",
+                "error": _safe_err(e),
                 "fallback": True,
             }
 
+    # --- Anthropic (secondary) ---
     if config.ANTHROPIC_API_KEY:
         model = config.LLM_MODEL or "claude-3-5-haiku-latest"
         body = {
             "model": model,
-            "max_tokens": 600,
-            "messages": [{"role": "user", "content": json.dumps(summary)}],
+            "max_tokens": 1200,
+            "system": system,
+            "messages": [{"role": "user", "content": user_content}],
         }
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
@@ -295,28 +472,27 @@ def llm_decide(books: dict[str, Any]) -> dict[str, Any] | None:
             for block in payload.get("content") or []:
                 if block.get("type") == "text":
                     text += block.get("text") or ""
-            # extract JSON object
-            start = text.find("{")
-            end = text.rfind("}")
-            parsed = json.loads(text[start : end + 1]) if start >= 0 and end > start else {}
+            parsed = _parse_llm_json(text)
+            return _llm_result(model, parsed)
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            TimeoutError,
+            OSError,
+            KeyError,
+            ValueError,
+            TypeError,
+            json.JSONDecodeError,
+        ) as e:
             return {
                 "engine": "llm",
                 "model": model,
-                "action": str(parsed.get("action") or "HOLD").upper(),
-                "thesis": str(parsed.get("thesis") or text[:500]),
-                "legs": parsed.get("legs") or [],
-                "confidence": float(parsed.get("confidence") or 0.5),
-                "raw_ok": True,
-            }
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, KeyError, ValueError, TypeError) as e:
-            return {
-                "engine": "llm",
-                "model": model,
-                "error": f"LLM call failed: {e}",
+                "error": _safe_err(e),
                 "fallback": True,
             }
 
     return None
+
 
 
 def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
@@ -335,9 +511,29 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
         books = bitget_public.get_books(force=True)
         marks = bitget_public.marks_map(books)
 
+        # Rule-2 perception pack — real books+session only; never invent news
+        pol = config.active_policy()
+        mag7 = _avg_change(books.get("us") or [], pol["mag7_symbols"])
+        btc_row = next(
+            (r for r in (books.get("crypto") or []) if r.get("symbol") == pol["btc_symbol"]),
+            None,
+        )
+        btc = (
+            float(btc_row["change24h_pct"])
+            if btc_row and btc_row.get("change24h_pct") is not None
+            else None
+        )
+        derived = {
+            "mag7_24h_pct": mag7,
+            "btc_24h_pct": btc,
+            "divergence_pct": (mag7 - btc) if mag7 is not None and btc is not None else None,
+            "threshold_pct": float(pol["divergence_threshold_pct"]),
+        }
+        context = perception.build_context(books, sess, derived=derived)
+
         decision: dict[str, Any]
         if config.llm_available():
-            llm_out = llm_decide(books)
+            llm_out = llm_decide(books, context=context)
             if llm_out and llm_out.get("raw_ok") and not llm_out.get("fallback"):
                 decision = llm_out
             else:
@@ -407,6 +603,7 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
                 "BTCUSDT": marks.get("BTCUSDT"),
                 "ETHUSDT": marks.get("ETHUSDT"),
             },
+            "context": context,
             "elapsed_ms": elapsed_ms,
             "status": decision.get("action") or "HOLD",
         }
@@ -422,6 +619,7 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
                 "action": record["action"],
                 "thesis": record["thesis"],
                 "divergence_pct": record["divergence_pct"],
+                "context": context,
                 "risk_cage": cage,
                 "trigger": trigger,
             },
@@ -438,6 +636,7 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
         with _state_lock:
             _state["status"] = record["action"]
             _state["last_decision"] = record
+            _state["last_context"] = context
             _state["last_tick_id"] = tick_id
             _state["last_heartbeat_ts"] = record["ts"]
             _state["next_heartbeat_ts"] = record["ts"] + config.HEARTBEAT_SEC
@@ -463,12 +662,25 @@ def get_state() -> dict[str, Any]:
     s["mode_pill"] = config.mode_pill()
     s["sleeve_connected"] = config.sleeve_connected()
     s["llm_available"] = config.llm_available()
+    try:
+        from . import bitget_private
+        hooks = bitget_private.hooks_enabled()
+        s["private_hooks_enabled"] = hooks
+        s["kill_armed"] = bool(s["sleeve_connected"] and hooks)
+        s["capabilities"] = bitget_private.capability_matrix()
+    except Exception:
+        s["private_hooks_enabled"] = False
+        s["kill_armed"] = False
+        s["capabilities"] = None
     s["heartbeat_sec"] = config.HEARTBEAT_SEC
     s["event_move_pct"] = config.EVENT_MOVE_PCT
     s["agent_mode"] = config.get_agent_mode()
     s["agent_profile"] = config.active_profile()
     s["risk"] = config.active_risk()
     s["policy"] = config.active_policy()
+    # Rule-2 pack: prefer explicit last_context; fall back to last_decision.context
+    if s.get("last_context") is None and isinstance(s.get("last_decision"), dict):
+        s["last_context"] = s["last_decision"].get("context")
     if s.get("next_heartbeat_ts") is None:
         # schedule relative to now if never ticked
         now = time.time()

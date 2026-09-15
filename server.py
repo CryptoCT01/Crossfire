@@ -68,20 +68,26 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/api/health":
                 st = agent_engine.get_state()
+                sleeve = config.sleeve_connected()
+                hooks = bitget_private.hooks_enabled()
                 _json(
                     self,
                     200,
                     {
                         "ok": True,
                         "service": "crossfire",
-                        "version": "0.2.1",
+                        "version": "0.2.2",
                         "mode": config.MODE,
                         "mode_pill": config.mode_pill(),
                         "agent_mode": config.get_agent_mode(),
                         "agent_profile": config.active_profile(),
                         "risk": config.active_risk(),
-                        "sleeve_connected": config.sleeve_connected(),
+                        "sleeve_connected": sleeve,
                         "llm_available": config.llm_available(),
+                        "agent_enabled": config.agent_enabled(),
+                        "private_hooks_enabled": hooks,
+                        "kill_armed": bool(sleeve and hooks),
+                        "capabilities": bitget_private.capability_matrix(),
                         "heartbeat_sec": config.HEARTBEAT_SEC,
                         "event_move_pct": config.EVENT_MOVE_PCT,
                         "last_heartbeat_ts": st.get("last_heartbeat_ts"),
@@ -109,7 +115,15 @@ class Handler(BaseHTTPRequestHandler):
                 _json(self, 200, sess)
                 return
             if path == "/api/agent/state":
-                _json(self, 200, agent_engine.get_state())
+                st = agent_engine.get_state()
+                sleeve = config.sleeve_connected()
+                hooks = bitget_private.hooks_enabled()
+                st["sleeve_connected"] = sleeve
+                st["llm_available"] = config.llm_available()
+                st["private_hooks_enabled"] = hooks
+                st["kill_armed"] = bool(sleeve and hooks)
+                st["capabilities"] = bitget_private.capability_matrix()
+                _json(self, 200, st)
                 return
             if path == "/api/agent/cinema":
                 n = 40
@@ -136,28 +150,37 @@ class Handler(BaseHTTPRequestHandler):
                 pos = bitget_private.positions()
                 orders = bitget_private.open_orders()
                 fills = store.read_jsonl_tail("fills.jsonl", 100)
+                sleeve = config.sleeve_connected()
+                hooks = bitget_private.hooks_enabled()
+                stub = bool(pos.get("stub") or orders.get("stub") or (sleeve and not hooks))
                 _json(
                     self,
                     200,
                     {
-                        "sleeve_connected": config.sleeve_connected(),
+                        "sleeve_connected": sleeve,
+                        "hooks_enabled": hooks,
+                        "stub": stub,
                         "positions": pos.get("positions") or [],
                         "orders": orders.get("orders") or [],
                         "fills": fills,
                         "message": pos.get("message"),
-                        "disconnected": not config.sleeve_connected(),
+                        "disconnected": not sleeve,
                     },
                 )
                 return
             if path == "/api/equity":
                 series = store.read_jsonl_tail("equity.jsonl", 500)
-                if not config.sleeve_connected():
+                sleeve = config.sleeve_connected()
+                hooks = bitget_private.hooks_enabled()
+                if not sleeve:
                     _json(
                         self,
                         200,
                         {
                             "ok": True,
                             "connected": False,
+                            "hooks_enabled": False,
+                            "stub": True,
                             "series": [],
                             "message": "Equity curve empty — sleeve DISCONNECTED (connect BITGET_* keys to start snapshots)",
                         },
@@ -169,10 +192,16 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         "ok": True,
                         "connected": True,
-                        "series": series,
+                        "hooks_enabled": hooks,
+                        "stub": not hooks,
+                        "series": series if hooks else [],
                         "message": None
-                        if series
-                        else "Sleeve connected but no equity snapshots yet (private hook stub or no data)",
+                        if (hooks and series)
+                        else (
+                            "Sleeve keys present; equity hook stub — no snapshots"
+                            if not hooks
+                            else "Sleeve connected but no equity snapshots yet"
+                        ),
                     },
                 )
                 return
@@ -290,7 +319,21 @@ class Handler(BaseHTTPRequestHandler):
                         409,
                         {
                             "ok": False,
+                            "hooks_enabled": False,
+                            "stub": True,
                             "error": "SLEEVE DISCONNECTED — kill switch disabled until BITGET_* keys are set",
+                        },
+                    )
+                    return
+                if not bitget_private.hooks_enabled():
+                    _json(
+                        self,
+                        409,
+                        {
+                            "ok": False,
+                            "hooks_enabled": False,
+                            "stub": True,
+                            "error": "Kill switch wired but private flatten hook not yet enabled — no fake cancel",
                         },
                     )
                     return
@@ -299,12 +342,64 @@ class Handler(BaseHTTPRequestHandler):
                 _json(self, code, result)
                 return
             if path == "/api/agent/tick":
+                if not config.agent_enabled():
+                    _json(
+                        self,
+                        409,
+                        {
+                            "ok": False,
+                            "error": "AGENT_OFF — turn agent on first",
+                            "agent_enabled": False,
+                        },
+                    )
+                    return
                 result = agent_engine.run_tick(trigger="force_api")
-                # ensure next heartbeat scheduled from this tick
                 if result.get("ok") and result.get("tick"):
                     agent_engine.schedule_next(result["tick"]["ts"])
                 _json(self, 200 if result.get("ok") else 409, result)
                 return
+
+            if path == "/api/agent/power":
+                try:
+                    length = int(self.headers.get("Content-Length") or 0)
+                except ValueError:
+                    length = 0
+                raw = self.rfile.read(length) if length else b"{}"
+                try:
+                    body = json.loads(raw.decode("utf-8") or "{}")
+                except json.JSONDecodeError:
+                    body = {}
+                if "enabled" in body:
+                    on = bool(body.get("enabled"))
+                elif "on" in body:
+                    on = bool(body.get("on"))
+                else:
+                    on = str(body.get("power") or body.get("state") or "").lower() in (
+                        "on", "1", "true", "enable", "enabled",
+                    )
+                val = config.set_agent_enabled(on)
+                if not val:
+                    try:
+                        agent_engine.schedule_next(time.time() + 3650 * 24 * 3600)
+                    except Exception:
+                        pass
+                st = agent_engine.get_state()
+                _json(
+                    self,
+                    200,
+                    {
+                        "ok": True,
+                        "agent_enabled": val,
+                        "message": (
+                            "AGENT ON — heartbeats + event wakes armed"
+                            if val
+                            else "AGENT OFF — no auto ticks, no LLM spend"
+                        ),
+                        "next_heartbeat_ts": st.get("next_heartbeat_ts"),
+                    },
+                )
+                return
+
             if path == "/api/agent/mode":
                 body = _read_json(self)
                 mode = body.get("mode")
@@ -369,17 +464,24 @@ class HeartbeatThread(threading.Thread):
         self._stop.set()
 
     def run(self) -> None:
-        # Initial schedule
+        # Initial schedule only — no startup tick if agent is off
         agent_engine.schedule_next(time.time())
-        # Optional: immediate first tick so cinema isn't empty on cold start
-        try:
-            r = agent_engine.run_tick(trigger="startup")
-            if r.get("ok") and r.get("tick"):
-                agent_engine.schedule_next(r["tick"]["ts"])
-        except Exception:
-            traceback.print_exc()
+        if config.agent_enabled():
+            try:
+                r = agent_engine.run_tick(trigger="startup")
+                if r.get("ok") and r.get("tick"):
+                    agent_engine.schedule_next(r["tick"]["ts"])
+            except Exception:
+                traceback.print_exc()
+        else:
+            # Park far ahead so UI countdown isn't fake-urgent while off
+            agent_engine.schedule_next(time.time() + 3650 * 24 * 3600)
 
         while not self._stop.is_set():
+            if not config.agent_enabled():
+                self._stop.wait(5.0)
+                continue
+
             st = agent_engine.get_state()
             now = time.time()
             nxt = float(st.get("next_heartbeat_ts") or (now + config.HEARTBEAT_SEC))

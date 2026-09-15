@@ -96,7 +96,7 @@ body::after{
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
 /* ===== FLOOR ===== */
-#floor{position:relative;z-index:3;height:100vh;display:flex;flex-direction:column;padding:8px 14px 6px;gap:6px;opacity:0;transform:translateY(8px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+#floor{position:relative;z-index:3;height:100vh;display:flex;flex-direction:column;padding:6px 14px 5px;gap:5px;opacity:0;transform:translateY(8px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 #floor.on{opacity:1;transform:none}
 
 .hunt-rail{flex:0 0 22px;position:relative;overflow:hidden;display:flex;align-items:center;border:1px solid rgba(255,255,255,.08);border-radius:8px;
@@ -109,15 +109,98 @@ body::after{
 .hunt-track .hc{color:var(--cyan);text-shadow:0 0 8px rgba(62,232,240,.35)}
 .hunt-track .hd{color:var(--fg3)}
 
-.honest-banner{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:10px;padding:5px 12px;border-radius:7px;
-  background:linear-gradient(90deg,rgba(232,184,74,.08),rgba(62,232,240,.06),rgba(232,184,74,.08));
-  border:1px solid rgba(232,184,74,.28);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
-.honest-banner.disc{border-color:rgba(255,93,108,.32);color:var(--red);background:linear-gradient(90deg,rgba(255,93,108,.08),rgba(62,232,240,.04),rgba(255,93,108,.08))}
-.honest-banner.live{border-color:rgba(61,255,156,.32);color:var(--green);background:linear-gradient(90deg,rgba(61,255,156,.08),rgba(62,232,240,.04),rgba(61,255,156,.08))}
+.honest-banner,#modeBanner{display:none!important}
 .honest-banner .dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;animation:blink 1.6s infinite}
 @keyframes blink{50%{opacity:.3}}
 
-.top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:2px 0}
+.wallet-strip{flex:0 0 auto;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:5px;padding:0 0 5px;border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto;scrollbar-width:thin}
+.wallet-strip .strip-div{flex:0 0 auto;width:1px;height:14px;background:rgba(255,255,255,.14);margin:0 4px}
+.wallet-strip .sess-inline{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
+.wallet-strip .sess-chip{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--fg3);white-space:nowrap}
+.wallet-strip .sess-chip.on{color:var(--green);border-color:rgba(61,255,156,.35);background:rgba(61,255,156,.06)}
+.wallet-strip .sess-chip.warn{color:var(--amber);border-color:rgba(240,160,48,.35);background:rgba(240,160,48,.06)}
+.wallet-strip .sess-chip.gold{color:var(--gold);border-color:rgba(232,184,74,.32);background:rgba(232,184,74,.06)}
+.wallet-strip .sess-chip.cyan{color:var(--cyan);border-color:rgba(62,232,240,.32);background:rgba(62,232,240,.06)}
+.sess{display:none!important}
+.wallet-chip{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:6px;border:1px solid var(--border);color:var(--fg3);background:rgba(255,255,255,.02);white-space:nowrap}
+.wallet-chip.on{color:var(--green);border-color:rgba(61,255,156,.35);background:rgba(61,255,156,.06)}
+.wallet-chip.warn{color:var(--gold);border-color:rgba(232,184,74,.35);background:rgba(232,184,74,.06)}
+.wallet-chip.off{color:var(--red);border-color:rgba(255,93,108,.32);background:rgba(255,93,108,.05)}
+.wallet-chip.muted{color:var(--fg3);opacity:.85}
+.eq-toggle{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:6px;border:1px solid rgba(62,232,240,.28);background:rgba(62,232,240,.06);color:var(--cyan);cursor:pointer}
+.eq-toggle.off{border-color:var(--border);color:var(--fg3);background:rgba(255,255,255,.03)}
+.eq-hidden-note{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3);padding:6px 8px;text-align:left;border-radius:7px;border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.03)}
+#drawer{display:none !important}
+
+.top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:2px 0;height:44px;min-height:0;box-sizing:border-box}
+.top-left,.top-right{flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0}
+.agent-beacon{flex:0 0 auto}
+.top-right{justify-content:flex-end}
+.hero-stats{margin-left:0;display:flex;align-items:stretch;gap:6px}
+.agent-beacon{
+  flex:0 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:center;
+  gap:8px;padding:4px 10px;border-radius:8px;height:42px;box-sizing:border-box;
+  background:linear-gradient(180deg,rgba(12,16,26,.94),rgba(6,8,14,.96));
+  border:1px solid rgba(232,184,74,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 12px rgba(62,232,240,.05);
+  position:relative;overflow:visible
+}
+.agent-beacon::before{
+  content:'';position:absolute;inset:-8px;border-radius:12px;
+  border:1px solid rgba(62,232,240,.0);pointer-events:none;opacity:0;z-index:0
+}
+.agent-beacon.on::before{
+  border-color:rgba(62,232,240,.18);opacity:1;
+  animation:abScan 3.2s ease-in-out infinite
+}
+@keyframes abScan{
+  0%{transform:scale(.92);opacity:0}
+  40%{opacity:.4}
+  100%{transform:scale(1.06);opacity:0}
+}
+.ab-bot-wrap{position:relative;width:26px;height:26px;flex:0 0 auto;z-index:1}
+.ab-light{
+  position:absolute;top:-2px;right:-2px;z-index:2;
+  width:6px;height:6px;border-radius:50%;background:#4a5568;
+  box-shadow:0 0 0 transparent;transition:background .2s,box-shadow .2s
+}
+.agent-beacon.on .ab-light{
+  background:var(--green);box-shadow:0 0 8px rgba(61,255,156,.75);
+  animation:abPulse 1.8s ease-in-out infinite
+}
+.agent-beacon.ticking .ab-light{
+  background:var(--amber);box-shadow:0 0 10px rgba(240,160,48,.8);
+  animation:abPulse .7s ease-in-out infinite
+}
+.agent-beacon.err .ab-light{
+  background:var(--red);box-shadow:0 0 10px rgba(255,93,108,.75);
+  animation:abPulse 1s ease-in-out infinite
+}
+.agent-beacon.off .ab-light{background:#4a5568;box-shadow:none;animation:none;opacity:.55}
+@keyframes abPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.85)}}
+.ab-bot{width:26px;height:26px;display:block;filter:drop-shadow(0 0 6px rgba(62,232,240,.16))}
+.ab-bot .ab-pupil{transform-origin:center;animation:abSearch 2.8s ease-in-out infinite}
+.agent-beacon.ticking .ab-bot .ab-pupil{animation-duration:.9s}
+.agent-beacon.off .ab-bot{opacity:.55;filter:grayscale(.4)}
+@keyframes abSearch{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-1.6px)}
+  50%{transform:translateX(0)}
+  75%{transform:translateX(1.6px)}
+}
+.ab-meta{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;line-height:1.05;z-index:1;min-width:72px}
+.ab-status{
+  font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--fg3);white-space:nowrap
+}
+.agent-beacon.on .ab-status{color:var(--green)}
+.agent-beacon.ticking .ab-status{color:var(--amber)}
+.agent-beacon.err .ab-status{color:var(--red)}
+.agent-beacon.off .ab-status{color:var(--fg3)}
+.ab-count{
+  font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.04em;color:var(--gold2);margin-top:1px
+}
+.agent-beacon.ticking .ab-count{color:var(--cyan)}
+
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .mark{width:28px;height:28px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(232,184,74,.25))}
 .brand h1{font-family:var(--orb);font-weight:800;font-size:17px;letter-spacing:.18em;line-height:1}
@@ -126,24 +209,26 @@ body::after{
 @keyframes quadPulse{0%,100%{opacity:.82;transform:translateY(0)}50%{opacity:1;transform:translateY(-1px)}}
 @keyframes quadShine{0%{background-position:0% 50%}100%{background-position:220% 50%}}
 .brand small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);margin-top:3px;font-weight:500}
-.mode-pill{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;padding:5px 10px;border-radius:999px;border:1px solid rgba(232,184,74,.45);color:var(--gold);background:rgba(232,184,74,.1);white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis}
+#modePill,.mode-pill{display:none!important}
+.mode-pill-legacy{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;padding:5px 10px;border-radius:999px;border:1px solid rgba(232,184,74,.45);color:var(--gold);background:rgba(232,184,74,.1);white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis}
 .mode-pill.live{border-color:rgba(61,255,156,.45);color:var(--green);background:rgba(61,255,156,.1)}
 .mode-pill.disc{border-color:rgba(255,93,108,.4);color:var(--red);background:rgba(255,93,108,.08)}
-.hero-stats{margin-left:auto;display:flex;align-items:stretch;gap:6px}
-.hs{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 10px;min-width:78px;backdrop-filter:blur(12px);overflow:hidden;transition:border-color .25s,box-shadow .25s}
+.hs{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 10px;min-width:78px;height:42px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;backdrop-filter:blur(12px);overflow:hidden;transition:border-color .25s,box-shadow .25s}
 .hs::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);transform:translateX(-120%);pointer-events:none}
 .hs:hover::after{animation:sheen 1s var(--ease)}
 @keyframes sheen{to{transform:translateX(120%)}}
 .hs-l{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
 .hs-v{font-family:var(--mono);font-size:13px;font-weight:700;margin-top:1px;letter-spacing:-.02em;transition:color .18s}
 .hs-v.flash{color:var(--cyan)!important}
+.hs-ch{font-size:9px;font-weight:700;margin-left:4px;letter-spacing:0;opacity:.95}
+.hs-v{display:flex;align-items:baseline;gap:2px;flex-wrap:wrap}
 .hs.gold{border-color:rgba(232,184,74,.22)}.hs.gold .hs-v{color:var(--gold)}
 .hs.cyan{border-color:rgba(62,232,240,.22)}.hs.cyan .hs-v{color:var(--cyan)}
 .hs.hb{min-width:96px;border-color:rgba(232,184,74,.28);background:linear-gradient(180deg,rgba(232,184,74,.08),rgba(8,12,20,.78))}
 .hs.hb .hs-v{font-size:16px;color:var(--gold2);letter-spacing:.04em}
 .hs.hb.urgent .hs-v{color:var(--amber);animation:e2Pulse 1s ease-in-out infinite}
 @keyframes e2Pulse{0%,100%{opacity:1}50%{opacity:.45}}
-.btn{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--fg2);cursor:pointer;transition:opacity .15s,background .15s,transform .15s,filter .15s}
+.btn{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:0 12px;height:42px;box-sizing:border-box;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--fg2);cursor:pointer;transition:opacity .15s,background .15s,transform .15s,filter .15s;display:inline-flex;align-items:center;justify-content:center}
 .btn:hover:not(:disabled){background:rgba(255,255,255,.08);color:var(--fg);transform:translateY(-1px)}
 .btn:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.35)}
 .btn.tick{border-color:rgba(62,232,240,.35);color:var(--cyan)}
@@ -211,7 +296,19 @@ body::after{
 .inst-px{font-family:var(--mono);font-weight:700;font-size:13px;text-align:right;transition:color .15s}
 .inst-px.flash{color:var(--cyan)}
 .inst-ch{font-family:var(--mono);font-size:10px;text-align:right;font-weight:600}
-.up{color:var(--green)}.dn{color:var(--red)}.na{color:var(--fg3)}
+.up{color:var(--green)!important;text-shadow:0 0 10px rgba(61,255,156,.22)}
+.dn{color:var(--red)!important;text-shadow:0 0 10px rgba(255,93,108,.22)}
+.flat,.na{color:var(--fg3)!important;text-shadow:none}
+.m-v.up,.inst-ch.up,.hs-v.up{color:var(--green)!important}
+.m-v.dn,.inst-ch.dn,.hs-v.dn{color:var(--red)!important}
+.sig-metric{font-variant-numeric:tabular-nums}
+.sig-row .roc.up,.sig-row .rsi.up{color:var(--green)!important;font-weight:700}
+.sig-row .roc.dn,.sig-row .rsi.dn{color:var(--red)!important;font-weight:700}
+.regime-meta .up{color:var(--green)!important;font-weight:700}
+.regime-meta .dn{color:var(--red)!important;font-weight:700}
+.regime-meta .flat{color:var(--fg3)!important}
+.leg-note .up{color:var(--green)!important}.leg-note .dn{color:var(--red)!important}
+
 .inst-micro{grid-column:1/-1;display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--fg3);letter-spacing:.04em}
 .spark{grid-column:1/-1;height:22px;width:100%}
 .regimes{display:flex;gap:4px;flex-wrap:wrap;padding:0 8px 8px;position:relative;z-index:2}
@@ -242,8 +339,11 @@ body::after{
 .leg-s{font-family:var(--mono);font-weight:800;font-size:13px}
 .leg.us .leg-s{color:var(--gold)}.leg.cr .leg-s{color:var(--cyan)}
 .leg-m{font-family:var(--mono);font-size:9px;color:var(--fg2);margin-top:2px;line-height:1.35}
-.thesis{font-size:12px;line-height:1.45;color:var(--fg2);padding:8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--line);min-height:44px;max-height:72px;overflow:auto}
+.thesis{font-size:12px;line-height:1.45;color:var(--fg2);padding:8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--line);min-height:52px;max-height:110px;overflow:auto;scrollbar-gutter:stable}
 .thesis b{color:var(--fg);font-family:var(--mono);font-size:10px;letter-spacing:.08em}
+.ctx-line{display:none;margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(62,232,240,.05);border:1px solid rgba(62,232,240,.18);font-family:var(--mono);font-size:10px;line-height:1.4;color:var(--fg2)}
+.ctx-line.show{display:block}
+.ctx-line b{color:var(--cyan);letter-spacing:.08em;font-size:9px}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .m{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
 .m-l{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
@@ -259,7 +359,7 @@ body::after{
 .act.cyan{border-color:rgba(62,232,240,.4);color:var(--cyan);background:rgba(62,232,240,.08)}
 .act.ghost{opacity:.85}
 
-.lower{flex:0 0 32%;min-height:168px;max-height:248px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(220px,.95fr) minmax(240px,1.05fr);gap:8px}
+.lower{flex:0 0 36%;min-height:200px;max-height:none;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(220px,.9fr) minmax(280px,1.15fr);gap:8px}
 .cin-body,.blotter-body,.eq-body{flex:1;min-height:0;overflow:auto;padding:0 8px 8px;position:relative;z-index:2}
 .cin-row{position:relative;padding:8px 10px 8px 28px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .2s}
 .cin-row:hover{background:rgba(255,255,255,.025)}
@@ -300,11 +400,21 @@ body::after{
 .blot-stat .l{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
 .blot-stat .v{font-family:var(--mono);font-weight:700;font-size:14px;margin-top:2px}
 
-.eq-stack{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.eq-stack{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;gap:4px}
+.eq-chart-wrap{position:relative;flex:0 0 auto;min-height:0}
+.eq-chart-wrap.collapsed{flex:0 0 auto}
+.eq-chart-wrap.collapsed #eqChart{display:none!important}
+.eq-chart-wrap.has-series:not(.collapsed){flex:0 0 88px}
+.eq-banner.hide,.eq-hidden-note.hide{display:none!important}
+.eq-banner{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3);padding:6px 8px;border-radius:7px;border:1px dashed rgba(255,93,108,.28);background:rgba(255,93,108,.05);text-align:left;line-height:1.35}
+.panel.cage .ph{flex-wrap:wrap;gap:6px}
+.panel.cage .ph > div:last-child{flex-wrap:wrap}
 #eqChart{width:100%;height:78px;flex:0 0 78px}
-.cage-body{flex:1;min-height:0;overflow:auto;padding:0 10px 8px;display:flex;flex-direction:column;gap:6px;position:relative;z-index:2}
-.cage-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.cg{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
+.cage-body{flex:1 1 auto;min-height:120px;overflow:auto;padding:2px 8px 10px;display:flex;flex-direction:column;gap:5px;position:relative;z-index:2;scrollbar-gutter:stable}
+.cage-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.cg{padding:5px 7px;border-radius:7px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
+.cg-l{font-size:8px!important}
+.cg-v{font-size:12px!important;margin-top:1px}
 .cg-l{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
 .cg-v{font-family:var(--mono);font-weight:800;font-size:14px;margin-top:2px;letter-spacing:-.03em}
 .slots{display:flex;gap:4px;margin-top:4px}
@@ -314,7 +424,7 @@ body::after{
 .bar{height:5px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:4px}
 .bar>i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--green),var(--gold));width:0;transition:width .5s var(--ease)}
 .bar.warn>i{background:linear-gradient(90deg,var(--gold),var(--red))}
-.kill-state{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:8px;border:1px dashed rgba(255,93,108,.35);background:rgba(255,93,108,.05)}
+.kill-state{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:7px;border:1px dashed rgba(255,93,108,.35);background:rgba(255,93,108,.05);flex:0 0 auto}
 .kill-state b{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
 .kill-state span{font-family:var(--mono);font-size:8px;color:var(--fg3);letter-spacing:.08em;text-transform:uppercase}
 
@@ -351,6 +461,7 @@ body::after{
 .scroll-region::before{top:0;background:linear-gradient(180deg,rgba(3,5,10,.85),transparent)}
 .scroll-region::after{bottom:0;background:linear-gradient(0deg,rgba(3,5,10,.85),transparent)}
 .scroll-region.can-up::before,.scroll-region.can-down::after{opacity:1}
+.cage-body,.thesis{scrollbar-gutter:stable}
 .scroll-hint{
   position:absolute;right:12px;bottom:10px;z-index:5;pointer-events:none;
   font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
@@ -358,7 +469,8 @@ body::after{
   color:var(--cyan2);background:rgba(3,5,10,.72);backdrop-filter:blur(8px);
   box-shadow:0 0 12px rgba(62,232,240,.12);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s;
 }
-.scroll-region.show-hint .scroll-hint{opacity:1;transform:translateY(0)}
+.scroll-region.show-hint .cage-body,.thesis{scrollbar-gutter:stable}
+.scroll-hint{opacity:1;transform:translateY(0)}
 .scroll-hint.gold{border-color:rgba(232,184,74,.4);color:var(--gold2);box-shadow:0 0 12px rgba(232,184,74,.12)}
 .book-body,.cin-body,.blotter-body,.cage-body,.eq-body,.ov-body,.dr-body,.thesis{
   scrollbar-width:thin;scrollbar-color:rgba(62,232,240,.65) rgba(255,255,255,.04);
@@ -471,13 +583,70 @@ body::after{
 .hb-pop .hb-row b{color:var(--gold)}
 .hb-pop .hb-acts{display:flex;gap:6px;margin-top:8px}
 
+
+/* ===== Agent Research Bay (beacon expand) ===== */
+.ov-win.bay{width:min(980px,96vw);max-height:min(90vh,820px)}
+.bay-grid{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(280px,1.15fr) minmax(220px,.9fr);gap:12px;min-height:360px}
+.bay-card{position:relative;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:linear-gradient(180deg,rgba(12,16,26,.92),rgba(6,8,14,.96));padding:12px;overflow:hidden;min-height:0}
+.bay-card h5{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);margin:0 0 10px}
+.bay-desk{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:240px;position:relative}
+.bay-bot{width:88px;height:88px;filter:drop-shadow(0 0 16px rgba(62,232,240,.25));z-index:2;animation:bayBob 3.2s ease-in-out infinite}
+.bay-bot .ab-pupil{animation:abSearch 1.6s ease-in-out infinite}
+@keyframes bayBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.bay-laptop{width:140px;height:78px;position:relative;z-index:1}
+.bay-screen{position:absolute;left:18px;top:6px;right:18px;height:42px;border-radius:4px 4px 0 0;background:#061018;border:1px solid rgba(62,232,240,.35);overflow:hidden}
+.bay-scan{position:absolute;left:0;right:0;height:8px;background:linear-gradient(90deg,transparent,rgba(62,232,240,.55),transparent);animation:bayScan 1.8s linear infinite}
+@keyframes bayScan{0%{top:-10%}100%{top:110%}}
+.bay-code{position:absolute;inset:4px;font-family:var(--mono);font-size:6px;line-height:1.35;color:rgba(62,232,240,.65);white-space:pre;animation:bayCode 4s steps(12) infinite}
+@keyframes bayCode{0%{transform:translateY(0)}100%{transform:translateY(-40%)}}
+.bay-base{position:absolute;left:8px;right:8px;bottom:0;height:14px;border-radius:0 0 6px 6px;background:linear-gradient(180deg,#1a2230,#0c1018);border:1px solid rgba(255,255,255,.1)}
+.bay-glow{position:absolute;bottom:18px;width:120px;height:20px;background:radial-gradient(ellipse,rgba(62,232,240,.22),transparent 70%);filter:blur(4px)}
+.bay-world{position:relative;height:250px;display:flex;align-items:center;justify-content:center}
+.bay-globe{width:180px;height:180px;border-radius:50%;position:relative;
+  background:
+    radial-gradient(circle at 35% 30%,rgba(62,232,240,.35),transparent 40%),
+    radial-gradient(circle at 70% 65%,rgba(232,184,74,.22),transparent 45%),
+    radial-gradient(circle at 50% 50%,#0a1520 0%,#04080f 70%);
+  border:1px solid rgba(62,232,240,.35);box-shadow:0 0 40px rgba(62,232,240,.12),inset 0 0 30px rgba(0,0,0,.5);
+  animation:baySpin 28s linear infinite}
+@keyframes baySpin{to{transform:rotate(360deg)}}
+.bay-globe::before{content:'';position:absolute;inset:12%;border-radius:50%;border:1px dashed rgba(255,255,255,.12)}
+.bay-globe::after{content:'';position:absolute;inset:0;border-radius:50%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 11px,rgba(62,232,240,.07) 12px),
+             repeating-linear-gradient(90deg,transparent,transparent 14px,rgba(232,184,74,.05) 15px);
+  opacity:.55;mix-blend-mode:screen}
+.bay-ring{position:absolute;width:220px;height:220px;border-radius:50%;border:1px solid rgba(232,184,74,.2);animation:bayOrbit 10s linear infinite}
+.bay-ring.r2{width:250px;height:250px;border-color:rgba(62,232,240,.18);animation-duration:16s;animation-direction:reverse}
+@keyframes bayOrbit{to{transform:rotate(-360deg)}}
+.bay-node{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);top:0;left:50%;margin-left:-4px}
+.bay-node.g{background:var(--gold);box-shadow:0 0 10px var(--gold);top:auto;bottom:18%;left:8%}
+.bay-node.r{background:var(--green);box-shadow:0 0 10px var(--green);top:40%;left:auto;right:0}
+.bay-arc{position:absolute;width:70%;height:70%;border-radius:50%;border-top:2px solid rgba(62,232,240,.35);border-right:2px solid transparent;animation:bayArc 3.5s ease-in-out infinite}
+@keyframes bayArc{0%,100%{opacity:.25;transform:rotate(0deg)}50%{opacity:.9;transform:rotate(180deg)}}
+.bay-feed{display:flex;flex-direction:column;gap:6px;max-height:250px;overflow:auto;scrollbar-gutter:stable}
+.bay-line{font-family:var(--mono);font-size:10px;letter-spacing:.04em;padding:7px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--fg2);animation:bayIn .45s ease both}
+.bay-line b{color:var(--cyan);font-weight:700}
+.bay-line.warn{border-color:rgba(240,160,48,.28);color:var(--gold2)}
+.bay-line.off{border-color:rgba(255,93,108,.25);color:#ff8a94}
+.bay-line.on{border-color:rgba(61,255,156,.28)}
+@keyframes bayIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bay-line:nth-child(1){animation-delay:.05s}.bay-line:nth-child(2){animation-delay:.12s}
+.bay-line:nth-child(3){animation-delay:.18s}.bay-line:nth-child(4){animation-delay:.24s}
+.bay-line:nth-child(5){animation-delay:.3s}.bay-line:nth-child(6){animation-delay:.36s}
+.bay-line:nth-child(7){animation-delay:.42s}.bay-line:nth-child(8){animation-delay:.48s}
+.bay-status{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3);text-align:center}
+.bay-status .live{color:var(--green)}.bay-status .idle{color:var(--amber)}
+.bay-caption{grid-column:1/-1;font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--fg2);padding:10px 12px;border-radius:10px;border:1px solid rgba(232,184,74,.22);background:rgba(232,184,74,.05)}
+.bay-caption strong{color:var(--gold2)}
+@media (max-width:900px){.bay-grid{grid-template-columns:1fr;min-height:0}.bay-desk,.bay-world{height:200px}}
+
 /* Equity dual chart in theatre */
 #ovEqChart,#ovDdChart{width:100%;height:220px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.28)}
 .ov-split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(max-width:900px){.ov-split{grid-template-columns:1fr}}
 
 /* ===== PACK B — Market brain ===== */
-.brain{flex:0 0 auto;display:grid;grid-template-columns:minmax(160px,.9fr) minmax(220px,1.35fr) minmax(180px,1fr) minmax(200px,1.15fr) minmax(110px,.7fr);gap:6px;max-height:118px}
+.brain{flex:0 0 auto;display:grid;grid-template-columns:minmax(160px,.9fr) minmax(220px,1.35fr) minmax(180px,1fr) minmax(200px,1.15fr) minmax(110px,.7fr);gap:6px;max-height:108px}
 .bp{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;backdrop-filter:blur(12px);overflow:hidden;padding:6px 8px 7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .bp::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,rgba(255,255,255,.03) 48%,transparent 70%);transform:translateX(-140%);pointer-events:none}
 .bp:hover::before{animation:sheen 1.1s var(--ease)}
@@ -553,38 +722,71 @@ body::after{
 <div id="floor">
   <div class="hunt-rail"><div class="hunt-track" id="huntTrack"><span class="hd">AWAITING BITGET MARKS</span></div></div>
 
-  <div class="honest-banner disc" id="modeBanner"><span class="dot"></span><span id="modeBannerText">CONNECTING…</span></div>
+  <div class="wallet-strip" id="walletStrip" aria-label="Capability and session strip">
+    <span class="wallet-chip muted" id="wsMarks">Marks —</span>
+    <span class="wallet-chip muted" id="wsLlm">LLM —</span>
+    <span class="wallet-chip muted" id="wsSleeve">Sleeve OFF</span>
+    <span class="wallet-chip muted" id="wsKill">Kill OFF</span>
+    <span class="wallet-chip muted" id="wsEq">Eq 0</span>
+    <span class="wallet-chip muted" id="wsMode">Mode NORMAL</span>
+    <span class="strip-div" aria-hidden="true"></span>
+    <span class="sess-inline" id="sessChips"></span>
+  </div>
 
   <header class="top">
-    <div class="brand">
-      <svg class="mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-        <path d="M4 6 L24 22" stroke="#e8b84a" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M24 6 L4 22" stroke="#3ee8f0" stroke-width="1.6" stroke-linecap="round"/>
-        <circle cx="14" cy="14" r="2.2" fill="#03050a" stroke="#e8edf4" stroke-width="1"/>
-      </svg>
-      <div>
-        <h1><span class="c1">CROSS</span><span class="c2">FIRE</span></h1>
-        <small>Cross-asset execution agent</small>
+    <div class="top-left">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M4 6 L24 22" stroke="#e8b84a" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M24 6 L4 22" stroke="#3ee8f0" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.2" fill="#03050a" stroke="#e8edf4" stroke-width="1"/>
+        </svg>
+        <div>
+          <h1><span class="c1">CROSS</span><span class="c2">FIRE</span></h1>
+          <small>Cross-asset execution agent</small>
+        </div>
+      </div>
+      <div class="mode-seg" id="agentModeSeg" title="Agent Risk Cage profile — heartbeat stays 5m in both">
+        <button type="button" class="on normal" data-mode="normal" id="modeNormalBtn">Normal</button>
+        <button type="button" class="aggressive" data-mode="aggressive" id="modeAggBtn">Aggressive</button>
+        <button type="button" class="info-btn" data-info="agent_mode" aria-label="About agent mode" style="margin:0 4px;width:20px;height:20px">i</button>
       </div>
     </div>
-    <div class="mode-pill disc" id="modePill">—</div>
-    <div class="mode-seg" id="agentModeSeg" title="Agent Risk Cage profile — heartbeat stays 5m in both">
-      <button type="button" class="on normal" data-mode="normal" id="modeNormalBtn">Normal</button>
-      <button type="button" class="aggressive" data-mode="aggressive" id="modeAggBtn">Aggressive</button>
-      <button type="button" class="info-btn" data-info="agent_mode" aria-label="About agent mode" style="margin:0 4px;width:20px;height:20px">i</button>
+    <div class="agent-beacon on" id="agentBeacon" title="Agent heartbeat">
+      <div class="ab-bot-wrap">
+        <div class="ab-light" id="abLight"></div>
+        <div class="ab-bot" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="26" height="26" fill="none">
+            <rect x="8" y="12" width="24" height="20" rx="6" fill="#0a0e16" stroke="#e8b84a" stroke-width="1.4"/>
+            <rect x="11" y="8" width="18" height="6" rx="2" fill="#0a0e16" stroke="#3ee8f0" stroke-width="1.1"/>
+            <circle cx="14" cy="6" r="1.4" fill="#3ee8f0"/>
+            <ellipse cx="16" cy="21" rx="4.2" ry="5" fill="#e8edf4" opacity=".92"/>
+            <ellipse cx="24" cy="21" rx="4.2" ry="5" fill="#c8f7fa" opacity=".95"/>
+            <circle class="ab-pupil" cx="16.5" cy="21.5" r="1.7" fill="#03050a"/>
+            <circle class="ab-pupil" cx="24.5" cy="21.5" r="1.7" fill="#03050a"/>
+            <path d="M15 29h10" stroke="#3ee8f0" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ab-meta">
+        <div class="ab-status" id="abStatus">ON · HUNTING</div>
+        <div class="ab-count" id="abCount">—</div>
+      </div>
+      <button type="button" class="info-btn" data-info="agent_beacon" aria-label="About agent beacon" style="width:16px;height:16px;font-size:8px;z-index:1">i</button>
     </div>
-    <div class="hero-stats">
-      <div class="hs gold"><div class="hs-l" id="hsAaplL">AAPL</div><div class="hs-v" id="hsAapl">—</div></div>
-      <div class="hs cyan"><div class="hs-l" id="hsBtcL">BTC</div><div class="hs-v" id="hsBtc">—</div></div>
-      <div class="hs hb" id="hsHbBox"><div class="hs-l" style="display:flex;align-items:center;gap:5px">Next heartbeat <button type="button" class="info-btn" data-info="heartbeat" aria-label="About Heartbeat" style="width:14px;height:14px;font-size:8px">i</button></div><div class="hs-v" id="hsHb">—</div></div>
-      <div class="hs"><div class="hs-l">Engine</div><div class="hs-v" id="hsEng">—</div></div>
+    <div class="top-right">
+      <div class="hero-stats">
+        <div class="hs gold"><div class="hs-l" id="hsAaplL">AAPL</div><div class="hs-v" id="hsAapl">—</div></div>
+        <div class="hs cyan"><div class="hs-l" id="hsBtcL">BTC</div><div class="hs-v" id="hsBtc">—</div></div>
+        <div class="hs"><div class="hs-l">Engine</div><div class="hs-v" id="hsEng">—</div></div>
+      </div>
+      <button class="btn tick" id="forceTick" type="button" title="Force a real agent tick">Force Tick</button>
+      <button class="btn kill" id="killBtn" type="button" disabled title="Requires connected sleeve">Kill</button>
+      <div class="clock-box"><div class="t" id="clock">—</div><div class="z" id="clockz">London</div></div>
     </div>
-    <button class="btn tick" id="forceTick" type="button" title="Force a real agent tick">Force Tick</button>
-    <button class="btn kill" id="killBtn" type="button" disabled title="Requires connected sleeve">Kill</button>
-    <div class="clock-box"><div class="t" id="clock">—</div><div class="z" id="clockz">London</div></div>
   </header>
 
-  <div class="sess" id="sessRow"></div>
+  <div class="sess" id="sessRow" hidden></div>
 
   <section class="brain" id="brainRow" aria-label="Market brain">
     <article class="bp">
@@ -604,7 +806,7 @@ body::after{
       <div class="bp-body" id="sigBody"><div class="void mini"><div class="void-s">Need more samples…</div></div></div>
     </article>
     <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Breadth</div><div class="bp-s">% green 24h</div></div></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Breadth</div><div class="bp-s">% green 24h</div></div><button type="button" class="info-btn" data-info="breadth" aria-label="About Breadth">i</button></div>
       <div class="bp-body" id="breadthBody"></div>
     </article>
   </section>
@@ -654,12 +856,14 @@ body::after{
         <div class="corr-row">
           <div class="corr-bar wait" id="corrBar"><i id="corrFill"></i></div>
           <div class="corr-n" id="corrN">ρ —</div>
+          <button type="button" class="info-btn" data-info="bridge_corr" aria-label="About bridge correlation" style="width:14px;height:14px;font-size:8px">i</button>
         </div>
         <div class="legs">
           <div class="leg us"><div class="leg-h">US focus</div><div class="leg-s" id="legUs">AAPL</div><div class="leg-m" id="legUSm">Awaiting books</div></div>
           <div class="leg cr"><div class="leg-h">Crypto focus</div><div class="leg-s" id="legCr">BTC</div><div class="leg-m" id="legCRm">Awaiting books</div></div>
         </div>
         <div class="thesis" id="thesisBox"><b>THESIS</b><br>Waiting for first heartbeat…</div>
+        <div class="ctx-line" id="ctxLine" hidden></div>
         <div class="metrics">
           <div class="m"><div class="m-l">Mag7 24h</div><div class="m-v" id="mMag">—</div></div>
           <div class="m"><div class="m-l">BTC 24h</div><div class="m-v" id="mBtc">—</div></div>
@@ -704,7 +908,7 @@ body::after{
     <article class="panel">
       <div class="ph">
         <div class="ph-l"><span class="dot bad" id="blotDot"></span><div><div class="ph-t" style="color:var(--fg)">Blotter</div><div class="ph-s">Positions · orders · fills</div></div></div>
-        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="blotter" aria-label="About Blotter">i</button><span class="chip warn" id="blotChip">—</span></div>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="blotter" aria-label="About Blotter">i</button><button type="button" class="expand-btn" id="blotExpand">Expand desk</button><span class="chip warn" id="blotChip">—</span></div>
       </div>
       <div class="blotter-body" id="blotter"></div>
     </article>
@@ -712,12 +916,13 @@ body::after{
     <article class="panel cage">
       <div class="ph">
         <div class="ph-l"><span class="dot" style="background:#ff5d6c;box-shadow:0 0 8px #ff5d6c"></span><div><div class="ph-t" style="color:#ff8a94">Equity · Risk cage</div><div class="ph-s">Sleeve snapshots · hard limits</div></div></div>
-        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="risk" aria-label="About Risk cage">i</button><button type="button" class="info-btn" data-info="equity" aria-label="About Equity" title="Equity">i</button><span class="chip" id="eqChip">—</span></div>
+        <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="risk" aria-label="About Risk cage">i</button><button type="button" class="info-btn" data-info="equity" aria-label="About Equity" title="Equity">i</button><button type="button" class="eq-toggle" id="eqToggle" title="Show / hide equity chart">Equity ON</button><button type="button" class="expand-btn" id="eqExpand">Expand equity</button><span class="chip" id="eqChip">—</span></div>
       </div>
       <div class="eq-stack">
-        <div style="position:relative;flex:0 0 78px">
+        <div class="eq-chart-wrap collapsed" id="eqChartWrap">
           <div id="eqChart"></div>
-          <div class="chart-empty" id="eqEmpty">Equity empty — sleeve disconnected</div>
+          <div class="eq-banner" id="eqEmpty">Equity empty — sleeve disconnected</div>
+          <div class="eq-hidden-note hide" id="eqHiddenNote">Equity hidden</div>
         </div>
         <div class="cage-body" id="riskGrid"></div>
       </div>
@@ -733,7 +938,7 @@ body::after{
   </footer>
 </div>
 
-<aside id="drawer">
+<aside id="drawer" hidden aria-hidden="true">
   <div class="dr-h"><h2>Explainability</h2><button class="dr-x" id="drClose" type="button">×</button></div>
   <div class="dr-meta" id="drMeta"></div>
   <div class="dr-body" id="drBody">Select a cinema card.</div>
@@ -781,6 +986,8 @@ const MAG7 = new Set(['AAPLUSDT','TSLAUSDT','NVDAUSDT','METAUSDT','AMZNUSDT','MS
 const MEME = new Set(['DOGEUSDT','PEPEUSDT']);
 const S = {
   nextHb: null, lastHb: null, hbSec: 300, sleeve: false,
+  hooksEnabled: false, killArmed: false, capabilities: null,
+  equityPts: 0, eqOn: (localStorage.getItem('cf_eq_on') !== '0'),
   usFilter: 'ALL', crFilter: 'ALL',
   hist: Object.create(null), histMax: 48,
   lastMark: Object.create(null),
@@ -792,7 +999,10 @@ const S = {
   booksUs: [], booksCr: [],
   agentMode: 'normal',
   risk: null,
-  policy: null
+  policy: null,
+  llmOn: false, agentEnabled: true, lastContext: null,
+  agentRunStatus: 'IDLE',
+  marksLive: false
 };
 
 const INFO_COPY = {
@@ -818,7 +1028,7 @@ const INFO_COPY = {
   },
   risk: {
     title: 'Risk Cage',
-    body: 'Hard limits that survive every mood: slots, leverage ceilings, daily drawdown halt, notional caps. Aggressive loosens gates — it does not remove the cage. Kill stays disabled until the sleeve is connected.',
+    body: 'Hard limits that survive every mood: slots, leverage ceilings, daily drawdown halt, notional caps. Aggressive loosens gates — it does not remove the cage. Kill arms only when sleeve keys AND private flatten hooks are live — never for stub.',
     real: 'Active cage · /api/risk'
   },
   equity: {
@@ -860,6 +1070,22 @@ const INFO_COPY = {
     title: 'Agent mode',
     body: 'Normal keeps the classic cage: 3 slots, tighter Mag7↔BTC gate, 5% daily halt. Aggressive opens more slots, loosens divergence gates, and raises the halt to 8% — same 5m heartbeat, still no fake fills, still blocked if the sleeve is disconnected.',
     real: 'POST /api/agent/mode · live switch'
+  },
+  breadth: {
+    title: 'Breadth',
+    body: 'Share of available US and crypto symbols printing green on 24h%. A market-width dial from live Bitget change24h — observational only, never a fabricated breadth score.',
+    real: 'Computed from live /api/books'
+  },
+  agent_beacon: { title: 'Agent beacon', body: 'Click to open Research Bay — cinematic view of the agent scanning Dual Book marks and Rule-2 world context. Status lines are real; news/geo stay unknown until wired.', real: 'Beacon · /api/agent/state · perception context' },
+  session: {
+    title: 'Session strip',
+    body: 'US cash RTH / weekend context plus Bitget US-contract and crypto 24/7 reminders. Sleeve chip reflects keys/hooks honesty — not simulated portfolio state.',
+    real: '/api/session'
+  },
+  bridge_corr: {
+    title: 'Bridge correlation',
+    body: 'Pearson ρ between the buffered live marks of the current US and crypto focus legs. Needs ≥8 overlapping samples; stays honest-empty until the buffer warms.',
+    real: 'Local mark buffer · client-side ρ'
   }
 };
 
@@ -895,7 +1121,20 @@ function fmtPct(v){
 }
 function pctClass(v){
   if(v==null || Number.isNaN(Number(v))) return 'na';
-  return Number(v) >= 0 ? 'up' : 'dn';
+  const n = Number(v);
+  if(n > 0) return 'up';
+  if(n < 0) return 'dn';
+  return 'flat';
+}
+function rsiClass(v){
+  if(v==null || Number.isNaN(Number(v))) return 'na';
+  const n = Number(v);
+  if(n >= 55) return 'up';
+  if(n <= 45) return 'dn';
+  return 'flat';
+}
+function signedSpan(v, text){
+  return '<span class="' + pctClass(v) + '">' + text + '</span>';
 }
 function shortSym(s){ return String(s||'').replace(/USDT$/,''); }
 function flash(el){
@@ -1071,27 +1310,72 @@ async function setAgentMode(mode){
     toast(j.message || ('Mode → ' + S.agentMode));
   }catch(e){ toast(String(e), true); }
 }
+function killGateLabel(){
+  if(!S.sleeve) return {armed:false, short:'DISABLED · no sleeve', title:'Disabled: sleeve DISCONNECTED — set BITGET_API_KEY/SECRET/PASSPHRASE'};
+  if(!S.hooksEnabled) return {armed:false, short:'HOOK STUB · no flatten', title:'Keys present but private flatten hook is stub — Kill stays disabled'};
+  return {armed:true, short:'ARMED', title:'Confirm kill — flatten sleeve (hooks live)'};
+}
 function setModeUI(pill, sleeve){
   const mp = $('modePill');
   const ban = $('modeBanner');
   const txt = $('modeBannerText');
-  mp.textContent = pill || '—';
-  mp.classList.toggle('disc', !sleeve);
-  mp.classList.toggle('live', /LIVE/i.test(pill||'') && sleeve);
-  mp.classList.toggle('agent-agg', S.agentMode === 'aggressive');
-  ban.classList.toggle('disc', !sleeve);
-  ban.classList.toggle('live', !!sleeve);
-  txt.textContent = sleeve
-    ? ((pill||'LIVE') + ' · Real marks · Risk Cage armed · ' + (S.agentMode||'normal').toUpperCase())
-    : ((pill||'PUBLIC MARKS') + ' · Public marks only · No simulated positions · ' + (S.agentMode||'normal').toUpperCase());
-  $('footMode').textContent = (pill || 'PUBLIC MARKS') + ' · ' + (S.agentMode||'normal').toUpperCase();
+  const hooks = !!S.hooksEnabled;
+  const liveSleeve = !!sleeve && hooks;
+  if(mp){
+    mp.textContent = pill || '—';
+    mp.classList.toggle('disc', !sleeve);
+    mp.classList.toggle('live', /LIVE/i.test(pill||'') && liveSleeve);
+    mp.classList.toggle('agent-agg', S.agentMode === 'aggressive');
+  }
+  if(ban){
+    ban.classList.toggle('disc', !sleeve);
+    ban.classList.toggle('live', liveSleeve);
+  }
+  if(txt){
+    if(!sleeve){
+      txt.textContent = ((pill||'PUBLIC MARKS') + ' · Public marks only · No simulated positions · ' + (S.agentMode||'normal').toUpperCase());
+    } else if(!hooks){
+      txt.textContent = ((pill||'KEYS·STUB') + ' · Keys present · Private hooks stub · No flatten · ' + (S.agentMode||'normal').toUpperCase());
+    } else {
+      txt.textContent = ((pill||'LIVE') + ' · Real marks · Risk Cage armed · ' + (S.agentMode||'normal').toUpperCase());
+    }
+  }
+  const fm = $('footMode');
+  if(fm) fm.textContent = (pill || 'PUBLIC MARKS') + ' · ' + (S.agentMode||'normal').toUpperCase();
+  const gate = killGateLabel();
+  S.killArmed = !!gate.armed;
   ['killBtn','actKill'].forEach(id => {
     const k = $(id);
-    k.disabled = !sleeve;
-    k.title = sleeve
-      ? 'Confirm kill — flatten sleeve (requires private hook)'
-      : 'Disabled: sleeve DISCONNECTED — set BITGET_API_KEY/SECRET/PASSPHRASE';
+    if(!k) return;
+    k.disabled = !gate.armed;
+    k.title = gate.title;
   });
+  renderWalletStrip();
+}
+function renderWalletStrip(){
+  const marks = $('wsMarks'), llm=$('wsLlm'), sleeve=$('wsSleeve'), kill=$('wsKill'), eq=$('wsEq'), mode=$('wsMode');
+  if(!marks) return;
+  const setChip = (el, label, kind) => {
+    if(!el) return;
+    el.textContent = label;
+    el.className = 'wallet-chip ' + (kind||'muted');
+  };
+  setChip(marks, S.marksLive ? 'Marks LIVE' : 'Marks —', S.marksLive ? 'on' : 'muted');
+  setChip(llm, !S.llmOn ? 'LLM OFF' : (S.agentEnabled===false ? 'LLM STANDBY' : 'LLM ON'), !S.llmOn ? 'off' : (S.agentEnabled===false ? 'muted' : 'on'));;
+  if(!S.sleeve) setChip(sleeve, 'Sleeve OFF', 'off');
+  else if(!S.hooksEnabled) setChip(sleeve, 'Sleeve KEYS·STUB', 'warn');
+  else setChip(sleeve, 'Sleeve LIVE', 'on');
+  if(!S.sleeve) setChip(kill, 'Kill OFF', 'off');
+  else if(!S.hooksEnabled) setChip(kill, 'Kill STUB', 'warn');
+  else setChip(kill, 'Kill ARMED', 'on');
+  setChip(eq, 'Eq ' + (S.equityPts|0), (S.equityPts|0) > 0 ? 'on' : 'muted');
+  const modeEl = $('wsMode');
+  if(modeEl){
+    if(S.agentEnabled === false) setChip(modeEl, 'Agent OFF', 'off');
+    else setChip(modeEl, 'Mode ' + String(S.agentMode||'normal').toUpperCase(), 'muted');
+  }
+  const am = String(S.agentMode||'normal').toUpperCase();
+  setChip(mode, 'Mode ' + am, am === 'AGGRESSIVE' ? 'warn' : 'muted');
 }
 
 function renderRisk(risk, sleeve){
@@ -1115,33 +1399,60 @@ function renderRisk(risk, sleeve){
     ? S.policy.divergence_threshold_pct
     : null;
   const modeColor = mode === 'aggressive' ? 'var(--gold2)' : 'var(--cyan2)';
+  let ddLabel;
+  if(!sleeve) ddLabel = 'Drawdown vs halt · UNAVAILABLE until sleeve connected';
+  else if(!S.hooksEnabled) ddLabel = 'Drawdown vs halt · equity hook unavailable (stub)';
+  else if(!(S.equityPts > 0)) ddLabel = 'Drawdown vs halt · waiting for equity snapshots';
+  else ddLabel = 'Drawdown vs halt · from sleeve equity snapshots';
+  const gate = killGateLabel();
+  let killTitle, killSub, killRight;
+  if(!sleeve){
+    killTitle = 'Kill · DISABLED';
+    killSub = 'Sleeve disconnected — not simulated';
+    killRight = 'DISABLED · no sleeve';
+  } else if(!S.hooksEnabled){
+    killTitle = 'Kill · HOOK STUB';
+    killSub = 'Keys present · flatten hook not enabled';
+    killRight = 'HOOK STUB · no flatten';
+  } else {
+    killTitle = 'Kill · ARMED';
+    killSub = 'Private hooks live — flatten available';
+    killRight = 'ARMED';
+  }
   g.innerHTML = `
-    <div class="agent-mode-note">Cage profile · <b style="color:${modeColor}">${mode.toUpperCase()}</b>
-      · ${mode==='aggressive'?'more slots · looser gates · halt 8% · same 5m HB':'3 slots · tighter HOLD bias · halt 5% · same 5m HB'}
+    <div class="agent-mode-note">Cage · <b style="color:${modeColor}">${mode.toUpperCase()}</b>
+      · ${mode==='aggressive'?'5 slots · looser · halt 8%':'3 slots · tight · halt 5%'}
       ${div!=null?` · div ±${div}%`:''}</div>
     <div class="cage-grid">
       <div class="cg"><div class="cg-l">Max slots</div><div class="cg-v" style="color:${modeColor}">${maxSlots}</div></div>
-      <div class="cg"><div class="cg-l">Halt threshold</div><div class="cg-v" style="color:#ff8a94">${halt==null?'—':halt+'%'}</div></div>
-      <div class="cg"><div class="cg-l">Max lev US / CR</div><div class="cg-v">${risk.max_lev_us||'—'}× / ${risk.max_lev_crypto||'—'}×</div></div>
-      <div class="cg"><div class="cg-l">Sleeve cap</div><div class="cg-v">$${risk.sleeve_notional_cap_usdt ?? '—'}</div></div>
-      <div class="cg">
-        <div class="cg-l">Slots · ${used} / ${maxSlots} used</div>
+      <div class="cg"><div class="cg-l">Halt</div><div class="cg-v" style="color:#ff8a94">${halt==null?'—':halt+'%'}</div></div>
+      <div class="cg"><div class="cg-l">Lev US / CR</div><div class="cg-v">${risk.max_lev_us||'—'}× / ${risk.max_lev_crypto||'—'}×</div></div>
+      <div class="cg"><div class="cg-l">Sleeve / leg</div><div class="cg-v">$${risk.sleeve_notional_cap_usdt ?? '—'} / $${risk.per_leg_notional_cap_usdt ?? '—'}</div></div>
+      <div class="cg" style="grid-column:1/-1">
+        <div class="cg-l">Slots · ${used} / ${maxSlots}</div>
         <div class="slots">${slots.join('')}</div>
       </div>
-      <div class="cg"><div class="cg-l">Per-leg cap</div><div class="cg-v">$${risk.per_leg_notional_cap_usdt ?? '—'}</div></div>
     </div>
     <div>
-      <div class="cg-l">Drawdown vs halt · UNAVAILABLE until sleeve connected</div>
+      <div class="cg-l">${escapeHtml(ddLabel)}</div>
       <div class="bar" id="ddBar"><i style="width:0%"></i></div>
     </div>
     <div class="kill-state">
       <div>
-        <b>Kill · ${sleeve?'ARMED':'DISABLED'}</b>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--fg3);margin-top:3px;letter-spacing:.06em;text-transform:uppercase">${sleeve?'Private sleeve connected':'Sleeve disconnected — not simulated'}</div>
+        <b>${killTitle}</b>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--fg3);margin-top:2px;letter-spacing:.06em;text-transform:uppercase">${escapeHtml(killSub)}</div>
       </div>
-      <span>${sleeve?'Ready':'Disabled'}</span>
+      <span>${escapeHtml(killRight)}</span>
     </div>`;
-  requestAnimationFrame(refreshScrollAffordances);
+  requestAnimationFrame(() => {
+    refreshScrollAffordances();
+    const pane = g.classList.contains('scroll-pane') ? g : g;
+    // If content fits, don't leave a useless tiny scroll trap
+    if(pane.scrollHeight <= pane.clientHeight + 2){
+      const wrap = pane.closest('.scroll-region');
+      if(wrap) wrap.classList.remove('show-hint','can-up','can-down');
+    }
+  });
 }
 
 function updateFocusFromDecision(d){
@@ -1160,6 +1471,42 @@ function updateFocusFromDecision(d){
   }
 }
 
+function formatContextLine(ctx){
+  if(!ctx || typeof ctx !== 'object') return '';
+  const bits = [];
+  if(ctx.sentiment && ctx.sentiment !== 'unknown') bits.push('sent ' + ctx.sentiment);
+  else if(ctx.sentiment === 'unknown') bits.push('sent unknown');
+  if(ctx.us_tape && ctx.us_tape !== 'unknown'){
+    const t = String(ctx.us_tape);
+    bits.push(t.length > 90 ? t.slice(0,87) + '…' : t);
+  }
+  const geo = ctx.geopolitics;
+  if(geo && geo.level && geo.level !== 'unknown') bits.push('geo ' + geo.level);
+  else if(geo && geo.level === 'unknown') bits.push('geo unknown');
+  if(Array.isArray(ctx.news) && ctx.news.length) bits.push(ctx.news.length + ' headlines');
+  else bits.push('news []');
+  // Only show if we have at least sentiment or us_tape or macro present (honest pack)
+  if(!ctx.sentiment && !ctx.macro && !ctx.us_tape) return '';
+  return bits.join(' · ');
+}
+
+function renderContextLine(d, st){
+  const el = $('ctxLine');
+  if(!el) return;
+  const ctx = (d && d.context) || (st && st.last_context) || null;
+  if(ctx) S.lastContext = ctx;
+  const line = formatContextLine(ctx);
+  if(!line){
+    el.classList.remove('show');
+    el.hidden = true;
+    el.textContent = '';
+    return;
+  }
+  el.innerHTML = '<b>CONTEXT</b> ' + escapeHtml(line);
+  el.hidden = false;
+  el.classList.add('show');
+}
+
 function renderState(st){
   const d = st.last_decision;
   const action = String((d && d.action) || st.status || 'IDLE').toUpperCase();
@@ -1174,28 +1521,38 @@ function renderState(st){
   S.lastHb = st.last_heartbeat_ts;
   S.hbSec = st.heartbeat_sec || S.hbSec;
   S.sleeve = !!st.sleeve_connected;
+  if(st.private_hooks_enabled != null) S.hooksEnabled = !!st.private_hooks_enabled;
+  if(st.kill_armed != null) S.killArmed = !!st.kill_armed;
+  else S.killArmed = !!(S.sleeve && S.hooksEnabled);
+  if(st.capabilities) S.capabilities = st.capabilities;
   S.lastTickId = (d && d.tick_id) || st.last_tick_id || S.lastTickId;
+  if(st.llm_available != null) S.llmOn = !!st.llm_available;
+  const runSt = String(st.status || 'IDLE').toUpperCase();
+  S.agentRunStatus = (st.running_tick || runSt === 'TICKING') ? 'TICKING' : runSt;
   if(st.agent_mode) S.agentMode = st.agent_mode;
   if(st.policy) S.policy = st.policy;
   if(st.risk) S.risk = st.risk;
   setAgentModeUI(S.agentMode);
   setModeUI(st.mode_pill, S.sleeve);
   if(st.risk) renderRisk(st.risk, S.sleeve);
+  updateAgentBeacon();
 
   if(!d){
     $('thesisBox').innerHTML = '<b>THESIS</b><br>Waiting for first heartbeat…';
+    renderContextLine(null, st);
     $('shockLine').textContent = 'No decision yet';
     $('mMag').textContent = '—';
     $('mBtc').textContent = '—';
     $('mDiv').textContent = '—';
     $('legUs').textContent = shortSym(S.focusUs);
     $('legCr').textContent = shortSym(S.focusCr);
-    $('legUSm').textContent = 'Default focus · no named US leg';
-    $('legCRm').textContent = 'Default focus · no named crypto leg';
+    $('legUSm').innerHTML = 'Default focus · no named US leg';
+    $('legCRm').innerHTML = 'Default focus · no named crypto leg';
     return;
   }
   updateFocusFromDecision(d);
   $('thesisBox').innerHTML = '<b>THESIS · ' + escapeHtml((d.engine||'').toUpperCase()) + '</b><br>' + escapeHtml(d.thesis||'');
+  renderContextLine(d, st);
   const trig = d.trigger || 'tick';
   $('shockLine').textContent = trig + (d.sleeve_connected ? '' : ' · thesis only');
   $('mMag').textContent = d.mag7_24h_pct==null ? '—' : fmtPct(d.mag7_24h_pct);
@@ -1215,12 +1572,12 @@ function renderState(st){
     : shortSym(S.focusCr);
   const usRow = S.booksUs.find(r => r.symbol===S.focusUs);
   const crRow = S.booksCr.find(r => r.symbol===S.focusCr);
-  $('legUSm').textContent = usL.length
+  $('legUSm').innerHTML = usL.length
     ? 'Named by last decision'
-    : (usRow ? ('Watch · mark '+fmtPx(usRow.mark)+' · '+fmtPct(usRow.change24h_pct)) : 'Default focus · no named US leg');
-  $('legCRm').textContent = crL.length
+    : (usRow ? ('Watch · mark '+fmtPx(usRow.mark)+' · <span class="'+pctClass(usRow.change24h_pct)+'">'+fmtPct(usRow.change24h_pct)+'</span>') : 'Default focus · no named US leg');
+  $('legCRm').innerHTML = crL.length
     ? 'Named by last decision'
-    : (crRow ? ('Watch · mark '+fmtPx(crRow.mark)+' · '+fmtPct(crRow.change24h_pct)) : 'Default focus · no named crypto leg');
+    : (crRow ? ('Watch · mark '+fmtPx(crRow.mark)+' · <span class="'+pctClass(crRow.change24h_pct)+'">'+fmtPct(crRow.change24h_pct)+'</span>') : 'Default focus · no named crypto leg');
 }
 
 function renderCinema(payload){
@@ -1263,19 +1620,20 @@ function renderCinema(payload){
 }
 
 async function openExplain(tickId){
-  // Pack A — Decision Court supersedes side drawer
+  // Pack A — Decision Court supersedes side drawer (legacy #drawer hidden)
   if(typeof openDecisionCourt === 'function') return openDecisionCourt(tickId);
-  $('drawer').classList.add('open');
-  $('drBody').innerHTML = '<div class="void mini"><div class="void-s">Decision Court unavailable</div></div>';
+  toast('Decision Court unavailable', true);
 }
 
 function renderBlotter(j){
   const el = $('blotter');
   const chip = $('blotChip');
   const disc = j.disconnected || !j.sleeve_connected;
-  S.positions = disc ? [] : (j.positions || []);
-  $('blotDot').className = 'dot ' + (disc ? 'bad' : 'ok');
+  const hooks = (j.hooks_enabled != null) ? !!j.hooks_enabled : !!S.hooksEnabled;
+  const stub = j.stub != null ? !!j.stub : ( !disc && !hooks );
+  S.positions = (disc || stub) ? [] : (j.positions || []);
   if(disc){
+    $('blotDot').className = 'dot bad';
     chip.textContent = 'DISCONNECTED';
     chip.className = 'chip warn';
     const fills = j.fills || [];
@@ -1293,9 +1651,30 @@ function renderBlotter(j){
       + `<div class="lev-note">${escapeHtml(j.message||'')}</div>`;
     return;
   }
-  chip.textContent = 'CONNECTED';
+  if(stub || !hooks){
+    $('blotDot').className = 'dot';
+    chip.textContent = 'KEYS·STUB';
+    chip.className = 'chip warn';
+    const fills = j.fills || [];
+    el.innerHTML = voidArt('KEYS · HOOK STUB',
+      'Sleeve keys present · private positions/orders hooks not live.<br>No simulated book — empty until hooks enable.')
+      + `<div class="blot-k">
+          <div class="blot-stat"><div class="l">Positions</div><div class="v">0</div></div>
+          <div class="blot-stat"><div class="l">Orders</div><div class="v">0</div></div>
+          <div class="blot-stat"><div class="l">Fills (JSONL)</div><div class="v">${fills.length}</div></div>
+          <div class="blot-stat"><div class="l">Sleeve</div><div class="v" style="color:var(--gold)">KEYS·STUB</div></div>
+        </div>`
+      + (fills.length
+          ? `<div class="blot-sec"><div class="blot-h">Fills<i></i></div>${fills.slice(-5).reverse().map(f=>`<div class="blot-line">${escapeHtml(typeof f==='string'?f:JSON.stringify(f))}</div>`).join('')}</div>`
+          : '')
+      + `<div class="lev-note">${escapeHtml(j.message||'Private hooks stub')}</div>`;
+    return;
+  }
+  $('blotDot').className = 'dot ok';
+  chip.textContent = 'LIVE';
   chip.className = 'chip hedge';
   const pos = j.positions||[], orders=j.orders||[], fills=j.fills||[];
+  S.positions = pos;
   const block = (title, arr) => `<div class="blot-sec"><div class="blot-h">${title} (${arr.length})<i></i></div>${
     arr.length
       ? arr.slice(-10).reverse().map(p => {
@@ -1311,7 +1690,7 @@ function renderBlotter(j){
       <div class="blot-stat"><div class="l">Positions</div><div class="v">${pos.length}</div></div>
       <div class="blot-stat"><div class="l">Orders</div><div class="v">${orders.length}</div></div>
       <div class="blot-stat"><div class="l">Fills</div><div class="v">${fills.length}</div></div>
-      <div class="blot-stat"><div class="l">Sleeve</div><div class="v" style="color:var(--green)">ON</div></div>
+      <div class="blot-stat"><div class="l">Sleeve</div><div class="v" style="color:var(--green)">LIVE</div></div>
     </div>
     ${block('Positions', pos)}${block('Orders', orders)}${block('Fills', fills)}
     <div class="lev-note">${escapeHtml(j.message||'')}</div>`;
@@ -1404,46 +1783,106 @@ function updateCorr(){
   $('corrN').textContent = 'ρ ' + rho.toFixed(2);
 }
 
+function applyEqVisibility(){
+  const wrap = $('eqChartWrap');
+  const chart = $('eqChart');
+  const empty = $('eqEmpty');
+  const note = $('eqHiddenNote');
+  const btn = $('eqToggle');
+  if(btn){
+    btn.textContent = S.eqOn ? 'Equity ON' : 'Equity OFF';
+    btn.classList.toggle('off', !S.eqOn);
+  }
+  if(!wrap) return;
+  const hasSeries = (S.equityPts|0) > 0;
+  wrap.classList.toggle('has-series', hasSeries);
+  // No live curve → collapse chart void so Risk Cage gets the panel
+  if(!S.eqOn){
+    wrap.classList.add('collapsed');
+    if(chart) chart.style.display = 'none';
+    if(empty) empty.classList.add('hide');
+    if(note){ note.classList.remove('hide'); note.textContent = 'Equity chart hidden · Risk Cage below'; }
+    wrap.style.flex = '';
+    return;
+  }
+  if(note) note.classList.add('hide');
+  if(!hasSeries){
+    wrap.classList.add('collapsed');
+    if(chart) chart.style.display = 'none';
+    if(empty) empty.classList.remove('hide');
+    wrap.style.flex = '';
+    return;
+  }
+  wrap.classList.remove('collapsed');
+  if(chart) chart.style.display = '';
+  if(empty) empty.classList.add('hide');
+  wrap.style.flex = '';
+}
 function renderEquity(j){
   const chip = $('eqChip');
   const empty = $('eqEmpty');
+  const hooks = (j.hooks_enabled != null) ? !!j.hooks_enabled : !!S.hooksEnabled;
+  const stub = j.stub != null ? !!j.stub : (j.connected && !hooks);
+  const series = (!j.connected || stub || !hooks) ? [] : (j.series || []);
+  S.equityPts = series.length;
+  applyEqVisibility();
   if(!j.connected){
     chip.textContent = 'DISCONNECTED';
-    empty.classList.remove('hide');
-    empty.textContent = j.message || 'Equity empty — sleeve disconnected (not simulated)';
+    if(S.eqOn){
+      empty.classList.remove('hide');
+      empty.textContent = j.message || 'Equity empty — sleeve disconnected (not simulated)';
+    }
     if(S.eqSeries) S.eqSeries.setData([]);
+    renderWalletStrip();
     return;
   }
-  const series = j.series || [];
+  if(stub || !hooks){
+    chip.textContent = 'KEYS·STUB';
+    if(S.eqOn){
+      empty.classList.remove('hide');
+      empty.textContent = j.message || 'Equity hook stub — no snapshots (not simulated)';
+    }
+    if(S.eqSeries) S.eqSeries.setData([]);
+    renderWalletStrip();
+    return;
+  }
   if(!series.length){
     chip.textContent = 'EMPTY';
-    empty.classList.remove('hide');
-    empty.textContent = j.message || 'Sleeve connected — no snapshots yet';
+    if(S.eqOn){
+      empty.classList.remove('hide');
+      empty.textContent = j.message || 'Sleeve connected — no snapshots yet';
+    }
     if(S.eqSeries) S.eqSeries.setData([]);
+    renderWalletStrip();
     return;
   }
   chip.textContent = series.length + ' pts';
-  empty.classList.add('hide');
-  ensureEqChart();
-  if(S.eqSeries){
-    const data = series.map(p => ({time: Math.floor(p.ts), value: Number(p.equity)})).filter(p => !Number.isNaN(p.value));
-    S.eqSeries.setData(data);
+  if(S.eqOn){
+    empty.classList.add('hide');
+    ensureEqChart();
+    if(S.eqSeries){
+      const data = series.map(p => ({time: Math.floor(p.ts), value: Number(p.equity)})).filter(p => !Number.isNaN(p.value));
+      S.eqSeries.setData(data);
+    }
   }
+  renderWalletStrip();
 }
 
 function renderSession(sess){
   const chips = [];
-  chips.push(`<span class="sess-chip ${sess.us_cash_rth_open?'on':'warn'}">US cash ${escapeHtml(sess.us_cash_status||'—')}</span>`);
+  const cash = String(sess.us_cash_status||'—').replace(/_/g,' ');
+  chips.push(`<span class="sess-chip ${sess.us_cash_rth_open?'on':'warn'}">US ${escapeHtml(cash)}</span>`);
   chips.push(`<span class="sess-chip ${sess.weekend?'warn':'on'}">${sess.weekend?'Weekend':'Weekday'}</span>`);
-  chips.push('<span class="sess-chip gold">Bitget US contracts 24/7</span>');
-  chips.push('<span class="sess-chip cyan">Crypto perps 24/7</span>');
+  chips.push('<span class="sess-chip gold">US 24/7</span>');
+  chips.push('<span class="sess-chip cyan">Crypto 24/7</span>');
   if(sess.last_heartbeat_ts){
-    chips.push(`<span class="sess-chip">Last HB ${new Date(sess.last_heartbeat_ts*1000).toLocaleTimeString('en-GB',{timeZone:'Europe/London'})}</span>`);
+    chips.push(`<span class="sess-chip">HB ${new Date(sess.last_heartbeat_ts*1000).toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour12:false})}</span>`);
   } else {
-    chips.push('<span class="sess-chip warn">Last HB —</span>');
+    chips.push('<span class="sess-chip warn">HB —</span>');
   }
-  chips.push(`<span class="sess-chip ${S.sleeve?'on':'warn'}">${S.sleeve?'Sleeve ON':'Sleeve OFF'}</span>`);
-  $('sessRow').innerHTML = chips.join('');
+  chips.push('<button type="button" class="info-btn" data-info="session" aria-label="About session strip" style="width:16px;height:16px;font-size:8px;margin-left:2px">i</button>');
+  const host = $('sessChips') || $('sessRow');
+  if(host) host.innerHTML = chips.join('');
   S.nextHb = sess.next_heartbeat_ts || S.nextHb;
   S.lastHb = sess.last_heartbeat_ts || S.lastHb;
   S.hbSec = sess.heartbeat_sec || S.hbSec;
@@ -1451,7 +1890,7 @@ function renderSession(sess){
   const usRegs = [];
   usRegs.push(`<span class="rg ${sess.us_cash_rth_open?'on':''}">US cash ${escapeHtml(sess.us_cash_status||'')}</span>`);
   usRegs.push(`<span class="rg ${sess.weekend?'on':''}">Weekend gap risk</span>`);
-  usRegs.push(`<span class="rg ${!S.sleeve?'on':''}">Sleeve ${S.sleeve?'live':'dark'}</span>`);
+  usRegs.push(`<span class="rg ${!S.sleeve?'on':''}">Sleeve ${!S.sleeve?'dark':(S.hooksEnabled?'live':'keys·stub')}</span>`);
   $('usReg').innerHTML = usRegs.join('');
   const crRegs = [];
   crRegs.push('<span class="rg on">24/7 tape</span>');
@@ -1480,14 +1919,14 @@ async function refreshBooks(){
   if(aapl && aapl.available){
     const el = $('hsAapl');
     const prev = S.lastMark[aapl.symbol];
-    el.textContent = fmtPx(aapl.mark);
+    el.innerHTML = fmtPx(aapl.mark) + ' <span class="hs-ch ' + pctClass(aapl.change24h_pct) + '">' + fmtPct(aapl.change24h_pct) + '</span>';
     $('hsAaplL').textContent = shortSym(aapl.symbol);
     if(prev!=null && prev!==aapl.mark) flash(el);
   }
   if(btc && btc.available){
     const el = $('hsBtc');
     const prev = S.lastMark[btc.symbol];
-    el.textContent = fmtPx(btc.mark);
+    el.innerHTML = fmtPx(btc.mark) + ' <span class="hs-ch ' + pctClass(btc.change24h_pct) + '">' + fmtPct(btc.change24h_pct) + '</span>';
     $('hsBtcL').textContent = shortSym(btc.symbol);
     if(prev!=null && prev!==btc.mark) flash(el);
   }
@@ -1497,10 +1936,12 @@ async function refreshBooks(){
     if(px && prev!=null && prev!==nowMarks[sym]) flash(px);
     S.lastMark[sym] = nowMarks[sym];
   });
+  S.marksLive = (S.booksUs.some(r=>r.available && r.mark!=null) || S.booksCr.some(r=>r.available && r.mark!=null));
   renderHunt();
   updateCoreChart();
   updateCorr();
   if(typeof renderBrain === 'function') renderBrain();
+  renderWalletStrip();
 }
 
 async function refreshAll(){
@@ -1518,34 +1959,86 @@ async function refreshAll(){
   if(risk && risk.agent_mode) state.agent_mode = state.agent_mode || risk.agent_mode;
   if(health.agent_mode) state.agent_mode = state.agent_mode || health.agent_mode;
   if(health.risk) state.risk = state.risk || health.risk;
+  const sleeveLbl = !health.sleeve_connected ? 'DISC' : (health.private_hooks_enabled ? 'LIVE' : 'KEYS·STUB');
   $('splashTrust').textContent =
     (health.ok ? 'Server OK · ' : 'Server issue · ') + (health.mode_pill || '') +
     ' · agent ' + ((state.agent_mode||health.agent_mode||'normal')+'').toUpperCase() +
-    ' · HB ' + (health.heartbeat_sec||300) + 's · sleeve ' + (health.sleeve_connected?'ON':'OFF');
+    ' · HB ' + (health.heartbeat_sec||300) + 's · sleeve ' + sleeveLbl +
+    ' · kill ' + (health.kill_armed ? 'ARMED' : 'OFF') +
+    ' · llm ' + (health.llm_available ? 'ON' : 'OFF');
   if(health.next_heartbeat_ts) S.nextHb = health.next_heartbeat_ts;
   if(health.heartbeat_sec) S.hbSec = health.heartbeat_sec;
+  if(health.llm_available != null) S.llmOn = !!health.llm_available;
+  if(typeof health.agent_enabled !== "undefined") S.agentEnabled = !!health.agent_enabled;
+  if(health.sleeve_connected != null) S.sleeve = !!health.sleeve_connected;
+  if(health.private_hooks_enabled != null) S.hooksEnabled = !!health.private_hooks_enabled;
+  if(health.kill_armed != null) S.killArmed = !!health.kill_armed;
+  else S.killArmed = !!(S.sleeve && S.hooksEnabled);
+  if(health.capabilities) S.capabilities = health.capabilities;
+  if(state && state.private_hooks_enabled == null) state.private_hooks_enabled = S.hooksEnabled;
+  if(state && state.kill_armed == null) state.kill_armed = S.killArmed;
+  if(state && !state.capabilities && S.capabilities) state.capabilities = S.capabilities;
   renderBlotter(blotter);
+  if(state && state.last_context) S.lastContext = state.last_context;
   renderState(state);
   renderSession(sess);
   renderCinema(cinema);
   renderEquity(equity);
+  if(S.risk) renderRisk(S.risk, S.sleeve);
+  renderWalletStrip();
   requestAnimationFrame(refreshScrollAffordances);
+}
+
+function updateAgentBeacon(){
+  const el = $('agentBeacon');
+  const stEl = $('abStatus');
+  if(!el || !stEl) return;
+  el.classList.remove('on','off','ticking','err');
+  const run = String(S.agentRunStatus || 'IDLE').toUpperCase();
+  if(S.agentEnabled === false){
+    el.classList.add('off');
+    stEl.textContent = 'AGENT OFF';
+  } else if(run === 'ERROR'){
+    el.classList.add('err');
+    stEl.textContent = 'ERROR';
+  } else if(run === 'TICKING'){
+    el.classList.add('ticking');
+    stEl.textContent = 'TICKING';
+  } else if(S.llmOn){
+    el.classList.add('on');
+    stEl.textContent = 'ON · HUNTING';
+  } else {
+    el.classList.add('off');
+    stEl.textContent = 'STANDBY · POLICY';
+  }
 }
 
 function tickClock(){
   const now = new Date();
-  $('clock').textContent = now.toLocaleTimeString('en-GB',{hour12:false, timeZone:'Europe/London'});
-  $('clockz').textContent = now.toLocaleDateString('en-GB',{weekday:'short', timeZone:'Europe/London'}) + ' · London';
-  const box = $('hsHbBox');
-  if(S.nextHb){
+  const clk = $('clock'); if(clk) clk.textContent = now.toLocaleTimeString('en-GB',{hour12:false, timeZone:'Europe/London'});
+  const clkz = $('clockz'); if(clkz) clkz.textContent = now.toLocaleDateString('en-GB',{weekday:'short', timeZone:'Europe/London'}) + ' · London';
+  const abCount = $('abCount');
+  const beacon = $('agentBeacon');
+  if(S.agentEnabled === false){
+    if(abCount) abCount.textContent = '—';
+    if(beacon) beacon.classList.remove('urgent');
+  } else if(S.nextHb){
     const rem = Math.max(0, Math.floor(S.nextHb - Date.now()/1000));
-    const m = Math.floor(rem/60), s = rem%60;
-    $('hsHb').textContent = m + ':' + String(s).padStart(2,'0');
-    box.classList.toggle('urgent', rem <= 15);
+    // Guard absurd parked schedules
+    if(rem > (S.hbSec || 300) * 3){
+      if(abCount) abCount.textContent = '—';
+      if(beacon) beacon.classList.remove('urgent');
+    } else {
+      const m = Math.floor(rem/60), s = rem%60;
+      const mmss = m + ':' + String(s).padStart(2,'0');
+      if(abCount) abCount.textContent = mmss;
+      if(beacon) beacon.classList.toggle('urgent', rem <= 15);
+    }
   } else {
-    $('hsHb').textContent = '—';
-    box.classList.remove('urgent');
+    if(abCount) abCount.textContent = '—';
+    if(beacon) beacon.classList.remove('urgent');
   }
+  updateAgentBeacon();
 }
 
 function enterFloor(){
@@ -1571,8 +2064,9 @@ async function doTick(){
 }
 
 async function doKill(){
-  if(!S.sleeve){ toast('Kill disabled — sleeve disconnected', true); return; }
-  if(!confirm('Confirm KILL? This requires a connected sleeve.')) return;
+  const gate = killGateLabel();
+  if(!gate.armed){ toast(gate.title, true); return; }
+  if(!confirm('Confirm KILL? Flatten requires sleeve + live private hooks.')) return;
   const j = await api('/api/kill', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({confirm:true}) });
   toast(j.error || (j.ok ? 'Kill executed' : 'Kill rejected'), !j.ok);
   await refreshAll();
@@ -1662,7 +2156,7 @@ async function openFocusRoom(sym){
       <div class="ov-stat"><div class="l">Ask</div><div class="v">${fmtPx(row.ask)}</div></div>
       <div class="ov-stat"><div class="l">24h</div><div class="v ${pctClass(row.change24h_pct)}">${fmtPct(row.change24h_pct)}</div></div>
       <div class="ov-stat"><div class="l">Range 24h</div><div class="v">${fmtPx(row.low24h)} – ${fmtPx(row.high24h)}</div></div>
-      <div class="ov-stat"><div class="l">Funding</div><div class="v">${row.funding_rate==null?'—':(Number(row.funding_rate)*100).toFixed(4)+'%'}</div></div>
+      <div class="ov-stat"><div class="l">Funding</div><div class="v ${row.funding_rate==null?'na':pctClass(Number(row.funding_rate)*100)}">${row.funding_rate==null?'—':((Number(row.funding_rate)>=0?'+':'')+(Number(row.funding_rate)*100).toFixed(4)+'%')}</div></div>
       <div class="ov-stat"><div class="l">Exch max lev</div><div class="v">${row.exchange_max_lev!=null?('≤'+row.exchange_max_lev+'×'):'—'}</div></div>
       <div class="ov-stat"><div class="l">Live buffer</div><div class="v">${hist.length} samples</div></div>
     </div>`;
@@ -1777,7 +2271,7 @@ async function openDecisionCourt(tickId){
     </div>
     <div class="dr-sec"><h3>Thesis</h3><div>${escapeHtml(t.thesis||'—')}</div></div>
     <div class="dr-sec"><h3>Market snapshot</h3>
-      Mag7 ${escapeHtml(fmtPct(t.mag7_24h_pct))} · BTC ${escapeHtml(fmtPct(t.btc_24h_pct))} · Div ${escapeHtml(fmtPct(t.divergence_pct))}
+      Mag7 <span class="${pctClass(t.mag7_24h_pct)}">${escapeHtml(fmtPct(t.mag7_24h_pct))}</span> · BTC <span class="${pctClass(t.btc_24h_pct)}">${escapeHtml(fmtPct(t.btc_24h_pct))}</span> · Div <span class="${pctClass(t.divergence_pct)}">${escapeHtml(fmtPct(t.divergence_pct))}</span>
       · threshold ±${t.threshold_pct==null?'—':t.threshold_pct}%
       ${snap.us_cash_status?(' · US cash '+escapeHtml(snap.us_cash_status)) : ''}
     </div>
@@ -1805,11 +2299,18 @@ async function openEquityTheatre(){
   $('ovEqClose').onclick = closeOverlay;
   const j = await api('/api/equity');
   S.ov.equityPayload = j;
-  if(!j.connected || !(j.series||[]).length){
+  const hooks = j.hooks_enabled != null ? !!j.hooks_enabled : !!S.hooksEnabled;
+  const stub = j.stub != null ? !!j.stub : (j.connected && !hooks);
+  if(!j.connected || stub || !(j.series||[]).length){
+    const title = !j.connected ? 'SLEEVE DISCONNECTED' : (stub || !hooks ? 'KEYS · HOOK STUB' : 'NO SNAPSHOTS');
     $('ovBody').innerHTML = voidArt(
-      'SLEEVE DISCONNECTED',
-      escapeHtml(j.message || 'Sleeve disconnected — equity theatre arms when sleeve connects')
-    ) + `<div class="ov-note" style="text-align:center">Zero fabricated equity · /api/equity series empty by design until BITGET_* keys + snapshots</div>`;
+      title,
+      escapeHtml(j.message || ( !j.connected
+        ? 'Sleeve disconnected — equity theatre arms when sleeve connects'
+        : (stub || !hooks
+          ? 'Equity hook stub — no snapshots (not simulated)'
+          : 'Waiting for equity snapshots')))
+    ) + `<div class="ov-note" style="text-align:center">Zero fabricated equity · /api/equity empty until BITGET_* keys + live hooks + snapshots</div>`;
     return;
   }
   const series = j.series || [];
@@ -1880,17 +2381,25 @@ async function openBlotterDesk(){
 
 function paintBlotterDesk(j){
   const disc = j.disconnected || !j.sleeve_connected;
-  const pos = disc ? [] : (j.positions||[]);
-  const orders = disc ? [] : (j.orders||[]);
+  const hooks = j.hooks_enabled != null ? !!j.hooks_enabled : !!S.hooksEnabled;
+  const stub = j.stub != null ? !!j.stub : (!disc && !hooks);
+  const emptyBook = disc || stub || !hooks;
+  const pos = emptyBook ? [] : (j.positions||[]);
+  const orders = emptyBook ? [] : (j.orders||[]);
   const fills = j.fills||[];
   const tab = S.ov.blotterTab || 'positions';
   const rows = tab==='positions' ? pos : tab==='orders' ? orders : fills;
+  const emptyMsg = disc ? 'Sleeve disconnected — not simulated'
+    : (stub || !hooks) ? 'Keys·stub — private hooks not live'
+    : 'none';
+  const sleeveLbl = disc ? 'DISCONNECTED' : (stub || !hooks ? 'KEYS·STUB' : 'LIVE');
+  const sleeveColor = disc ? 'var(--red)' : (stub || !hooks ? 'var(--gold)' : 'var(--green)');
   const list = rows.length
     ? rows.slice().reverse().map(p => `<div class="blot-line">${escapeHtml(typeof p==='string'?p:JSON.stringify(p))}</div>`).join('')
-    : `<div class="blot-line">${disc && tab!=='fills' ? 'Sleeve disconnected — not simulated' : 'none'}</div>`;
+    : `<div class="blot-line">${tab!=='fills' ? emptyMsg : 'none'}</div>`;
   $('ovBody').innerHTML = `
     <div class="ov-grid">
-      <div class="ov-stat"><div class="l">Sleeve</div><div class="v" style="color:${disc?'var(--red)':'var(--green)'}">${disc?'OFF':'ON'}</div></div>
+      <div class="ov-stat"><div class="l">Sleeve</div><div class="v" style="color:${sleeveColor}">${sleeveLbl}</div></div>
       <div class="ov-stat"><div class="l">Positions</div><div class="v">${pos.length}</div></div>
       <div class="ov-stat"><div class="l">Orders</div><div class="v">${orders.length}</div></div>
       <div class="ov-stat"><div class="l">Fills</div><div class="v">${fills.length}</div></div>
@@ -1907,22 +2416,119 @@ function paintBlotterDesk(j){
   });
 }
 
+
+/* ===== Agent Research Bay ===== */
+function researchBayBody(){
+  const on = S.agentEnabled !== false;
+  const llm = !!S.llmOn;
+  const usN = (S.booksUs||[]).filter(r=>r.available).length;
+  const crN = (S.booksCr||[]).filter(r=>r.available).length;
+  const ctx = S.lastContext || {};
+  const sent = ctx.sentiment || 'unknown';
+  const geo = (ctx.geopolitics && ctx.geopolitics.level) || 'unknown';
+  const newsN = Array.isArray(ctx.news) ? ctx.news.length : 0;
+  const macro = ctx.macro ? String(ctx.macro) : 'unknown';
+  const tape = ctx.us_tape ? String(ctx.us_tape) : 'unknown';
+  const sources = Array.isArray(ctx.sources) ? ctx.sources.join(', ') : 'marks · session';
+  const rem = (S.agentEnabled !== false && S.nextHb)
+    ? Math.max(0, Math.floor(S.nextHb - Date.now()/1000)) : null;
+  const countdown = (rem==null || rem > (S.hbSec||300)*3) ? '—' : (Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0'));
+  const eng = ($('hsEng') && $('hsEng').textContent) || '—';
+  const lines = [];
+  lines.push(`<div class="bay-line ${on?'on':'off'}"><b>LOOP</b> · ${on?'armed · hunting Dual Book':'AGENT OFF · idle'}</div>`);
+  lines.push(`<div class="bay-line ${llm?'on':'warn'}"><b>BRAIN</b> · ${llm?'DeepSeek via OpenRouter ready':'no LLM key · policy fallback'}</div>`);
+  lines.push(`<div class="bay-line"><b>MARKS</b> · Bitget public USDT-M · ${usN} US + ${crN} crypto</div>`);
+  lines.push(`<div class="bay-line"><b>SESSION</b> · ${escapeHtml(tape.length>80?tape.slice(0,77)+'…':tape)}</div>`);
+  lines.push(`<div class="bay-line"><b>SENTIMENT</b> · <span class="${sent==='risk_on'?'up':(sent==='risk_off'?'dn':'flat')}">${escapeHtml(sent)}</span> · from breadth + funding</div>`);
+  lines.push(`<div class="bay-line ${newsN?'on':'warn'}"><b>NEWS</b> · ${newsN?newsN+' headlines': 'none wired · Rule 2 stays cautious'}</div>`);
+  lines.push(`<div class="bay-line ${geo==='unknown'?'warn':'on'}"><b>GEOPOLITICS</b> · ${escapeHtml(geo)} · never invented</div>`);
+  lines.push(`<div class="bay-line"><b>RULES</b> · R1→R13 checklist every tick · next pulse ${countdown}</div>`);
+  const macroShort = macro.length>110 ? macro.slice(0,107)+'…' : macro;
+  const caption = on
+    ? `<strong>What it’s doing:</strong> Crossfire’s agent is scanning live Bitget marks across US stock contracts and crypto perps, reading session + perception context (${escapeHtml(sources)}), then walking the mandatory rules before any action. Macro note: ${escapeHtml(macroShort)}`
+    : `<strong>What it’s doing:</strong> Agent loop is off — dashboard still shows live marks, but no heartbeat / LLM spend until you arm it.`;
+
+  return `
+  <div class="bay-grid">
+    <div class="bay-card">
+      <h5>Operator · laptop</h5>
+      <div class="bay-desk">
+        <div class="bay-glow"></div>
+        <svg class="bay-bot" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <rect x="8" y="12" width="24" height="20" rx="6" fill="#0a0e16" stroke="#e8b84a" stroke-width="1.4"/>
+          <rect x="11" y="8" width="18" height="6" rx="2" fill="#0a0e16" stroke="#3ee8f0" stroke-width="1.1"/>
+          <circle cx="14" cy="6" r="1.4" fill="#3ee8f0"/>
+          <ellipse cx="16" cy="21" rx="4.2" ry="5" fill="#e8edf4" opacity=".92"/>
+          <ellipse cx="24" cy="21" rx="4.2" ry="5" fill="#c8f7fa" opacity=".95"/>
+          <circle class="ab-pupil" cx="16.5" cy="21.5" r="1.7" fill="#03050a"/>
+          <circle class="ab-pupil" cx="24.5" cy="21.5" r="1.7" fill="#03050a"/>
+          <path d="M15 29h10" stroke="#3ee8f0" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        </svg>
+        <div class="bay-laptop" aria-hidden="true">
+          <div class="bay-screen"><div class="bay-scan"></div><div class="bay-code">scan books.us
+scan books.crypto
+R2 context pack
+funding · OI · breadth
+JSON decision…</div></div>
+          <div class="bay-base"></div>
+        </div>
+      </div>
+      <div class="bay-status">Engine <span class="${eng==='llm'?'live':'idle'}">${escapeHtml(eng)}</span> · mode ${escapeHtml(String(S.agentMode||'normal').toUpperCase())}</div>
+    </div>
+    <div class="bay-card">
+      <h5>World intake · infographic</h5>
+      <div class="bay-world">
+        <div class="bay-ring"><span class="bay-node"></span></div>
+        <div class="bay-ring r2"><span class="bay-node g"></span><span class="bay-node r"></span></div>
+        <div class="bay-arc"></div>
+        <div class="bay-globe" title="Stylized globe — animation only; data is Bitget + session + perception pack"></div>
+      </div>
+      <div class="bay-status">Pulling cross-asset tape · US ↔ crypto bridge</div>
+    </div>
+    <div class="bay-card">
+      <h5>Live gather log</h5>
+      <div class="bay-feed">${lines.join('')}</div>
+    </div>
+    <div class="bay-caption">${caption}</div>
+  </div>
+  <div class="ov-note" style="margin-top:10px">Cinematic chrome · status lines are real Crossfire state (marks, LLM, Rule-2 context). News/geopolitics stay unknown until a feed is wired — we don’t invent headlines.</div>`;
+}
+
+function openResearchBay(){
+  closeHbPop();
+  const on = S.agentEnabled !== false;
+  openOverlay(
+    'bay',
+    'Agent <span class="c">Research Bay</span>',
+    on ? 'Hunting · Dual Book + world context · 5m heartbeat' : 'Idle · agent loop off',
+    researchBayBody(),
+    `<button type="button" class="btn tick" id="bayForce">Force tick</button>
+     <button type="button" class="btn" id="bayHb">Heartbeat</button>
+     <button type="button" class="btn" id="bayClose">Close</button>`,
+    'bay'
+  );
+  const f = $('bayForce'); if(f) f.onclick = () => { closeOverlay(); doTick(); };
+  const h = $('bayHb'); if(h) h.onclick = () => { closeOverlay(); openHbPop(); };
+  const c = $('bayClose'); if(c) c.onclick = closeOverlay;
+}
+
+
 /* Heartbeat pop */
 function closeHbPop(){ const p=$('hbPop'); if(p) p.classList.remove('open'); }
 function openHbPop(){
-  const box = $('hsHbBox');
+  const box = $('agentBeacon') || $('hsHbBox');
   const pop = $('hbPop');
   if(!box || !pop) return;
   const r = box.getBoundingClientRect();
   pop.style.top = (r.bottom + 8) + 'px';
   pop.style.left = Math.min(r.left, window.innerWidth - 240) + 'px';
-  $('hbLast').textContent = S.lastHb
+  const hl = $('hbLast'); if(hl) hl.textContent = S.lastHb
     ? new Date(S.lastHb*1000).toLocaleTimeString('en-GB',{hour12:false,timeZone:'Europe/London'}) + ' PT'
     : '—';
-  $('hbNext').textContent = S.nextHb
+  const hn = $('hbNext'); if(hn) hn.textContent = S.nextHb
     ? new Date(S.nextHb*1000).toLocaleTimeString('en-GB',{hour12:false,timeZone:'Europe/London'}) + ' PT'
     : '—';
-  $('hbInt').textContent = (S.hbSec||300) + 's';
+  const hi = $('hbInt'); if(hi) hi.textContent = (S.hbSec||300) + 's';
   pop.classList.add('open');
 }
 
@@ -1947,7 +2553,7 @@ function renderRegime(){
   }
   el.innerHTML = `
     <div class="regime-pill ${cls}">${label}</div>
-    <div class="regime-meta">Mag7 ${fmtPct(mag)} · BTC ${fmtPct(btc)} · ETH ${fmtPct(eth)}
+    <div class="regime-meta">Mag7 <span class="${pctClass(mag)}">${fmtPct(mag)}</span> · BTC <span class="${pctClass(btc)}">${fmtPct(btc)}</span> · ETH <span class="${pctClass(eth)}">${fmtPct(eth)}</span>
     <br>ON: Mag7&gt;+0.4% &amp; crypto&gt;+0.2% · OFF: Mag7&lt;-0.4% &amp; crypto&lt;-0.2% · else MIXED</div>`;
 }
 
@@ -2051,8 +2657,10 @@ function renderSignals(){
   el.innerHTML = rows.slice(0,4).map(x => `
     <div class="sig-row" data-sym="${escapeHtml(x.sym)}">
       <span class="sym ${x.side==='us'?'g':'c'}">${escapeHtml(shortSym(x.sym))}</span>
-      <span style="color:var(--fg2)">RSI ${x.rsi==null?'—':x.rsi.toFixed(0)} · ROC ${fmtPct(x.roc)} · σ ${x.vol==null?'—':x.vol.toFixed(2)}</span>
-    </div>`).join('') + `<div class="ov-note">computed · local buffer · not AI prophecy</div>`;
+      <span class="sig-metric">RSI <span class="rsi ${rsiClass(x.rsi)}">${x.rsi==null?'—':x.rsi.toFixed(0)}</span>
+      · ROC <span class="roc ${pctClass(x.roc)}">${fmtPct(x.roc)}</span>
+      · σ <span class="flat">${x.vol==null?'—':x.vol.toFixed(2)}</span></span>
+    </div>`).join('') + `<div class="ov-note">computed · local buffer · green↑ / red↓ · not AI prophecy</div>`;
   el.querySelectorAll('.sig-row').forEach(r => r.onclick = () => openFocusRoom(r.getAttribute('data-sym')));
 }
 
@@ -2107,15 +2715,22 @@ function wirePack(){
 
   $('ovBackdrop').addEventListener('click', closeOverlay);
   $('ovClose').addEventListener('click', closeOverlay);
-  $('hbClose').addEventListener('click', closeHbPop);
-  $('hbForce').addEventListener('click', () => { closeHbPop(); doTick(); });
-  $('hsHbBox').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if($('hbPop').classList.contains('open')) closeHbPop(); else openHbPop();
-  });
+  const hbClose = $('hbClose'); if(hbClose) hbClose.addEventListener('click', closeHbPop);
+  const hbForce = $('hbForce'); if(hbForce) hbForce.addEventListener('click', () => { closeHbPop(); doTick(); });
+  const beaconClick = $('agentBeacon');
+  if(beaconClick){
+    beaconClick.addEventListener('click', (e) => {
+      if(e.target.closest('.info-btn')) return;
+      e.stopPropagation();
+      closeHbPop();
+      openResearchBay();
+    });
+    beaconClick.title = 'Open Agent Research Bay';
+  }
   document.addEventListener('click', (e) => {
     const pop = $('hbPop');
-    if(pop && pop.classList.contains('open') && !pop.contains(e.target) && !$('hsHbBox').contains(e.target)) closeHbPop();
+    const be = $('agentBeacon');
+    if(pop && pop.classList.contains('open') && !pop.contains(e.target) && !(be && be.contains(e.target))) closeHbPop();
   });
 
   // Book row → Focus Room
@@ -2138,27 +2753,33 @@ function wirePack(){
     openFocusRoom(sym);
   });
 
-  // Expand controls
-  const blotPh = document.querySelector('#blotter')?.closest('.panel')?.querySelector('.ph');
-  if(blotPh && !blotPh.querySelector('#blotExpand')){
-    const b = document.createElement('button');
-    b.type='button'; b.className='expand-btn'; b.id='blotExpand'; b.textContent='Expand desk';
-    blotPh.appendChild(b);
-    b.onclick = openBlotterDesk;
+  // Expand controls (static HTML near panel headers)
+  const blotExpand = $('blotExpand');
+  if(blotExpand) blotExpand.onclick = openBlotterDesk;
+  const eqExpand = $('eqExpand');
+  if(eqExpand) eqExpand.onclick = openEquityTheatre;
+  const eqToggle = $('eqToggle');
+  if(eqToggle){
+    applyEqVisibility();
+    eqToggle.onclick = (e) => {
+      e.stopPropagation();
+      S.eqOn = !S.eqOn;
+      localStorage.setItem('cf_eq_on', S.eqOn ? '1' : '0');
+      applyEqVisibility();
+      // re-apply empty/chart honesty without inventing data
+      refreshAll();
+    };
   }
-  const eqPh = document.querySelector('#eqChart')?.closest('.panel')?.querySelector('.ph');
-  if(eqPh && !eqPh.querySelector('#eqExpand')){
-    const b = document.createElement('button');
-    b.type='button'; b.className='expand-btn'; b.id='eqExpand'; b.textContent='Expand equity';
-    eqPh.appendChild(b);
-    b.onclick = openEquityTheatre;
-  }
-  // Also click equity chart area
-  const eqWrap = $('eqChart')?.parentElement;
+  // Also click equity chart area (not when hidden / toggle)
+  const eqWrap = $('eqChartWrap') || $('eqChart')?.parentElement;
   if(eqWrap){
     eqWrap.style.cursor = 'pointer';
     eqWrap.title = 'Expand equity theatre';
-    eqWrap.addEventListener('click', openEquityTheatre);
+    eqWrap.addEventListener('click', (e) => {
+      if(e.target && e.target.closest && e.target.closest('#eqToggle')) return;
+      if(!S.eqOn) return;
+      openEquityTheatre();
+    });
   }
 
   const heatExpand = $('heatExpand');
@@ -2208,7 +2829,7 @@ function ensureScrollWraps(){
   wrapScrollRegion($('crBook'));
   wrapScrollRegion($('cinema'));
   wrapScrollRegion($('blotter'));
-  wrapScrollRegion($('riskGrid'));
+  // riskGrid (.cage-body) already scrolls — avoid nested tiny scroll-region
   // overlays / thesis
   const th = $('thesisBox');
   if(th && th.dataset.scrollWrapped !== '1'){

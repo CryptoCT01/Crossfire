@@ -23,3 +23,12 @@ logs/
 __pycache__/
 .venv/
 _design_ref/
+prompts/
+
+# local verify screenshots
+crossfire-*-verify.png
+crossfire-*-strip.png
+crossfire-*-colors.png
+crossfire-*-cage.png
+crossfire-full-verify.png
+*.bak
