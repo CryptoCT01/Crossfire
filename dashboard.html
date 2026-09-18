@@ -2032,7 +2032,7 @@ function renderBlotter(j){
     <div class="blot-k">
       <div class="blot-stat"><div class="l">Positions</div><div class="v">${pos.length}</div></div>
       <div class="blot-stat"><div class="l">Orders</div><div class="v">${orders.length}</div></div>
-      <div class="blot-stat"><div class="l">Fills</div><div class="v">${fills.length}</div></div>
+      <div class="blot-stat"><div class="l">Fills</div><div class="v">${(j.fills_total!=null?j.fills_total:fills.length)}</div></div>
       <div class="blot-stat"><div class="l">Sleeve</div><div class="v" style="color:var(--green)">${j.paper?'PAPER':'LIVE'}</div></div>
     </div>
     ${block('Positions', pos, 'positions')}${block('Orders', orders, 'orders')}${block('Fills', fills, 'fills')}
@@ -2784,7 +2784,7 @@ async function openEquityTheatre(){
   $('ovEqClose').onclick = closeOverlay;
   const [j, fillsJ] = await Promise.all([
     api('/api/equity', {timeoutMs: 8000}),
-    api('/api/fills?n=500', {timeoutMs: 8000})
+    api('/api/fills?n=2000', {timeoutMs: 8000})
   ]);
   S.ov.equityPayload = j;
   if(j._offline){
@@ -2832,6 +2832,7 @@ async function openEquityTheatre(){
   const fills = (fillsJ && !fillsJ._offline && Array.isArray(fillsJ.fills)) ? fillsJ.fills
     : (fillsJ && Array.isArray(fillsJ.fills) ? fillsJ.fills : []);
   const sc = paperScoreFromSeries(eqPts, ddPts, fills, paper);
+  if(fillsJ && fillsJ.total != null) sc.nFills = fillsJ.total;
   $('ovBody').innerHTML = `
     <div class="ov-grid">
       <div class="ov-stat"><div class="l">Points</div><div class="v">${eqPts.length}</div></div>
@@ -2866,9 +2867,14 @@ async function openBlotterDesk(){
      <button type="button" class="btn" id="ovBlotClose">Close</button>`,
     'desk');
   $('ovBlotClose').onclick = closeOverlay;
-  const [blot, fillsApi] = await Promise.all([api('/api/blotter'), api('/api/fills?n=200')]);
-  // Prefer dedicated fills endpoint if blotter fills empty
-  if((!blot.fills || !blot.fills.length) && fillsApi.fills) blot.fills = fillsApi.fills;
+  const [blot, fillsApi] = await Promise.all([api('/api/blotter'), api('/api/fills?n=2000')]);
+  // Always prefer dedicated fills endpoint (blotter was hard-capped at 100)
+  if(fillsApi && Array.isArray(fillsApi.fills) && fillsApi.fills.length){
+    blot.fills = fillsApi.fills;
+    blot.fills_total = fillsApi.total != null ? fillsApi.total : fillsApi.fills.length;
+  } else if(blot.fills_total == null && Array.isArray(blot.fills)){
+    blot.fills_total = blot.fills.length;
+  }
   S.ov.blotterPayload = blot;
   S.ov.blotterTab = 'fills';
   $('ovExport').onclick = () => {
@@ -2913,14 +2919,14 @@ function paintBlotterDesk(j){
       <div class="ov-stat"><div class="l">Sleeve</div><div class="v" style="color:${sleeveColor}">${sleeveLbl}</div></div>
       <div class="ov-stat"><div class="l">Positions</div><div class="v">${pos.length}</div></div>
       <div class="ov-stat"><div class="l">Orders</div><div class="v">${orders.length}</div></div>
-      <div class="ov-stat"><div class="l">Fills</div><div class="v">${fills.length}</div></div>
+      <div class="ov-stat"><div class="l">Fills</div><div class="v">${(j.fills_total!=null?j.fills_total:fills.length)}</div></div>
     </div>
     <div class="ov-tabs">
       <button type="button" class="ov-tab ${tab==='positions'?'on':''}" data-tab="positions">Positions</button>
       <button type="button" class="ov-tab ${tab==='orders'?'on':''}" data-tab="orders">Orders</button>
       <button type="button" class="ov-tab cyan ${tab==='fills'?'on':''}" data-tab="fills">Journal</button>
     </div>
-    <div class="dr-sec"><h3>${escapeHtml(tab==='fills'?'Journal':tab)} (${rows.length})</h3>${list}</div>
+    <div class="dr-sec"><h3>${escapeHtml(tab==='fills'?'Journal':tab)} (${tab==='fills' && j.fills_total!=null ? j.fills_total : rows.length})</h3>${list}</div>
     <div class="ov-note">${escapeHtml(j.message||'')} · Export downloads the live payload only</div>`;
   $('ovBody').querySelectorAll('.ov-tab').forEach(btn => {
     btn.onclick = () => { S.ov.blotterTab = btn.getAttribute('data-tab'); paintBlotterDesk(j); };

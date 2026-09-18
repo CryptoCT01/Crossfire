@@ -30,6 +30,19 @@ def append_jsonl(name: str, record: dict[str, Any]) -> None:
             f.write(line + "\n")
 
 
+def count_jsonl(name: str) -> int:
+    """Total non-empty lines in a JSONL log (full history length)."""
+    path = _path(name)
+    if not path.exists():
+        return 0
+    n = 0
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                n += 1
+    return n
+
+
 def read_jsonl_tail(name: str, n: int = 50) -> list[dict[str, Any]]:
     path = _path(name)
     if not path.is_file():

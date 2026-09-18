@@ -156,7 +156,8 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/blotter":
                 pos = bitget_private.positions()
                 orders = bitget_private.open_orders()
-                fills = store.read_jsonl_tail("fills.jsonl", 100)
+                fills_total = store.count_jsonl("fills.jsonl")
+                fills = store.read_jsonl_tail("fills.jsonl", 2000)
                 paper = config.paper_mode()
                 sleeve = True if paper else config.sleeve_connected()
                 hooks = True if paper else bitget_private.hooks_enabled()
@@ -172,6 +173,8 @@ class Handler(BaseHTTPRequestHandler):
                         "positions": pos.get("positions") or [],
                         "orders": orders.get("orders") or [],
                         "fills": fills,
+                        "fills_total": fills_total,
+                        "fills_returned": len(fills),
                         "message": pos.get("message"),
                         "disconnected": not sleeve,
                     },
@@ -337,9 +340,10 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/fills":
                 qs = parse_qs(urlparse(self.path).query)
                 try:
-                    n = max(1, min(500, int((qs.get("n") or ["100"])[0])))
+                    n = max(1, min(5000, int((qs.get("n") or ["2000"])[0])))
                 except ValueError:
-                    n = 100
+                    n = 2000
+                fills_total = store.count_jsonl("fills.jsonl")
                 fills = store.read_jsonl_tail("fills.jsonl", n)
                 _json(
                     self,
@@ -347,6 +351,7 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         "ok": True,
                         "count": len(fills),
+                        "total": fills_total,
                         "fills": fills,
                         "sleeve_connected": config.sleeve_connected(),
                         "message": None
