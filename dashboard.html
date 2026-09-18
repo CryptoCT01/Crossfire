@@ -139,10 +139,35 @@ body::after{
 .hero-stats{margin-left:0;display:flex;align-items:stretch;gap:6px}
 .agent-beacon{
   flex:0 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:center;
-  gap:8px;padding:4px 10px;border-radius:8px;height:42px;box-sizing:border-box;
+  gap:10px;padding:4px 12px;border-radius:8px;height:42px;min-width:188px;box-sizing:border-box;
   background:linear-gradient(180deg,rgba(12,16,26,.94),rgba(6,8,14,.96));
   border:1px solid rgba(232,184,74,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 12px rgba(62,232,240,.05);
-  position:relative;overflow:visible
+  position:relative;overflow:visible;cursor:pointer
+}
+.ab-expand{
+  flex:0 0 auto;z-index:2;height:22px;padding:0 9px;border-radius:6px;
+  font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid rgba(62,232,240,.4);background:rgba(62,232,240,.1);color:var(--cyan);
+  cursor:pointer;white-space:nowrap;line-height:1
+}
+.ab-expand:hover{background:rgba(62,232,240,.18);box-shadow:0 0 10px rgba(62,232,240,.2)}
+.hs.engine{min-width:92px;border-color:rgba(62,232,240,.28);background:linear-gradient(180deg,rgba(62,232,240,.1),rgba(8,12,20,.82))}
+.hs.engine .hs-l{color:var(--cyan)}
+.hs.engine .hs-v{display:flex;color:var(--cyan);font-size:12px;gap:6px;align-items:center}
+.hs.engine .eng-name{letter-spacing:.08em}
+.hs.engine .eng-state{
+  font-size:8px;letter-spacing:.1em;padding:2px 5px;border-radius:4px;
+  border:1px solid rgba(61,255,156,.35);background:rgba(61,255,156,.1);color:var(--green)
+}
+.hs.engine.off{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.03)}
+.hs.engine.off .hs-l,.hs.engine.off .hs-v{color:var(--fg3)}
+.hs.engine.off .eng-state{
+  border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:var(--fg3)
+}
+.hs.engine.standby{border-color:rgba(240,160,48,.3);background:linear-gradient(180deg,rgba(240,160,48,.08),rgba(8,12,20,.82))}
+.hs.engine.standby .hs-l,.hs.engine.standby .hs-v{color:var(--amber)}
+.hs.engine.standby .eng-state{
+  border-color:rgba(240,160,48,.35);background:rgba(240,160,48,.1);color:var(--amber)
 }
 .agent-beacon::before{
   content:'';position:absolute;inset:-8px;border-radius:12px;
@@ -187,7 +212,7 @@ body::after{
   50%{transform:translateX(0)}
   75%{transform:translateX(1.6px)}
 }
-.ab-meta{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;line-height:1.05;z-index:1;min-width:72px}
+.ab-meta{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;line-height:1.05;z-index:1;min-width:78px}
 .ab-status{
   font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.12em;
   text-transform:uppercase;color:var(--fg3);white-space:nowrap
@@ -908,13 +933,14 @@ body::after{
         <div class="ab-status" id="abStatus">ON · HUNTING</div>
         <div class="ab-count" id="abCount">—</div>
       </div>
+      <button type="button" class="ab-expand" id="abExpand" title="Open Agent Research Bay">Expand</button>
       <button type="button" class="info-btn" data-info="agent_beacon" aria-label="About agent beacon" style="width:16px;height:16px;font-size:8px;z-index:1">i</button>
     </div>
     <div class="top-right">
       <div class="hero-stats">
         <div class="hs gold"><div class="hs-l" id="hsAaplL">AAPL</div><div class="hs-v" id="hsAapl">—</div></div>
         <div class="hs cyan"><div class="hs-l" id="hsBtcL">BTC</div><div class="hs-v" id="hsBtc">—</div></div>
-        <div class="hs"><div class="hs-l">Engine</div><div class="hs-v" id="hsEng">—</div></div>
+        <div class="hs engine off" id="hsEngBox"><div class="hs-l">Engine</div><div class="hs-v" id="hsEng"><span class="eng-name">LLM</span><span class="eng-state" id="hsEngState">OFF</span></div></div>
       </div>
       <button class="btn tick" id="forceTick" type="button" title="Force a real agent tick">Force Tick</button>
       <button class="btn kill" id="killBtn" type="button" disabled title="Requires connected sleeve">Kill</button>
@@ -1216,7 +1242,7 @@ const INFO_COPY = {
     body: 'Share of available US and crypto symbols printing green on 24h%. A market-width dial from live Bitget change24h — observational only, never a fabricated breadth score.',
     real: 'Computed from live /api/books'
   },
-  agent_beacon: { title: 'Agent beacon', body: 'Click to open Research Bay — cinematic view of the agent scanning Dual Book marks and Rule-2 world context. Status lines are real; news/geo stay unknown until wired.', real: 'Beacon · /api/agent/state · perception context' },
+  agent_beacon: { title: 'Agent beacon', body: 'Use Expand (or click the beacon) to open Research Bay — cinematic view of the agent scanning Dual Book marks and Rule-2 world context. Status lines are real; news/geo stay unknown until wired.', real: 'Beacon · /api/agent/state · perception context' },
   session: {
     title: 'Session strip',
     body: 'US cash RTH / weekend context plus Bitget US-contract and crypto 24/7 reminders. Sleeve chip reflects keys/hooks honesty — not simulated portfolio state.',
@@ -1714,7 +1740,7 @@ function renderState(st){
   const chip = $('coreChip');
   chip.textContent = action;
   chip.className = 'chip ' + actionClass(action);
-  $('hsEng').textContent = st.engine || (d && d.engine) || 'policy';
+  updateEngineChip(st);
   S.nextHb = st.next_heartbeat_ts;
   S.lastHb = st.last_heartbeat_ts;
   S.hbSec = st.heartbeat_sec || S.hbSec;
@@ -2313,6 +2339,31 @@ async function refreshAll(){
   requestAnimationFrame(refreshScrollAffordances);
 }
 
+
+function updateEngineChip(st){
+  const box = $('hsEngBox');
+  const nameEl = document.querySelector('#hsEng .eng-name');
+  const stateEl = $('hsEngState');
+  const engRaw = String((st && (st.engine || (st.last_decision && st.last_decision.engine))) || (S.llmOn ? 'llm' : 'policy')).toLowerCase();
+  const isLlm = engRaw === 'llm' || !!S.llmOn;
+  if(nameEl) nameEl.textContent = isLlm ? 'LLM' : 'POLICY';
+  let mode = 'off', label = 'OFF';
+  if(S.agentEnabled === false){
+    mode = 'off'; label = 'OFF';
+  } else if(isLlm && S.llmOn){
+    mode = 'on'; label = 'ON';
+  } else if(isLlm && !S.llmOn){
+    mode = 'standby'; label = 'STANDBY';
+  } else {
+    mode = 'standby'; label = 'ON';
+  }
+  if(stateEl) stateEl.textContent = label;
+  if(box){
+    box.classList.remove('on','off','standby');
+    box.classList.add(mode === 'on' ? 'on' : (mode === 'standby' ? 'standby' : 'off'));
+  }
+}
+
 function updateAgentBeacon(){
   const el = $('agentBeacon');
   const stEl = $('abStatus');
@@ -2335,8 +2386,8 @@ function updateAgentBeacon(){
     el.classList.add('off');
     stEl.textContent = 'STANDBY · POLICY';
   }
+  updateEngineChip(null);
 }
-
 function tickClock(){
   const now = new Date();
   const clk = $('clock'); if(clk) clk.textContent = now.toLocaleTimeString('en-GB',{hour12:false, timeZone:'Europe/London'});
@@ -2894,7 +2945,9 @@ function researchBayBody(){
   const rem = (S.agentEnabled !== false && S.nextHb)
     ? Math.max(0, Math.floor(S.nextHb - Date.now()/1000)) : null;
   const countdown = (rem==null || rem > (S.hbSec||300)*3) ? '—' : (Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0'));
-  const eng = ($('hsEng') && $('hsEng').textContent) || '—';
+  const engName = (document.querySelector('#hsEng .eng-name') || {}).textContent || 'LLM';
+  const engState = ($('hsEngState') && $('hsEngState').textContent) || '';
+  const eng = (engState ? (engName + ' · ' + engState) : (engName || '—'));
   const cmcOk = !!(ctx.cmc && ctx.cmc.ok);
   const has = (needle) => srcList.some(s => s.toLowerCase().includes(needle));
   // Real fetch chips only — on/warn/off from live context, never invented feeds
@@ -3417,7 +3470,16 @@ function wirePack(){
       closeHbPop();
       openResearchBay();
     });
-    beaconClick.title = 'Open Agent Research Bay';
+    beaconClick.title = 'Expand opens Agent Research Bay';
+  }
+  const abExpand = $('abExpand');
+  if(abExpand){
+    abExpand.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeHbPop();
+      openResearchBay();
+    });
   }
   document.addEventListener('click', (e) => {
     const pop = $('hbPop');
