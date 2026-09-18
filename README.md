@@ -6,6 +6,22 @@ When US cash equities sleep, Bitget **US stock USDT-M contracts** and **crypto p
 
 Repo: [github.com/CryptoCT01/Crossfire](https://github.com/CryptoCT01/Crossfire)
 
+## Track 2 checklist · Agentic Trading
+
+Ordered for what judges ask for — only what Crossfire actually ships:
+
+- [x] **Runnable demo** — local dashboard on `:8780`, Dual Book + agent deck live
+- [x] **LLM as decision-maker** — DeepSeek via OpenRouter on the heartbeat (policy fallback if no key)
+- [x] **Event → decision → execution flow** — marks/context → rules + LLM → Risk Cage → paper sleeve fill/log
+- [x] **Cross-asset execution** — Mag7 US stock contracts ↔ crypto perps on one Dual Book
+- [x] **Risk control layer** — Risk Cage slots / leverage / DD halt (code-enforced)
+- [x] **Decision explainability** — Decision Cinema + `/api/explain/:tickId` + Research Bay
+- [x] **Paper trading (not live min-size)** — paper sleeve, live Bitget marks, live orders blocked
+- [x] **Paper trading log** — append-only JSONL + [docs/PAPER-RUN-RECORDS.md](docs/PAPER-RUN-RECORDS.md) · [docs/paper-trading-fills.jsonl](docs/paper-trading-fills.jsonl)
+- [x] **Compliant X post** — [docs/X-POSTS.md](docs/X-POSTS.md)
+- [x] **Paper scorecard in UI** — Sharpe / max DD / win rate / fills inside Expanded Equity (from real logs)
+
+**Paper record:** competition log is **actively building** (started mid-window; aging continues through the deadline). We don’t claim a finished multi-week backfill — judges can read the live JSONL as it grows.
 
 ## Dashboard
 
