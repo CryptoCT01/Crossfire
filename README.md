@@ -81,7 +81,7 @@ Secrets come **only** from environment / `.env`. Never hardcode keys. Never comm
 
 ### Risk Cage (enforced in code)
 
-`max_slots=3`, `max_lev_us=20`, `max_lev_crypto=50`, `daily_dd_halt_pct=5`, sleeve / per-leg notional caps. Without a connected sleeve, hedge theses are **logged only** — no fake fills.
+Paper sleeve (hackathon demo): **`max_slots=5`**, lev caps 20×/50×, daily halt 8%, sleeve/leg notional caps. Live Normal/Aggressive profiles stay tighter (2 / 3 slots) when not in paper. Without a connected sleeve, hedge theses are **logged only** — no fake fills.
 
 ### Heartbeat
 

@@ -177,8 +177,10 @@ def active_policy() -> dict[str, Any]:
 
 
 # Back-compat: RISK / POLICY dicts — prefer active_*() for live values
+# Prefer active_risk() — this dict is back-compat only.
+# Paper mode overrides max_slots to 5 via active_profile().
 RISK = {
-    "max_slots": 3,
+    "max_slots": 5,
     "max_lev_us": 20,
     "max_lev_crypto": 50,
     "daily_dd_halt_pct": 5.0,

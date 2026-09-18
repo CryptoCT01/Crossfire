@@ -1208,7 +1208,7 @@ const INFO_COPY = {
   },
   agent_mode: {
     title: 'Agent mode',
-    body: 'Normal keeps the classic cage: 3 slots, tighter Mag7↔BTC gate, 5% daily halt. Aggressive opens more slots, loosens divergence gates, and raises the halt to 8% — same 5m heartbeat, still no fake fills, still blocked if the sleeve is disconnected.',
+    body: 'Paper demo cage: up to 5 slots on the $10k virtual book. Live Normal/Aggressive stay tighter (2 / 3 slots). Aggressive loosens Mag7↔BTC gates and can raise the halt — same 5m heartbeat, still no fake fills, still blocked if the sleeve is disconnected.',
     real: 'POST /api/agent/mode · live switch'
   },
   breadth: {
@@ -1574,7 +1574,7 @@ function renderWalletStrip(){
 
 function renderRisk(risk, sleeve){
   const g = $('riskGrid');
-  const maxSlots = risk.max_slots ?? 3;
+  const maxSlots = risk.max_slots ?? 5;
   const used = (S.positions||[]).length;
   const slots = [];
   for(let i=0;i<maxSlots;i++){

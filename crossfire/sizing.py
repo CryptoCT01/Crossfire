@@ -218,7 +218,7 @@ def normalize_executable_legs(
         }
 
     contracts = fetch_contracts()
-    max_legs = int(config.active_risk().get("max_slots") or 3)
+    max_legs = int(config.active_risk().get("max_slots") or 5)
     max_legs = max(1, min(8, max_legs))
     chosen: list[dict[str, Any]] = []
     errors: list[str] = []
