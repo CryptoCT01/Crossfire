@@ -9,8 +9,9 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-from . import bitget_private, bitget_public, config
+from . import bitget_private, bitget_public, config, sizing
 from . import logging_store as store
+from . import paper_sleeve
 from . import perception
 from . import session_info
 
@@ -51,7 +52,69 @@ def _avg_change(rows: list[dict[str, Any]], symbols: list[str]) -> float | None:
     return sum(vals) / len(vals)
 
 
-def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any]) -> dict[str, Any]:
+def _min_confidence() -> float:
+    import os
+    if config.paper_mode():
+        try:
+            return max(0.2, min(0.95, float(os.environ.get("CROSSFIRE_PAPER_MIN_CONF") or "0.35")))
+        except ValueError:
+            return 0.35
+    try:
+        return max(0.5, min(0.95, float(os.environ.get("CROSSFIRE_MIN_CONFIDENCE") or "0.75")))
+    except ValueError:
+        return 0.75
+
+
+def _capital_preserve() -> bool:
+    import os
+    if config.paper_mode():
+        return False
+    return (os.environ.get("CROSSFIRE_CAPITAL_PRESERVE") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
+def _day_equity_baseline(current_equity: float | None) -> dict[str, Any]:
+    """UTC-day equity baseline from equity.jsonl; seed with current if empty."""
+    import datetime as _dt
+
+    day = _dt.datetime.utcnow().strftime("%Y-%m-%d")
+    eq_log = "paper_equity.jsonl" if config.paper_mode() else "equity.jsonl"
+    series = store.read_jsonl_tail(eq_log, 2000)
+    day_points = []
+    for row in series:
+        ts = float(row.get("ts") or 0)
+        if ts <= 0:
+            continue
+        d = _dt.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
+        if d == day and row.get("equity") is not None:
+            try:
+                day_points.append((ts, float(row["equity"])))
+            except (TypeError, ValueError):
+                pass
+    if day_points:
+        day_points.sort(key=lambda x: x[0])
+        baseline = day_points[0][1]
+        seeded = False
+    elif current_equity is not None:
+        baseline = float(current_equity)
+        seeded = True
+        store.append_jsonl(
+            eq_log,
+            {"ts": time.time(), "tick_id": "day_baseline", "equity": baseline, "day": day, "paper": config.paper_mode()},
+        )
+    else:
+        return {"day": day, "baseline": None, "dd_pct": None, "seeded": False}
+    dd_pct = None
+    if current_equity is not None and baseline:
+        dd_pct = (float(current_equity) - baseline) / baseline * 100.0
+    return {"day": day, "baseline": baseline, "dd_pct": dd_pct, "seeded": seeded, "n_points": len(day_points)}
+
+
+def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any], sized: dict[str, Any] | None = None) -> dict[str, Any]:
     """Enforce Risk Cage. Never invent clearance for live orders without sleeve."""
     risk = config.active_risk()
     checks = []
@@ -76,24 +139,157 @@ def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any]) -> dict[st
     else:
         checks.append({"rule": "sleeve_connected", "pass": config.sleeve_connected()})
 
-    # Daily DD: without real equity, cannot trip — report UNAVAILABLE honestly
+    # Live equity / available for DD + micro-sleeve caps
+    equity = None
+    available = None
+    try:
+        eq = bitget_private.account_equity()
+        if eq.get("ok"):
+            equity = eq.get("equity")
+            available = eq.get("available")
+    except Exception:
+        pass
+
+    caps = sizing.effective_caps(float(available or 0.0))
+    checks.append(
+        {
+            "rule": "per_leg_notional_cap_usdt",
+            "limit": caps["per_leg_notional_cap_usdt"],
+            "configured": risk["per_leg_notional_cap_usdt"],
+            "pass": True,
+            "detail": f"effective leg cap {caps['per_leg_notional_cap_usdt']} (wallet-aware)",
+        }
+    )
+    checks.append(
+        {
+            "rule": "sleeve_notional_cap_usdt",
+            "limit": caps["sleeve_notional_cap_usdt"],
+            "configured": risk["sleeve_notional_cap_usdt"],
+            "pass": True,
+            "detail": f"effective sleeve cap {caps['sleeve_notional_cap_usdt']} (wallet-aware)",
+        }
+    )
+
+    dd_pass = True
+    dd_detail = "equity UNAVAILABLE until sleeve connected"
+    day_info: dict[str, Any] = {}
+    if equity is not None:
+        day_info = _day_equity_baseline(float(equity))
+        dd_pct = day_info.get("dd_pct")
+        halt = float(risk["daily_dd_halt_pct"])
+        if float(available or 0) < 5:
+            dd_pass = False
+            dd_detail = f"available {available} < Bitget minTradeUSDT"
+        elif dd_pct is not None and dd_pct <= -halt:
+            dd_pass = False
+            dd_detail = f"day DD {dd_pct:.2f}% hit halt -{halt}% (baseline {day_info.get('baseline')})"
+        else:
+            dd_detail = (
+                f"live equity {float(equity):.2f}; day DD {dd_pct if dd_pct is not None else 0:.2f}% "
+                f"(halt -{halt}%); baseline {day_info.get('baseline')}"
+            )
     checks.append(
         {
             "rule": "daily_dd_halt_pct",
             "limit": risk["daily_dd_halt_pct"],
-            "current": None,
-            "pass": True,
-            "detail": "equity UNAVAILABLE until sleeve connected",
+            "current": day_info.get("dd_pct") if day_info else equity,
+            "pass": dd_pass,
+            "detail": dd_detail,
+            "baseline": day_info.get("baseline") if day_info else None,
         }
     )
 
+    # Sized legs must exist + fit caps before exec
+    exec_legs_ok = True
+    if decision.get("action") not in ("HOLD",) and (config.paper_mode() or config.sleeve_connected()):
+        if not sized or not sized.get("executable"):
+            exec_legs_ok = False
+            checks.append(
+                {
+                    "rule": "sized_legs",
+                    "pass": False,
+                    "detail": (sized or {}).get("message") or (sized or {}).get("error") or "legs not sized for wallet",
+                }
+            )
+        else:
+            spent = float(sized.get("spent_notional_usdt") or 0)
+            over = spent > float(caps["sleeve_notional_cap_usdt"]) + 1e-6
+            checks.append(
+                {
+                    "rule": "sized_legs",
+                    "pass": not over,
+                    "spent": spent,
+                    "limit": caps["sleeve_notional_cap_usdt"],
+                    "legs": len(sized.get("legs") or []),
+                }
+            )
+            if over:
+                exec_legs_ok = False
+            for leg in sized.get("legs") or []:
+                n = float(leg.get("notional_usdt") or 0)
+                if n > float(caps["per_leg_notional_cap_usdt"]) + 1e-6:
+                    exec_legs_ok = False
+                    checks.append({"rule": "per_leg_fit", "symbol": leg.get("symbol"), "pass": False, "notional": n})
+
     for c in checks:
-        if c.get("pass") is False and c.get("rule") != "sleeve_connected":
+        if c.get("pass") is False and c.get("rule") not in ("sleeve_connected",):
             ok = False
             reason = f"blocked by {c['rule']}"
 
+    if not exec_legs_ok and decision.get("action") not in ("HOLD",):
+        ok = False
+        reason = "blocked by sized_legs"
+
+    # Confidence floor (capital preservation)
+    conf = None
+    try:
+        conf = float(decision.get("confidence")) if decision.get("confidence") is not None else None
+    except (TypeError, ValueError):
+        conf = None
+    min_c = _min_confidence()
+    conf_ok = True
+    if decision.get("action") in ("HEDGE", "ROTATE") and (conf is None or conf < min_c):
+        conf_ok = False
+        checks.append(
+            {
+                "rule": "min_confidence",
+                "limit": min_c,
+                "current": conf,
+                "pass": False,
+                "detail": f"need confidence >= {min_c} to open risk",
+            }
+        )
+        ok = False
+        reason = "blocked by min_confidence"
+    else:
+        checks.append({"rule": "min_confidence", "limit": min_c, "current": conf, "pass": True})
+
+    # Capital preserve: block ROTATE adds; force prefer HOLD on weak context
+    if _capital_preserve() and decision.get("action") == "ROTATE":
+        checks.append({"rule": "capital_preserve_no_rotate", "pass": False})
+        ok = False
+        reason = "blocked by capital_preserve_no_rotate"
+        conf_ok = False
+
+    if not dd_pass and decision.get("action") in ("HEDGE", "ROTATE"):
+        ok = False
+        reason = "blocked by daily_dd_halt_pct"
+
     # Sleeve disconnect blocks execution but does not invalidate the thesis record
-    exec_allowed = ok and config.sleeve_connected() and decision.get("action") not in ("HOLD",)
+    exec_allowed = (
+        ok
+        and conf_ok
+        and dd_pass
+        and (config.paper_mode() or config.sleeve_connected())
+        and decision.get("action") not in ("HOLD",)
+        and bool(sized and sized.get("executable"))
+    )
+    if config.paper_mode() and decision.get("action") not in ("HOLD",):
+        checks.append({"rule": "paper_mode_fills", "pass": True, "detail": "paper — virtual fills at live marks, Bitget private unused"})
+        if exec_allowed:
+            reason = "paper_fill_cleared"
+        else:
+            reason = reason or "paper — blocked by cage"
     if decision.get("action") in ("HOLD",):
         exec_allowed = False
         reason = "HOLD — no execution"
@@ -102,10 +298,12 @@ def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any]) -> dict[st
         "ok": ok,
         "exec_allowed": exec_allowed,
         "reason": reason,
-        "risk": risk,
+        "risk": {**risk, **{k: caps[k] for k in ("sleeve_notional_cap_usdt", "per_leg_notional_cap_usdt", "equity_budget_usdt", "available_usdt", "default_leverage") if k in caps}},
         "agent_mode": config.get_agent_mode(),
         "checks": checks,
+        "sizing": sized,
     }
+
 
 
 def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
@@ -203,6 +401,48 @@ def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def paper_seed_hedge(books: dict[str, Any], sess: dict[str, Any], derived: dict[str, Any]) -> dict[str, Any]:
+    """Overnight / closed-cash cross-hedge so the paper book is not stuck HOLD."""
+    mag7 = derived.get("mag7_24h_pct")
+    btc = derived.get("btc_24h_pct")
+    try:
+        div = float(mag7) - float(btc) if mag7 is not None and btc is not None else 0.0
+    except (TypeError, ValueError):
+        div = 0.0
+    cash_closed = not bool(sess.get("us_cash_rth_open"))
+    if div >= 0:
+        legs = [
+            {"book": "us", "intent": "REDUCE_OR_SHORT", "basket": "Mag7", "symbol": "NVDAUSDT", "note": "paper_seed"},
+            {"book": "crypto", "intent": "LONG_HEDGE", "symbol": "BTCUSDT", "note": "paper_seed"},
+        ]
+        why = "US leading or flat vs BTC — short NVDA / long BTC overnight hedge"
+    else:
+        legs = [
+            {"book": "crypto", "intent": "REDUCE_OR_SHORT", "symbol": "BTCUSDT", "note": "paper_seed"},
+            {"book": "us", "intent": "LONG_HEDGE", "basket": "Mag7", "symbol": "NVDAUSDT", "note": "paper_seed"},
+        ]
+        why = "BTC leading US — short BTC / long NVDA overnight hedge"
+    mag7_s = f"{float(mag7):+.2f}%" if mag7 is not None else "n/a"
+    btc_s = f"{float(btc):+.2f}%" if btc is not None else "n/a"
+    thesis = (
+        f"PAPER HEDGE: R1 session={'CLOSED' if cash_closed else 'OPEN'} Bitget US 24/7. "
+        f"R4 Mag7 {mag7_s} vs BTC {btc_s} (div {div:+.2f}%). {why}. "
+        f"Virtual fills only — live Bitget untouched."
+    )
+    return {
+        "engine": "policy",
+        "model": None,
+        "action": "HEDGE",
+        "thesis": thesis,
+        "legs": legs,
+        "confidence": 0.8,
+        "paper_seed": True,
+        "divergence_pct": div,
+        "mag7_24h_pct": mag7,
+        "btc_24h_pct": btc,
+    }
+
+
 _RULEBOOK_CACHE: str | None = None
 _RULEBOOK_FALLBACK = (
     "You are Crossfire cross-asset agent. Follow Risk Cage. "
@@ -243,8 +483,9 @@ def _safe_err(exc: BaseException) -> str:
 
 
 def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Compact tick JSON for the LLM — never secrets."""
+    """Compact tick JSON for the LLM — never secrets. Full Dual Book fields the agent needs."""
     pol = config.active_policy()
+    risk = config.active_risk()
     us = books.get("us") or []
     crypto = books.get("crypto") or []
     mag7 = _avg_change(us, pol["mag7_symbols"])
@@ -256,8 +497,24 @@ def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = N
     )
     divergence = (mag7 - btc) if mag7 is not None and btc is not None else None
 
+    def _row(r: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "s": r.get("symbol"),
+            "m": r.get("mark"),
+            "c24": r.get("change24h_pct"),
+            "bid": r.get("bid"),
+            "ask": r.get("ask"),
+            "hi": r.get("high24h"),
+            "lo": r.get("low24h"),
+            "fr": r.get("funding_rate"),
+            "max_lev": r.get("exchange_max_lev"),
+        }
+
     positions_summary: list[dict[str, Any]] = []
-    if config.sleeve_connected():
+    equity_snap: dict[str, Any] = {}
+    # Always load positions from active sleeve (paper routes to paper_sleeve).
+    # Previously only ran when sleeve_connected — LLM often saw empty positions and re-opened.
+    if config.paper_mode() or config.sleeve_connected():
         try:
             sleeve = bitget_private.positions()
             for p in sleeve.get("positions") or []:
@@ -268,27 +525,42 @@ def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = N
                         "symbol": p.get("symbol") or p.get("symbolName"),
                         "side": p.get("side") or p.get("holdSide"),
                         "size": p.get("size") or p.get("total"),
-                        "unrealized_pnl": p.get("unrealizedPL") or p.get("unrealized_pnl"),
+                        "entry": p.get("entry"),
+                        "mark": p.get("mark"),
+                        "unrealized_pnl": p.get("unrealized_pnl") or p.get("unrealizedPL"),
+                        "leverage": p.get("leverage"),
                     }
                 )
         except Exception:
             positions_summary = []
+        try:
+            eq = bitget_private.account_equity()
+            if eq.get("ok"):
+                equity_snap = {
+                    "equity": eq.get("equity"),
+                    "available": eq.get("available"),
+                    "unrealized_pnl": eq.get("unrealized_pnl"),
+                }
+                day = _day_equity_baseline(eq.get("equity"))
+                equity_snap["day_baseline"] = day.get("baseline")
+                equity_snap["day_dd_pct"] = day.get("dd_pct")
+                equity_snap["day"] = day.get("day")
+                caps = sizing.effective_caps(float(eq.get("available") or 0))
+                equity_snap["effective_caps"] = caps
+        except Exception:
+            equity_snap = {"error": "equity_fetch_failed"}
 
+    capital = _capital_preserve()
     payload: dict[str, Any] = {
-        "us": [
-            {"s": r["symbol"], "m": r.get("mark"), "c24": r.get("change24h_pct")}
-            for r in us
-            if r.get("available")
-        ],
-        "crypto": [
-            {"s": r["symbol"], "m": r.get("mark"), "c24": r.get("change24h_pct")}
-            for r in crypto
-            if r.get("available")
-        ],
+        "us": [_row(r) for r in us if r.get("available")],
+        "crypto": [_row(r) for r in crypto if r.get("available")],
         "session": session_info.us_cash_session(),
-        "risk": config.active_risk(),
+        "risk": risk,
         "agent_mode": config.get_agent_mode(),
+        "capital_preserve": capital,
+        "min_confidence_to_execute": _min_confidence(),
         "sleeve_connected": config.sleeve_connected(),
+        "wallet": equity_snap,
         "positions": positions_summary,
         "derived": {
             "mag7_24h_pct": mag7,
@@ -296,6 +568,29 @@ def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = N
             "divergence_pct": divergence,
             "threshold_pct": float(pol["divergence_threshold_pct"]),
         },
+        "capital_mandate": (
+            "PAPER SLEEVE: $10k virtual book at live marks (not live Bitget). "
+            "Default HOLD when thesis already expressed. Max 5 slots. "
+            "ONE position per symbol — never OPEN/ADD/average a symbol that is already open; "
+            "only REDUCE or FLAT that symbol. No same-side stacking. "
+            "HEDGE only for a NEW symbol pair when Rules 2–10 pass. "
+            "When US cash is CLOSED/PRE_MARKET/WEEKEND, manage existing cross-hedge; do not churn."
+            if config.paper_mode()
+            else (
+                "CAPITAL PRESERVATION ON: prefer HOLD. Do not open new risk unless confidence "
+                f">= {_min_confidence():.2f}, divergence is clear, Rule 2/5 pass, and day DD is inside "
+                f"{risk.get('daily_dd_halt_pct')}%. Never average down. Prefer REDUCE/FLAT over hope. "
+                "Micro sleeve (~$90): small sized legs only; losing more money is unacceptable."
+                if capital
+                else "Follow Risk Cage; prefer capital safety over activity."
+            )
+        ),
+        "data_honesty": (
+            "context.news and geopolitics may be unknown — never invent headlines. "
+            "Use Dual Book marks, funding, breadth, session, wallet, positions, and "
+            "CMC Witness (context.cmc / context.cmc_brief) when present. "
+            "If context.cmc.ok is false, treat CMC as unknown. Mag7 is Dual Book, not CMC."
+        ),
         "reply_schema": (
             "Reply JSON only: "
             '{"action":"HOLD|HEDGE|ROTATE|REDUCE|FLAT","thesis":"...","legs":[],'
@@ -303,7 +598,6 @@ def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = N
         ),
     }
     if context:
-        # Drop any accidental secret-looking keys
         safe_ctx = {
             k: v
             for k, v in context.items()
@@ -312,6 +606,7 @@ def _tick_user_payload(books: dict[str, Any], context: dict[str, Any] | None = N
         if safe_ctx:
             payload["context"] = safe_ctx
     return payload
+
 
 
 def _parse_llm_json(content: str) -> dict[str, Any]:
@@ -511,6 +806,10 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
         books = bitget_public.get_books(force=True)
         marks = bitget_public.marks_map(books)
 
+        if config.paper_mode():
+            paper_sleeve.mark_to_market(marks)
+            paper_sleeve.manage_exits(marks, tick_id)
+
         # Rule-2 perception pack — real books+session only; never invent news
         pol = config.active_policy()
         mag7 = _avg_change(books.get("us") or [], pol["mag7_symbols"])
@@ -544,33 +843,93 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
             decision = policy_decide(books)
 
         sleeve = bitget_private.positions()
-        cage = risk_cage_check(decision, sleeve)
+        open_n = len(sleeve.get("positions") or [])
+        cash_closed = not bool(sess.get("us_cash_rth_open"))
+        if config.paper_mode() and open_n == 0 and str(decision.get("action") or "HOLD").upper() in ("HOLD",):
+            if cash_closed or abs(float(derived.get("divergence_pct") or 0)) >= float(pol.get("divergence_threshold_pct") or 0.4):
+                decision = paper_seed_hedge(books, sess, derived)
 
-        # Execution: only if cage allows AND sleeve connected — currently stub, no fake fills
+        # Wallet-aware sizing BEFORE Risk Cage — never send unsized Mag7 intents live
+        eq_snap = bitget_private.account_equity()
+        available = float(eq_snap.get("available") or 0.0) if eq_snap.get("ok") else 0.0
+        marks_for_size = bitget_public.marks_map(books)
+        sized = sizing.normalize_executable_legs(decision, marks_for_size, available)
+        if sized.get("executable"):
+            decision = dict(decision)
+            decision["legs"] = sized["legs"]
+            decision["sizing"] = {
+                "caps": sized.get("caps"),
+                "spent_notional_usdt": sized.get("spent_notional_usdt"),
+            }
+        cage = risk_cage_check(decision, sleeve, sized=sized)
+
+        # Execution: paper virtual fills OR live Bitget — never mix
         execution = {
             "attempted": False,
             "filled": False,
             "fills": [],
-            "message": "no execution — HOLD or sleeve disconnected / stub",
+            "message": "no execution — HOLD, blocked by Risk Cage, or legs not sized for wallet",
+            "sizing": sized,
         }
         if cage.get("exec_allowed") and decision.get("action") not in ("HOLD",):
+            # Hard gate: drop legs that would ADD same-side to an open symbol
+            open_map = {}
+            for p0 in (sleeve.get("positions") or []):
+                if not isinstance(p0, dict):
+                    continue
+                sym0 = str(p0.get("symbol") or p0.get("symbolName") or "").upper()
+                if sym0 and not sym0.endswith("USDT"):
+                    sym0 += "USDT"
+                side0 = str(p0.get("side") or p0.get("holdSide") or "").lower()
+                if sym0:
+                    open_map[sym0] = side0
+            legs_in = list(sized.get("legs") or [])
+            kept = []
+            rejected = []
+            for leg in legs_in:
+                if not isinstance(leg, dict):
+                    continue
+                sym = str(leg.get("symbol") or "").upper()
+                if sym and not sym.endswith("USDT"):
+                    sym += "USDT"
+                raw = str(leg.get("side") or "").lower()
+                want = "long" if raw in ("long", "open_long", "buy") else "short" if raw in ("short", "open_short", "sell") else ""
+                reduce_only = bool(leg.get("reduceOnly") or leg.get("reduce_only"))
+                have = open_map.get(sym)
+                if have and want and have == want and not reduce_only:
+                    rejected.append({"symbol": sym, "side": want, "reason": "duplicate_same_side"})
+                    continue
+                kept.append(leg)
+            if rejected:
+                decision = dict(decision)
+                decision["rejected_legs"] = rejected
+                sized = dict(sized)
+                sized["legs"] = kept
+                if not kept and str(decision.get("action") or "").upper() in ("HEDGE", "ROTATE"):
+                    decision["action"] = "HOLD"
+                    decision["note"] = (str(decision.get("note") or "") + " | blocked duplicate same-side opens").strip(" |")
+                    cage = dict(cage)
+                    cage["exec_allowed"] = False
+                    cage["detail"] = "all legs were duplicate same-side opens"
             order = bitget_private.place_order(
-                {"action": decision.get("action"), "legs": decision.get("legs"), "tick_id": tick_id}
+                {"action": decision.get("action"), "legs": sized.get("legs") or [], "tick_id": tick_id}
             )
             execution = {
                 "attempted": True,
                 "filled": False,
                 "fills": [],
                 "order_result": order,
+                "sizing": sized,
+                "paper": config.paper_mode(),
                 "message": order.get("error") or order.get("message") or "order hook returned",
             }
-            # Only write fills.jsonl when real fills exist
             if order.get("fills"):
                 for fl in order["fills"]:
                     fl = dict(fl)
                     fl["tick_id"] = tick_id
-                    fl["ts"] = time.time()
-                    store.append_jsonl("fills.jsonl", fl)
+                    fl.setdefault("ts", time.time())
+                    if not config.paper_mode():
+                        store.append_jsonl("fills.jsonl", fl)
                     execution["filled"] = True
                     execution["fills"].append(fl)
 
@@ -595,6 +954,7 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
             "execution": execution,
             "sleeve_connected": config.sleeve_connected(),
             "connect_mode": config.connect_mode_label(),
+            "paper": config.paper_mode(),
             "mode_pill": config.mode_pill(),
             "agent_mode": config.get_agent_mode(),
             "books_ok": bool(books.get("ok")),
@@ -625,9 +985,11 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
             },
         )
 
-        # Equity snapshot only when sleeve connected and we have a real number
+        # Equity snapshot: paper book OR live sleeve — never mix files
         eq = bitget_private.account_equity()
-        if eq.get("connected") and eq.get("equity") is not None:
+        if config.paper_mode():
+            pass  # paper_sleeve already appends paper_equity.jsonl on fill/MTM
+        elif eq.get("connected") and eq.get("equity") is not None:
             store.append_jsonl(
                 "equity.jsonl",
                 {"ts": time.time(), "tick_id": tick_id, "equity": eq["equity"]},

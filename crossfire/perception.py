@@ -1,17 +1,20 @@
-"""Rule-2 perception pack — real Dual Book + session only; never invent news.
+"""Rule-2 perception pack — Dual Book + session + Bitget toolkit mirrors.
 
 build_context() is called every heartbeat / event wake and injected as
 `context` on the LLM user payload (and stored on the tick/decision record).
 
 Determinism (documented):
-  - macro / us_tape / sentiment are derived ONLY from:
+  - macro / us_tape / sentiment are derived from:
       * books.us / books.crypto marks & change24h_pct & funding_rate
       * session.us_cash_status / us_cash_rth_open
       * optional derived Mag7/BTC averages (or recomputed here)
       * optional public Bitget open-interest for BTC (best-effort; fail → omit)
-  - news is always [] unless a real public feed is wired later (none today).
-  - geopolitics is always level=unknown with notes="no feed wired" until a
-    real feed exists — never claimed from marks alone.
+      * bitget_feeds toolkit pack (Fear&Greed, CoinDesk RSS, Yahoo NDX/DXY/Mag7)
+        — public mirrors of Bitget S2 MCP/signal skills; never invented
+      * cmc_feeds Witness pack (BTC/ETH quotes, global dominance, F&G pulse)
+        — CoinMarketCap Pro; Mag7 is Dual Book, not CMC
+  - news comes from CoinDesk RSS when reachable; else []
+  - geopolitics stays level=unknown (no geopolitics feed wired)
   - If books are empty / not ok / insufficient marks → macro/sentiment/us_tape
     become "unknown" so Rule 2 biases HOLD / no new US risk.
 """
@@ -19,6 +22,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from . import bitget_feeds
+from . import cmc_feeds
 from . import config
 
 # Sentiment thresholds (deterministic)
@@ -214,6 +219,16 @@ def _build_macro(
     return "; ".join(bits)
 
 
+def _cmc_bits(cmc: dict[str, Any]) -> str:
+    """One honest CMC line for Rule-2. Empty string if pack is down."""
+    if not isinstance(cmc, dict) or not cmc.get("ok"):
+        return ""
+    brief = cmc.get("brief")
+    if isinstance(brief, str) and brief and brief not in ("cmc:unknown", "cmc:unavailable", "cmc:no_key"):
+        return brief
+    return ""
+
+
 def _derive_sentiment(
     us_b: dict[str, Any],
     cr_b: dict[str, Any],
@@ -303,10 +318,63 @@ def build_context(
     if oi:
         sources.append("bitget_public_open_interest:BTCUSDT")
 
-    # Honest empty feeds — Rule 2 must see unknown, not invented shock
-    news: list[Any] = []
-    geopolitics = {"level": "unknown", "notes": "no feed wired"}
-    sources.append("news:none")
+    # Toolkit feeds (Bitget S2 MCP/signal public mirrors) — never invent
+    toolkit: dict[str, Any] = {}
+    try:
+        toolkit = bitget_feeds.fetch_toolkit_pack()
+    except Exception as e:
+        toolkit = {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+    news: list[Any] = list(toolkit.get("news") or [])
+    if news:
+        sources.append("bitget_feeds.coindesk_rss")
+    else:
+        sources.append("news:none")
+
+    fng = toolkit.get("fear_greed") if isinstance(toolkit.get("fear_greed"), dict) else None
+    if fng and fng.get("value") is not None:
+        sources.append("bitget_feeds.fear_greed")
+    cross = toolkit.get("cross_asset") if isinstance(toolkit.get("cross_asset"), dict) else {}
+    mag7_cash = toolkit.get("mag7_cash") if isinstance(toolkit.get("mag7_cash"), dict) else {}
+    if cross:
+        sources.append("bitget_feeds.yahoo_cross_asset")
+    if mag7_cash:
+        sources.append("bitget_feeds.yahoo_mag7_cash")
+
+    # CMC Witness (Pro API + optional skills cache) — never invent
+    cmc: dict[str, Any] = {}
+    try:
+        cmc = cmc_feeds.fetch_cmc_pack()
+    except Exception as e:
+        cmc = {"ok": False, "error": f"{type(e).__name__}: {e}"}
+    cmc_brief = ""
+    pulse = cmc.get("sentiment_pulse") if isinstance(cmc.get("sentiment_pulse"), dict) else None
+    if cmc.get("ok"):
+        sources.append("cmc_witness")
+        for s in cmc.get("sources") or []:
+            if isinstance(s, str) and s not in sources:
+                sources.append(s)
+        # Prefer CMC Fear&Greed when present (more authoritative than alt.me mirror)
+        cfng = cmc.get("fear_greed") if isinstance(cmc.get("fear_greed"), dict) else None
+        if cfng and cfng.get("value") is not None:
+            fng = {
+                "value": cfng.get("value"),
+                "label": cfng.get("label"),
+                "source": cfng.get("source") or "cmc_fear_greed",
+            }
+            if pulse and pulse.get("change_7d_points") is not None:
+                fng["change_7d_points"] = pulse.get("change_7d_points")
+                fng["avg_30d"] = pulse.get("avg_30d")
+            if "bitget_feeds.fear_greed" in sources:
+                sources = [x for x in sources if x != "bitget_feeds.fear_greed"]
+            if "cmc.fear_greed" not in sources:
+                sources.append("cmc.fear_greed")
+        cmc_brief = _cmc_bits(cmc)
+    else:
+        sources.append("cmc:unavailable")
+    cmc_ctx = cmc_feeds.compact_for_context(cmc)
+
+    geopolitics = {"level": "unknown", "notes": "no geopolitics feed wired"}
     sources.append("geopolitics:none")
 
     usable = us_b.get("n", 0) > 0 or cr_b.get("n", 0) > 0
@@ -321,22 +389,50 @@ def build_context(
             "breadth": {"us": us_b, "crypto": cr_b},
             "funding": {"btc": btc_fund, "mag7_avg": mag7_fund},
             "open_interest": oi,
+            "fear_greed": fng,
+            "cross_asset": cross,
+            "mag7_cash": mag7_cash,
+            "toolkit_ok": bool(toolkit.get("ok")),
+            "cmc": cmc_ctx,
+            "cmc_brief": cmc_brief or "cmc:unavailable",
         }
 
     macro = _build_macro(session, mag7, btc, div, btc_fund, mag7_fund, us_b, cr_b, oi)
+    if cmc_brief:
+        macro = f"{macro}; {cmc_brief}"
     us_tape = _build_us_tape(session, us_b, mag7)
     sentiment = _derive_sentiment(us_b, cr_b, btc_fund, div)
+
+    # Fold Fear&Greed into sentiment label when Dual Book already set risk_on/off
+    if fng and fng.get("value") is not None and sentiment not in ("unknown",):
+        try:
+            fv = int(fng["value"])
+            fl = fng.get("label") or ""
+            if fv <= 25 and sentiment == "risk_on":
+                sentiment = "mixed"  # extreme fear overrides soft risk_on
+            elif fv >= 75 and sentiment == "risk_off":
+                sentiment = "mixed"
+            # attach for LLM without inventing a new regime string alone
+            _ = fl
+        except (TypeError, ValueError):
+            pass
 
     return {
         "macro": macro,
         "sentiment": sentiment,
-        "news": news,
+        "news": news[:5],
         "geopolitics": geopolitics,
         "us_tape": us_tape,
         "sources": sources,
         "breadth": {"us": us_b, "crypto": cr_b},
         "funding": {"btc": btc_fund, "mag7_avg": mag7_fund},
         "open_interest": oi,
+        "fear_greed": fng,
+        "cross_asset": cross,
+        "mag7_cash": mag7_cash,
+        "toolkit_ok": bool(toolkit.get("ok")),
+        "cmc": cmc_ctx,
+        "cmc_brief": cmc_brief or "cmc:unavailable",
         "derived_snapshot": {
             "mag7_24h_pct": mag7,
             "btc_24h_pct": btc,

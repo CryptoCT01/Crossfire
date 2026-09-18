@@ -14,11 +14,12 @@ from urllib.parse import parse_qs, urlparse
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from crossfire import config  # noqa: E402
+from crossfire import config
+from crossfire import cmc_feeds  # noqa: E402
 
 config.load_dotenv_if_present()
 # reload bindings after dotenv
-from crossfire import agent_engine, bitget_private, bitget_public  # noqa: E402
+from crossfire import agent_engine, bitget_private, bitget_public, paper_sleeve  # noqa: E402
 from crossfire import logging_store as store  # noqa: E402
 from crossfire import session_info  # noqa: E402
 
@@ -68,15 +69,16 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/api/health":
                 st = agent_engine.get_state()
-                sleeve = config.sleeve_connected()
-                hooks = bitget_private.hooks_enabled()
+                paper = config.paper_mode()
+                sleeve = True if paper else config.sleeve_connected()
+                hooks = True if paper else bitget_private.hooks_enabled()
                 _json(
                     self,
                     200,
                     {
                         "ok": True,
                         "service": "crossfire",
-                        "version": "0.2.2",
+                        "version": "0.3.0",
                         "mode": config.MODE,
                         "mode_pill": config.mode_pill(),
                         "agent_mode": config.get_agent_mode(),
@@ -85,8 +87,9 @@ class Handler(BaseHTTPRequestHandler):
                         "sleeve_connected": sleeve,
                         "llm_available": config.llm_available(),
                         "agent_enabled": config.agent_enabled(),
+                        "paper": paper,
                         "private_hooks_enabled": hooks,
-                        "kill_armed": bool(sleeve and hooks),
+                        "kill_armed": bool(paper or (sleeve and hooks)),
                         "capabilities": bitget_private.capability_matrix(),
                         "heartbeat_sec": config.HEARTBEAT_SEC,
                         "event_move_pct": config.EVENT_MOVE_PCT,
@@ -99,6 +102,10 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/api/books":
                 _json(self, 200, bitget_public.get_books())
+                return
+            if path == "/api/cmc":
+                pack = cmc_feeds.fetch_cmc_pack()
+                _json(self, 200 if pack.get("ok") else 503, pack)
                 return
             if path == "/api/session":
                 st = agent_engine.get_state()
@@ -150,9 +157,10 @@ class Handler(BaseHTTPRequestHandler):
                 pos = bitget_private.positions()
                 orders = bitget_private.open_orders()
                 fills = store.read_jsonl_tail("fills.jsonl", 100)
-                sleeve = config.sleeve_connected()
-                hooks = bitget_private.hooks_enabled()
-                stub = bool(pos.get("stub") or orders.get("stub") or (sleeve and not hooks))
+                paper = config.paper_mode()
+                sleeve = True if paper else config.sleeve_connected()
+                hooks = True if paper else bitget_private.hooks_enabled()
+                stub = False if paper else bool(pos.get("stub") or orders.get("stub") or (sleeve and not hooks))
                 _json(
                     self,
                     200,
@@ -160,6 +168,7 @@ class Handler(BaseHTTPRequestHandler):
                         "sleeve_connected": sleeve,
                         "hooks_enabled": hooks,
                         "stub": stub,
+                        "paper": paper,
                         "positions": pos.get("positions") or [],
                         "orders": orders.get("orders") or [],
                         "fills": fills,
@@ -169,7 +178,32 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 return
             if path == "/api/equity":
-                series = store.read_jsonl_tail("equity.jsonl", 500)
+                paper = config.paper_mode()
+                eq_log = "paper_equity.jsonl" if paper else "equity.jsonl"
+                if paper:
+                    paper_sleeve.ensure_curve_seed()
+                    live = paper_sleeve.account_equity()
+                    series = store.read_jsonl_tail(eq_log, 500)
+                    _json(
+                        self,
+                        200,
+                        {
+                            "ok": True,
+                            "paper": True,
+                            "connected": True,
+                            "hooks_enabled": True,
+                            "stub": False,
+                            "live": {
+                                "equity": live.get("equity"),
+                                "available": live.get("available"),
+                                "paper": True,
+                            },
+                            "series": series,
+                            "message": live.get("message") or "PAPER sleeve — not live Bitget",
+                        },
+                    )
+                    return
+                series = store.read_jsonl_tail(eq_log, 500)
                 sleeve = config.sleeve_connected()
                 hooks = bitget_private.hooks_enabled()
                 if not sleeve:
@@ -182,10 +216,36 @@ class Handler(BaseHTTPRequestHandler):
                             "hooks_enabled": False,
                             "stub": True,
                             "series": [],
-                            "message": "Equity curve empty — sleeve DISCONNECTED (connect BITGET_* keys to start snapshots)",
+                            "message": ("PAPER sleeve — seeding virtual equity" if config.paper_mode() else "Equity curve empty — sleeve DISCONNECTED (connect BITGET_* keys to start snapshots)"),
                         },
                     )
                     return
+                live = None
+                if hooks:
+                    live = bitget_private.account_equity()
+                    eqv = live.get("equity")
+                    if eqv is not None:
+                        # Throttle snapshots: append if empty or last point is >25s old / moved
+                        should = True
+                        if series:
+                            last = series[-1]
+                            age = time.time() - float(last.get("ts") or 0)
+                            try:
+                                moved = abs(float(last.get("equity") or 0) - float(eqv)) > 1e-6
+                            except (TypeError, ValueError):
+                                moved = True
+                            should = age >= 25.0 or moved
+                        if should:
+                            store.append_jsonl(
+                                eq_log,
+                                {
+                                    "ts": time.time(),
+                                    "tick_id": "poll",
+                                    "equity": eqv,
+                                    "available": live.get("available"),
+                                },
+                            )
+                            series = store.read_jsonl_tail("equity.jsonl", 500)
                 _json(
                     self,
                     200,
@@ -194,6 +254,12 @@ class Handler(BaseHTTPRequestHandler):
                         "connected": True,
                         "hooks_enabled": hooks,
                         "stub": not hooks,
+                        "live": {
+                            "equity": (live or {}).get("equity"),
+                            "available": (live or {}).get("available"),
+                        }
+                        if hooks
+                        else None,
                         "series": series if hooks else [],
                         "message": None
                         if (hooks and series)

@@ -208,7 +208,11 @@ body::after{
 .brand h1 .c2{background:linear-gradient(90deg,var(--gold) 0%,var(--cyan) 45%,#fff 70%,var(--gold) 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:quadShine 3.8s linear infinite}
 @keyframes quadPulse{0%,100%{opacity:.82;transform:translateY(0)}50%{opacity:1;transform:translateY(-1px)}}
 @keyframes quadShine{0%{background-position:0% 50%}100%{background-position:220% 50%}}
-.brand small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);margin-top:3px;font-weight:500}
+.brand small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3);margin-top:3px;font-weight:600;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+#topMode{color:var(--cyan);text-shadow:0 0 10px rgba(62,232,240,.25);letter-spacing:.1em;font-weight:700}
+#topMode.paper{color:var(--cyan)}
+#topMode.live{color:var(--green)}
+#topMode.disc{color:var(--red)}
 #modePill,.mode-pill{display:none!important}
 .mode-pill-legacy{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;padding:5px 10px;border-radius:999px;border:1px solid rgba(232,184,74,.45);color:var(--gold);background:rgba(232,184,74,.1);white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis}
 .mode-pill.live{border-color:rgba(61,255,156,.45);color:var(--green);background:rgba(61,255,156,.1)}
@@ -428,8 +432,8 @@ body::after{
 .kill-state b{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
 .kill-state span{font-family:var(--mono);font-size:8px;color:var(--fg3);letter-spacing:.08em;text-transform:uppercase}
 
-.foot{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:2px 0 0;flex-wrap:wrap}
-.fc{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--border);color:var(--fg3)}
+.foot{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 0 2px;flex-wrap:nowrap}
+.fc{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:999px;border:1px solid var(--border);color:var(--fg3)}
 .fc.hash{color:var(--gold);border-color:rgba(232,184,74,.3)}
 .fc.ag{color:var(--cyan);border-color:rgba(62,232,240,.3)}
 
@@ -646,7 +650,7 @@ body::after{
 @media(max-width:900px){.ov-split{grid-template-columns:1fr}}
 
 /* ===== PACK B — Market brain ===== */
-.brain{flex:0 0 auto;display:grid;grid-template-columns:minmax(160px,.9fr) minmax(220px,1.35fr) minmax(180px,1fr) minmax(200px,1.15fr) minmax(110px,.7fr);gap:6px;max-height:108px}
+.brain{flex:0 0 auto;display:grid;grid-template-columns:minmax(148px,.8fr) minmax(168px,.95fr) minmax(200px,1.2fr) minmax(160px,.9fr) minmax(180px,1.05fr) minmax(100px,.55fr);gap:6px;max-height:112px}
 .bp{position:relative;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;backdrop-filter:blur(12px);overflow:hidden;padding:6px 8px 7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .bp::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,rgba(255,255,255,.03) 48%,transparent 70%);transform:translateX(-140%);pointer-events:none}
 .bp:hover::before{animation:sheen 1.1s var(--ease)}
@@ -675,10 +679,15 @@ body::after{
 .dial-ring::after{content:'';position:absolute;inset:5px;border-radius:50%;background:rgba(6,8,14,.95)}
 .dial-ring span{position:relative;z-index:1}
 .dial-l{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+.cmc-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:9px;line-height:1.35}
+.cmc-row b{font-weight:800;letter-spacing:.04em}
+.cmc-fg{font-family:var(--mono);font-size:15px;font-weight:800;letter-spacing:.04em;line-height:1}
+.cmc-fg span{font-size:8px;letter-spacing:.12em;text-transform:uppercase;margin-left:6px;color:var(--fg3);font-weight:700}
+.cmc-meta{font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg3);margin-top:3px;line-height:1.4}
 
 @media(max-width:1280px){
-  .brain{grid-template-columns:1fr 1.2fr 1fr;max-height:none}
-  .brain .bp:nth-child(4),.brain .bp:nth-child(5){display:none}
+  .brain{grid-template-columns:1fr 1.1fr 1.2fr;max-height:none}
+  .brain .bp:nth-child(n+4){display:none}
   #ovChart{height:220px}
 }
 @media(max-width:1100px){
@@ -688,6 +697,15 @@ body::after{
   .brain{grid-template-columns:1fr}
   .ov-win{width:98vw;max-height:94vh}
 }
+
+
+.pos-card,.ord-card,.fill-card{padding:10px 12px;margin:0 0 8px;border:1px solid rgba(62,232,240,.14);border-radius:10px;background:rgba(8,12,20,.72)}
+.pos-card .pos-top,.ord-card .pos-top{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-family:'JetBrains Mono',monospace;font-size:12px}
+.pos-card .pos-top b{color:#e8edf4;font-size:13px;letter-spacing:.02em}
+.pos-card .pos-lev,.ord-card .pos-lev{color:rgba(232,184,74,.9);font-size:11px}
+.pos-card .pos-pnl{margin-left:auto;font-weight:600}
+.pos-card .pos-meta,.ord-card .pos-meta,.fill-card .pos-meta{margin-top:6px;font-size:11px;color:rgba(232,237,244,.55);font-family:'JetBrains Mono',monospace;line-height:1.45}
+
 
 </style>
 </head>
@@ -743,7 +761,7 @@ body::after{
         </svg>
         <div>
           <h1><span class="c1">CROSS</span><span class="c2">FIRE</span></h1>
-          <small>Cross-asset execution agent</small>
+          <small id="topMode">PAPER SLEEVE · LIVE MARKS</small>
         </div>
       </div>
       <div class="mode-seg" id="agentModeSeg" title="Agent Risk Cage profile — heartbeat stays 5m in both">
@@ -793,6 +811,11 @@ body::after{
       <div class="bp-h"><div><div class="bp-t" style="color:var(--gold)">Regime</div><div class="bp-s">Mag7 vs BTC/ETH</div></div><button type="button" class="info-btn" data-info="regime" aria-label="About Regime">i</button></div>
       <div class="bp-body" id="regimeBody"><div class="void mini"><div class="void-s">Warming…</div></div></div>
     </article>
+    <article class="bp">
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">CMC Witness</div><div class="bp-s">quotes · global · pulse</div></div><button type="button" class="info-btn" data-info="cmc" aria-label="About CMC Witness">i</button></div>
+      <div class="bp-body" id="cmcBody"><div class="void mini"><div class="void-s">No CMC yet</div></div></div>
+    </article>
+
     <article class="bp">
       <div class="bp-h"><div><div class="bp-t" style="color:var(--fg)">Heat map</div><div class="bp-s">24h% · click → focus</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="heat" aria-label="About Heat map">i</button><button type="button" class="expand-btn" id="heatExpand">Expand</button></div></div>
       <div class="bp-body" id="heatBody"></div>
@@ -934,7 +957,6 @@ body::after{
     <span class="fc ag">Agentic Trading</span>
     <span class="fc">Cross-Asset</span>
     <span class="fc">S2</span>
-    <span class="fc" id="footMode">PUBLIC MARKS</span>
   </footer>
 </div>
 
@@ -987,7 +1009,7 @@ const MEME = new Set(['DOGEUSDT','PEPEUSDT']);
 const S = {
   nextHb: null, lastHb: null, hbSec: 300, sleeve: false,
   hooksEnabled: false, killArmed: false, capabilities: null,
-  equityPts: 0, eqOn: (localStorage.getItem('cf_eq_on') !== '0'),
+  equityPts: 0, eqOn: (localStorage.getItem('cf_eq_on') !== '0'), paper: false,
   usFilter: 'ALL', crFilter: 'ALL',
   hist: Object.create(null), histMax: 48,
   lastMark: Object.create(null),
@@ -1002,7 +1024,8 @@ const S = {
   policy: null,
   llmOn: false, agentEnabled: true, lastContext: null,
   agentRunStatus: 'IDLE',
-  marksLive: false
+  marksLive: false,
+  cmc: null
 };
 
 const INFO_COPY = {
@@ -1045,6 +1068,11 @@ const INFO_COPY = {
     title: 'Regime',
     body: 'Mag7 vs BTC/ETH posture from live 24h changes. A compass for cross-asset risk-on / risk-off — not a trade signal by itself.',
     real: 'Computed from live books'
+  },
+  cmc: {
+    title: 'CMC Witness',
+    body: 'CoinMarketCap Pro: BTC/ETH quotes, global dominance, Fear & Greed pulse. Mag7 stays on Dual Book — CMC has no US names. Fail → unknown, never a fake index.',
+    real: 'Live · /api/cmc · Pro API'
   },
   heat: {
     title: 'Heat map',
@@ -1094,10 +1122,27 @@ function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 async function api(path, opts){
-  const r = await fetch(API + path, opts);
-  const j = await r.json().catch(() => ({ok:false, error:'bad json', status:r.status}));
-  j._http = r.status;
-  return j;
+  opts = opts || {};
+  const timeoutMs = opts.timeoutMs != null ? opts.timeoutMs : 12000;
+  const fetchOpts = Object.assign({}, opts);
+  delete fetchOpts.timeoutMs;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(API + path, Object.assign({}, fetchOpts, {signal: ctrl.signal}));
+    const j = await r.json().catch(() => ({ok:false, error:'bad json', status:r.status}));
+    j._http = r.status;
+    return j;
+  } catch (e) {
+    return {
+      ok: false,
+      error: (e && e.name === 'AbortError') ? 'request timeout' : String((e && e.message) || e || 'fetch failed'),
+      _offline: true,
+      _http: 0
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 function toast(msg, bad){
   const t = $('toast');
@@ -1340,6 +1385,13 @@ function setModeUI(pill, sleeve){
       txt.textContent = ((pill||'LIVE') + ' · Real marks · Risk Cage armed · ' + (S.agentMode||'normal').toUpperCase());
     }
   }
+  const tm = $('topMode');
+  if(tm){
+    tm.textContent = (pill || 'PUBLIC MARKS') + ' · ' + (S.agentMode||'normal').toUpperCase();
+    tm.classList.toggle('paper', /PAPER/i.test(pill||'') || !!S.paper);
+    tm.classList.toggle('live', /LIVE SLEEVE/i.test(pill||'') && !S.paper);
+    tm.classList.toggle('disc', /DISC/i.test(pill||'') || (!S.sleeve && !S.paper));
+  }
   const fm = $('footMode');
   if(fm) fm.textContent = (pill || 'PUBLIC MARKS') + ' · ' + (S.agentMode||'normal').toUpperCase();
   const gate = killGateLabel();
@@ -1363,6 +1415,7 @@ function renderWalletStrip(){
   setChip(marks, S.marksLive ? 'Marks LIVE' : 'Marks —', S.marksLive ? 'on' : 'muted');
   setChip(llm, !S.llmOn ? 'LLM OFF' : (S.agentEnabled===false ? 'LLM STANDBY' : 'LLM ON'), !S.llmOn ? 'off' : (S.agentEnabled===false ? 'muted' : 'on'));;
   if(!S.sleeve) setChip(sleeve, 'Sleeve OFF', 'off');
+  else if(S.paper) setChip(sleeve, 'Sleeve PAPER', 'on');
   else if(!S.hooksEnabled) setChip(sleeve, 'Sleeve KEYS·STUB', 'warn');
   else setChip(sleeve, 'Sleeve LIVE', 'on');
   if(!S.sleeve) setChip(kill, 'Kill OFF', 'off');
@@ -1421,7 +1474,7 @@ function renderRisk(risk, sleeve){
   }
   g.innerHTML = `
     <div class="agent-mode-note">Cage · <b style="color:${modeColor}">${mode.toUpperCase()}</b>
-      · ${mode==='aggressive'?'5 slots · looser · halt 8%':'3 slots · tight · halt 5%'}
+      · ${maxSlots} slots · halt ${halt==null?'—':halt+'%'}
       ${div!=null?` · div ±${div}%`:''}</div>
     <div class="cage-grid">
       <div class="cg"><div class="cg-l">Max slots</div><div class="cg-v" style="color:${modeColor}">${maxSlots}</div></div>
@@ -1485,6 +1538,10 @@ function formatContextLine(ctx){
   else if(geo && geo.level === 'unknown') bits.push('geo unknown');
   if(Array.isArray(ctx.news) && ctx.news.length) bits.push(ctx.news.length + ' headlines');
   else bits.push('news []');
+  const cmc = ctx.cmc;
+  if(cmc && cmc.ok && ctx.cmc_brief) bits.push('cmc ' + String(ctx.cmc_brief).slice(0,80));
+  else if(cmc && cmc.ok === false) bits.push('cmc unknown');
+  else if(ctx.cmc_brief && ctx.cmc_brief !== 'cmc:unavailable') bits.push('cmc ' + String(ctx.cmc_brief).slice(0,80));
   // Only show if we have at least sentiment or us_tape or macro present (honest pack)
   if(!ctx.sentiment && !ctx.macro && !ctx.us_tape) return '';
   return bits.join(' · ');
@@ -1625,9 +1682,133 @@ async function openExplain(tickId){
   toast('Decision Court unavailable', true);
 }
 
+
+function fmtNum(v, d){
+  const n = Number(v);
+  if(!Number.isFinite(n)) return '—';
+  const dd = (d==null) ? 2 : d;
+  return n.toFixed(dd);
+}
+function chartPoints(series){
+  const out = [];
+  let lastT = -1;
+  for(const p of (series || [])){
+    let t = Math.floor(Number(p.ts != null ? p.ts : p.time));
+    const v = Number(p.equity != null ? p.equity : p.value);
+    if(!Number.isFinite(t) || !Number.isFinite(v) || t <= 0) continue;
+    if(t <= lastT) t = lastT + 1;
+    lastT = t;
+    out.push({time: t, value: v});
+  }
+  return out;
+}
+function fillPnlBits(f){
+  const notion = Number(f.notional_usdt);
+  const pnl = Number(f.pnl);
+  const note = String(f.note || f.reason || '').toLowerCase();
+  const isOpen = note === 'open' || note === 'add';
+  let pnlStr = '—';
+  let pnlCls = 'flat';
+  if(isOpen){
+    pnlStr = note === 'add' ? 'add' : 'open';
+  } else if(Number.isFinite(pnl)){
+    const pct = (Number.isFinite(notion) && notion > 0) ? (pnl / notion) * 100 : null;
+    pnlStr = (pnl>=0?'+':'') + pnl.toFixed(4) + (pct==null ? '' : ' (' + (pct>=0?'+':'') + pct.toFixed(2) + '%)');
+    pnlCls = pnl>=0 ? 'up' : 'dn';
+  }
+  return {pnlStr, pnlCls, note: note || 'fill'};
+}
+function formatPosCard(p){
+  if(!p || typeof p!=='object') return `<div class="blot-line">${escapeHtml(String(p))}</div>`;
+  const sym = p.symbol || p.instId || '?';
+  const side = String(p.side || p.holdSide || '').toLowerCase();
+  const sideCls = (side==='long'||side==='buy') ? 'up' : ((side==='short'||side==='sell') ? 'dn' : 'flat');
+  const pnl = Number(p.unrealized_pnl != null ? p.unrealized_pnl : p.unrealizedPL);
+  const pnlCls = Number.isFinite(pnl) ? (pnl>=0?'up':'dn') : 'flat';
+  const size = p.size != null ? p.size : (p.total != null ? p.total : p.qty);
+  const notion = Number(p.notional_usdt) || (Number(size) * Number(p.mark != null ? p.mark : p.markPrice));
+  const pct = (Number.isFinite(pnl) && Number.isFinite(notion) && notion > 0) ? (pnl / notion) * 100 : null;
+  const pnlStr = Number.isFinite(pnl)
+    ? ((pnl>=0?'+':'') + pnl.toFixed(4) + (pct==null ? ' uPnL' : ' (' + (pct>=0?'+':'') + pct.toFixed(2) + '%)'))
+    : 'uPnL —';
+  const lev = p.leverage != null ? String(p.leverage) + '×' : '';
+  const entry = p.entry != null ? p.entry : p.openPriceAvg;
+  const mark = p.mark != null ? p.mark : p.markPrice;
+  return `<div class="pos-card">
+    <div class="pos-top"><b>${escapeHtml(String(sym))}</b>
+      <span class="${sideCls}">${escapeHtml(side||'—')}</span>
+      ${lev?`<span class="pos-lev">${escapeHtml(lev)}</span>`:''}
+      <span class="pos-pnl ${pnlCls}">${escapeHtml(pnlStr)}</span>
+    </div>
+    <div class="pos-meta">size ${escapeHtml(String(size??'—'))} · entry ${escapeHtml(fmtNum(entry,4))} · mark ${escapeHtml(fmtNum(mark,4))}</div>
+  </div>`;
+}
+function formatOrdCard(o){
+  if(!o || typeof o!=='object') return `<div class="blot-line">${escapeHtml(String(o))}</div>`;
+  const sym = o.symbol || '?';
+  const side = String(o.side||'').toLowerCase();
+  const sideCls = (side==='buy'||side==='long')?'up':((side==='sell'||side==='short')?'dn':'flat');
+  return `<div class="ord-card">
+    <div class="pos-top"><b>${escapeHtml(String(sym))}</b>
+      <span class="${sideCls}">${escapeHtml(side||'—')}</span>
+      <span class="pos-lev">${escapeHtml(String(o.order_type||o.orderType||''))}</span>
+      <span class="pos-pnl flat">${escapeHtml(String(o.status||'pending'))}</span>
+    </div>
+    <div class="pos-meta">size ${escapeHtml(String(o.size??'—'))} · px ${escapeHtml(fmtNum(o.price,4))} · id ${escapeHtml(String(o.order_id||o.orderId||'—'))}</div>
+  </div>`;
+}
+function formatFillCard(f){
+  if(!f || typeof f!=='object') return `<div class="blot-line">${escapeHtml(typeof f==='string'?f:JSON.stringify(f))}</div>`;
+  const sym = f.symbol || '?';
+  const side = String(f.side||'').toLowerCase();
+  const sideCls = (side==='buy'||side==='long')?'up':((side==='sell'||side==='short')?'dn':'flat');
+  const bits = fillPnlBits(f);
+  const when = f.ts_iso ? String(f.ts_iso).replace('T',' ').replace('Z','') : '';
+  return `<div class="fill-card">
+    <div class="pos-top"><b>${escapeHtml(String(sym))}</b>
+      <span class="${sideCls}">${escapeHtml(side||'—')}</span>
+      <span class="pos-lev">${escapeHtml(bits.note)}</span>
+      <span class="pos-pnl ${bits.pnlCls}">${escapeHtml(bits.pnlStr)}</span>
+    </div>
+    <div class="pos-meta">${escapeHtml(when)} · size ${escapeHtml(String(f.size??'—'))} · px ${escapeHtml(fmtNum(f.price,4))} · notional ${escapeHtml(fmtNum(f.notional_usdt,2))}</div>
+  </div>`;
+}
+function formatBlotterRow(tab, row){
+  if(tab==='positions') return formatPosCard(row);
+  if(tab==='orders') return formatOrdCard(row);
+  return formatFillCard(row);
+}
+
+function applyLivePnl(nowMarks){
+  if(!S.positions || !S.positions.length || !nowMarks) return;
+  let changed = false;
+  S.positions.forEach(p => {
+    const m = nowMarks[p.symbol];
+    if(m==null) return;
+    const entry = Number(p.entry);
+    const size = Number(p.size);
+    const side = String(p.side || p.holdSide || '').toLowerCase();
+    const sgn = (side==='long' || side==='buy') ? 1 : -1;
+    if(!Number.isFinite(entry) || !Number.isFinite(size)) return;
+    p.mark = m;
+    p.unrealized_pnl = (m - entry) * size * sgn;
+    changed = true;
+  });
+  if(changed && S.lastBlotter){
+    S.lastBlotter.positions = S.positions;
+    renderBlotter(S.lastBlotter);
+  }
+}
 function renderBlotter(j){
   const el = $('blotter');
   const chip = $('blotChip');
+  S.lastBlotter = j;
+  if(j.paper){
+    j.disconnected = false;
+    j.sleeve_connected = true;
+    j.stub = false;
+    j.hooks_enabled = true;
+  }
   const disc = j.disconnected || !j.sleeve_connected;
   const hooks = (j.hooks_enabled != null) ? !!j.hooks_enabled : !!S.hooksEnabled;
   const stub = j.stub != null ? !!j.stub : ( !disc && !hooks );
@@ -1671,18 +1852,13 @@ function renderBlotter(j){
     return;
   }
   $('blotDot').className = 'dot ok';
-  chip.textContent = 'LIVE';
+  chip.textContent = j.paper ? 'PAPER' : 'LIVE';
   chip.className = 'chip hedge';
   const pos = j.positions||[], orders=j.orders||[], fills=j.fills||[];
   S.positions = pos;
-  const block = (title, arr) => `<div class="blot-sec"><div class="blot-h">${title} (${arr.length})<i></i></div>${
+  const block = (title, arr, kind) => `<div class="blot-sec"><div class="blot-h">${title} (${arr.length})<i></i></div>${
     arr.length
-      ? arr.slice(-10).reverse().map(p => {
-          if(p && (p.symbol||p.instId)){
-            return `<div class="blot-line"><b>${escapeHtml(p.symbol||p.instId)}</b> ${escapeHtml(p.holdSide||p.side||'')} ${escapeHtml(String(p.total||p.size||p.qty||''))}</div>`;
-          }
-          return `<div class="blot-line">${escapeHtml(JSON.stringify(p))}</div>`;
-        }).join('')
+      ? arr.slice(-10).reverse().map(p => formatBlotterRow(kind, p)).join('')
       : '<div class="blot-line">none</div>'
   }</div>`;
   el.innerHTML = `
@@ -1690,9 +1866,9 @@ function renderBlotter(j){
       <div class="blot-stat"><div class="l">Positions</div><div class="v">${pos.length}</div></div>
       <div class="blot-stat"><div class="l">Orders</div><div class="v">${orders.length}</div></div>
       <div class="blot-stat"><div class="l">Fills</div><div class="v">${fills.length}</div></div>
-      <div class="blot-stat"><div class="l">Sleeve</div><div class="v" style="color:var(--green)">LIVE</div></div>
+      <div class="blot-stat"><div class="l">Sleeve</div><div class="v" style="color:var(--green)">${j.paper?'PAPER':'LIVE'}</div></div>
     </div>
-    ${block('Positions', pos)}${block('Orders', orders)}${block('Fills', fills)}
+    ${block('Positions', pos, 'positions')}${block('Orders', orders, 'orders')}${block('Fills', fills, 'fills')}
     <div class="lev-note">${escapeHtml(j.message||'')}</div>`;
 }
 
@@ -1823,7 +1999,7 @@ function renderEquity(j){
   const empty = $('eqEmpty');
   const hooks = (j.hooks_enabled != null) ? !!j.hooks_enabled : !!S.hooksEnabled;
   const stub = j.stub != null ? !!j.stub : (j.connected && !hooks);
-  const series = (!j.connected || stub || !hooks) ? [] : (j.series || []);
+  const series = j.paper ? (j.series || []) : ((!j.connected || stub || !hooks) ? [] : (j.series || []));
   S.equityPts = series.length;
   applyEqVisibility();
   if(!j.connected){
@@ -1861,8 +2037,8 @@ function renderEquity(j){
     empty.classList.add('hide');
     ensureEqChart();
     if(S.eqSeries){
-      const data = series.map(p => ({time: Math.floor(p.ts), value: Number(p.equity)})).filter(p => !Number.isNaN(p.value));
-      S.eqSeries.setData(data);
+      const data = chartPoints(series);
+      try { S.eqSeries.setData(data); } catch(e) { console.warn('eq setData', e); }
     }
   }
   renderWalletStrip();
@@ -1910,6 +2086,7 @@ async function refreshBooks(){
       nowMarks[r.symbol] = r.mark;
     }
   });
+  applyLivePnl(nowMarks);
   renderBook($('usBook'), S.booksUs, 'us', S.usFilter);
   renderBook($('crBook'), S.booksCr, 'crypto', S.crFilter);
   $('usCount').textContent = String(S.booksUs.filter(x=>x.available).length);
@@ -1944,16 +2121,21 @@ async function refreshBooks(){
   renderWalletStrip();
 }
 
+
+
 async function refreshAll(){
-  const [health, state, sess, cinema, blotter, equity, risk] = await Promise.all([
+  const [health, state, sess, cinema, blotter, equity, risk, cmc] = await Promise.all([
     api('/api/health'),
     api('/api/agent/state'),
     api('/api/session'),
     api('/api/agent/cinema?n=40'),
     api('/api/blotter'),
     api('/api/equity'),
-    api('/api/risk')
+    api('/api/risk'),
+    api('/api/cmc')
   ]);
+  S.cmc = cmc && typeof cmc === 'object' ? cmc : {ok:false, error:'no /api/cmc'};
+  if(typeof renderCmc === 'function') renderCmc();
   if(risk && risk.risk) state.risk = state.risk || risk.risk;
   if(risk && risk.policy) state.policy = state.policy || risk.policy;
   if(risk && risk.agent_mode) state.agent_mode = state.agent_mode || risk.agent_mode;
@@ -1970,6 +2152,7 @@ async function refreshAll(){
   if(health.heartbeat_sec) S.hbSec = health.heartbeat_sec;
   if(health.llm_available != null) S.llmOn = !!health.llm_available;
   if(typeof health.agent_enabled !== "undefined") S.agentEnabled = !!health.agent_enabled;
+  if(health.paper != null) S.paper = !!health.paper;
   if(health.sleeve_connected != null) S.sleeve = !!health.sleeve_connected;
   if(health.private_hooks_enabled != null) S.hooksEnabled = !!health.private_hooks_enabled;
   if(health.kill_armed != null) S.killArmed = !!health.kill_armed;
@@ -2297,11 +2480,28 @@ async function openEquityTheatre(){
     '<button type="button" class="btn" id="ovEqClose">Close</button>',
     'theatre');
   $('ovEqClose').onclick = closeOverlay;
-  const j = await api('/api/equity');
+  const j = await api('/api/equity', {timeoutMs: 8000});
   S.ov.equityPayload = j;
+  if(j._offline){
+    $('ovBody').innerHTML = voidArt(
+      'SERVER OFFLINE',
+      escapeHtml(j.error || 'Cannot reach Crossfire on :8780')
+    ) + `<div class="ov-note" style="text-align:center">Dashboard process died mid-fetch — keep_crossfire watchdog should restart it; hard-refresh once :8780 is back</div>`;
+    return;
+  }
+  const paper = !!j.paper;
   const hooks = j.hooks_enabled != null ? !!j.hooks_enabled : !!S.hooksEnabled;
   const stub = j.stub != null ? !!j.stub : (j.connected && !hooks);
-  if(!j.connected || stub || !(j.series||[]).length){
+  const seriesLen = (j.series || []).length;
+  if(paper){
+    if(!seriesLen){
+      $('ovBody').innerHTML = voidArt(
+        'NO PAPER SNAPSHOTS',
+        escapeHtml(j.message || 'Paper equity curve empty — waiting for sleeve MTM points')
+      );
+      return;
+    }
+  } else if(!j.connected || stub || !seriesLen){
     const title = !j.connected ? 'SLEEVE DISCONNECTED' : (stub || !hooks ? 'KEYS · HOOK STUB' : 'NO SNAPSHOTS');
     $('ovBody').innerHTML = voidArt(
       title,
@@ -2314,17 +2514,13 @@ async function openEquityTheatre(){
     return;
   }
   const series = j.series || [];
-  // compute drawdown from peaks
+  const eqPts = chartPoints(series);
   let peak = -Infinity;
-  const eqPts = [], ddPts = [];
-  for(const p of series){
-    const t = Math.floor(Number(p.ts));
-    const v = Number(p.equity);
-    if(Number.isNaN(t) || Number.isNaN(v)) continue;
-    if(v > peak) peak = v;
-    const dd = peak > 0 ? ((v - peak) / peak) * 100 : 0;
-    eqPts.push({time:t, value:v});
-    ddPts.push({time:t, value:+dd.toFixed(4)});
+  const ddPts = [];
+  for(const p of eqPts){
+    if(p.value > peak) peak = p.value;
+    const dd = peak > 0 ? ((p.value - peak) / peak) * 100 : 0;
+    ddPts.push({time:p.time, value:+dd.toFixed(4)});
   }
   const last = eqPts[eqPts.length-1];
   const lastDd = ddPts[ddPts.length-1];
@@ -2344,11 +2540,11 @@ async function openEquityTheatre(){
   const eqEl = $('ovEqChart'), ddEl = $('ovDdChart');
   S.ov.eq = LightweightCharts.createChart(eqEl, chartOpts(eqEl, 220));
   const eqS = S.ov.eq.addAreaSeries({ lineColor:'#3ee8f0', topColor:'rgba(62,232,240,.28)', bottomColor:'rgba(62,232,240,.02)', lineWidth:2 });
-  eqS.setData(eqPts);
+  try { eqS.setData(eqPts); } catch(e) { console.warn('ov eq setData', e); }
   S.ov.eq.timeScale().fitContent();
   S.ov.dd = LightweightCharts.createChart(ddEl, chartOpts(ddEl, 220));
   const ddS = S.ov.dd.addAreaSeries({ lineColor:'#ff5d6c', topColor:'rgba(255,93,108,.02)', bottomColor:'rgba(255,93,108,.25)', lineWidth:2 });
-  ddS.setData(ddPts);
+  try { ddS.setData(ddPts); } catch(e) { console.warn('ov dd setData', e); }
   S.ov.dd.timeScale().fitContent();
 }
 
@@ -2365,7 +2561,7 @@ async function openBlotterDesk(){
   // Prefer dedicated fills endpoint if blotter fills empty
   if((!blot.fills || !blot.fills.length) && fillsApi.fills) blot.fills = fillsApi.fills;
   S.ov.blotterPayload = blot;
-  S.ov.blotterTab = 'positions';
+  S.ov.blotterTab = 'fills';
   $('ovExport').onclick = () => {
     const payload = S.ov.blotterPayload || blot;
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
@@ -2380,6 +2576,12 @@ async function openBlotterDesk(){
 }
 
 function paintBlotterDesk(j){
+  if(j.paper){
+    j.disconnected = false;
+    j.sleeve_connected = true;
+    j.stub = false;
+    j.hooks_enabled = true;
+  }
   const disc = j.disconnected || !j.sleeve_connected;
   const hooks = j.hooks_enabled != null ? !!j.hooks_enabled : !!S.hooksEnabled;
   const stub = j.stub != null ? !!j.stub : (!disc && !hooks);
@@ -2392,10 +2594,10 @@ function paintBlotterDesk(j){
   const emptyMsg = disc ? 'Sleeve disconnected — not simulated'
     : (stub || !hooks) ? 'Keys·stub — private hooks not live'
     : 'none';
-  const sleeveLbl = disc ? 'DISCONNECTED' : (stub || !hooks ? 'KEYS·STUB' : 'LIVE');
+  const sleeveLbl = disc ? 'DISCONNECTED' : (j.paper ? 'PAPER' : (stub || !hooks ? 'KEYS·STUB' : 'LIVE'));
   const sleeveColor = disc ? 'var(--red)' : (stub || !hooks ? 'var(--gold)' : 'var(--green)');
   const list = rows.length
-    ? rows.slice().reverse().map(p => `<div class="blot-line">${escapeHtml(typeof p==='string'?p:JSON.stringify(p))}</div>`).join('')
+    ? rows.slice().reverse().map(p => formatBlotterRow(tab, p)).join('')
     : `<div class="blot-line">${tab!=='fills' ? emptyMsg : 'none'}</div>`;
   $('ovBody').innerHTML = `
     <div class="ov-grid">
@@ -2407,9 +2609,9 @@ function paintBlotterDesk(j){
     <div class="ov-tabs">
       <button type="button" class="ov-tab ${tab==='positions'?'on':''}" data-tab="positions">Positions</button>
       <button type="button" class="ov-tab ${tab==='orders'?'on':''}" data-tab="orders">Orders</button>
-      <button type="button" class="ov-tab cyan ${tab==='fills'?'on':''}" data-tab="fills">Fills</button>
+      <button type="button" class="ov-tab cyan ${tab==='fills'?'on':''}" data-tab="fills">Journal</button>
     </div>
-    <div class="dr-sec"><h3>${escapeHtml(tab)} (${rows.length})</h3>${list}</div>
+    <div class="dr-sec"><h3>${escapeHtml(tab==='fills'?'Journal':tab)} (${rows.length})</h3>${list}</div>
     <div class="ov-note">${escapeHtml(j.message||'')} · Export downloads the live payload only</div>`;
   $('ovBody').querySelectorAll('.ov-tab').forEach(btn => {
     btn.onclick = () => { S.ov.blotterTab = btn.getAttribute('data-tab'); paintBlotterDesk(j); };
@@ -2439,7 +2641,11 @@ function researchBayBody(){
   lines.push(`<div class="bay-line ${llm?'on':'warn'}"><b>BRAIN</b> · ${llm?'DeepSeek via OpenRouter ready':'no LLM key · policy fallback'}</div>`);
   lines.push(`<div class="bay-line"><b>MARKS</b> · Bitget public USDT-M · ${usN} US + ${crN} crypto</div>`);
   lines.push(`<div class="bay-line"><b>SESSION</b> · ${escapeHtml(tape.length>80?tape.slice(0,77)+'…':tape)}</div>`);
+
   lines.push(`<div class="bay-line"><b>SENTIMENT</b> · <span class="${sent==='risk_on'?'up':(sent==='risk_off'?'dn':'flat')}">${escapeHtml(sent)}</span> · from breadth + funding</div>`);
+  const cmcOk = !!(ctx.cmc && ctx.cmc.ok);
+  const cmcLine = cmcOk ? String(ctx.cmc_brief || ctx.cmc.brief || 'cmc ok').slice(0,90) : 'unknown · no invent';
+  lines.push(`<div class="bay-line ${cmcOk?'on':'warn'}"><b>CMC</b> · ${escapeHtml(cmcLine)}</div>`);
   lines.push(`<div class="bay-line ${newsN?'on':'warn'}"><b>NEWS</b> · ${newsN?newsN+' headlines': 'none wired · Rule 2 stays cautious'}</div>`);
   lines.push(`<div class="bay-line ${geo==='unknown'?'warn':'on'}"><b>GEOPOLITICS</b> · ${escapeHtml(geo)} · never invented</div>`);
   lines.push(`<div class="bay-line"><b>RULES</b> · R1→R13 checklist every tick · next pulse ${countdown}</div>`);
@@ -2537,6 +2743,38 @@ function avgPct(rows, filterFn){
   const xs = rows.filter(r => r.available && r.change24h_pct!=null && (!filterFn || filterFn(r))).map(r => Number(r.change24h_pct));
   if(!xs.length) return null;
   return xs.reduce((a,b)=>a+b,0)/xs.length;
+}
+
+function renderCmc(){
+  const el = $('cmcBody'); if(!el) return;
+  const p = S.cmc;
+  if(!p || p.ok === false){
+    const err = (p && (p.error || p.brief)) ? String(p.error || p.brief) : 'no /api/cmc';
+    el.innerHTML = `<div class="void mini"><div class="void-s">CMC unknown · ${escapeHtml(err.slice(0,42))}</div></div>`;
+    return;
+  }
+  const fg = p.fear_greed || {};
+  const pulse = p.sentiment_pulse || {};
+  const btc = p.btc || {};
+  const eth = p.eth || {};
+  const g = p.global || {};
+  const fv = fg.value;
+  const fl = fg.label || '—';
+  let fgCls = 'mixed';
+  if(fv != null){
+    if(Number(fv) <= 25) fgCls = 'off';
+    else if(Number(fv) >= 75) fgCls = 'on';
+  }
+  const ch7 = pulse.change_7d_points;
+  const ch7s = (ch7==null || Number.isNaN(Number(ch7))) ? '7d —' : ('7d ' + (Number(ch7)>=0?'+':'') + Number(ch7));
+  const btcD = g.btc_dominance;
+  const mcap = g.total_market_cap_yesterday_percentage_change;
+  const cred = (p.credits && p.credits.credits_left != null) ? Number(p.credits.credits_left).toLocaleString() + ' cr' : '';
+  el.innerHTML = `
+    <div class="cmc-fg ${fgCls==='on'?'up':(fgCls==='off'?'dn':'')}">${fv==null?'—':fv}<span>${escapeHtml(String(fl))} · ${escapeHtml(ch7s)}</span></div>
+    <div class="cmc-row" style="margin-top:4px"><b>BTC</b><span class="${pctClass(btc.pct_24h)}">${fmtPct(btc.pct_24h)}</span></div>
+    <div class="cmc-row"><b>ETH</b><span class="${pctClass(eth.pct_24h)}">${fmtPct(eth.pct_24h)}</span></div>
+    <div class="cmc-meta">BTC.D ${btcD==null?'—':Number(btcD).toFixed(1)+'%'} · mcap <span class="${pctClass(mcap)}">${fmtPct(mcap)}</span>${cred?' · '+escapeHtml(cred):''}</div>`;
 }
 
 function renderRegime(){
@@ -2681,6 +2919,7 @@ function renderBreadth(){
 
 function renderBrain(){
   renderRegime();
+  renderCmc();
   renderHeat();
   renderLeadLag();
   renderSignals();
