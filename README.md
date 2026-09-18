@@ -6,6 +6,13 @@ When US cash equities sleep, Bitget **US stock USDT-M contracts** and **crypto p
 
 Repo: [github.com/CryptoCT01/Crossfire](https://github.com/CryptoCT01/Crossfire)
 
+
+## Dashboard
+
+![Crossfire paper sleeve — live marks, Dual Book, Risk Cage](docs/crossfire-dashboard-paper-sleeve.png)
+
+*Paper sleeve · live Bitget marks · agent hunting · Decision Cinema / Blotter / Equity Cage.*
+
 ## Run
 
 ```bash
