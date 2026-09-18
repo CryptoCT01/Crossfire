@@ -22,6 +22,7 @@ _CREDITS: dict[str, Any] = {"ts": 0.0, "credits": None}
 _TTL = 90.0  # seconds — quotes / global / F&G
 _CREDITS_TTL = 900.0  # key/info is observational; don't spend every pack
 _SKILLS_CACHE = _ROOT / "logs" / "cmc_skills_cache.json"
+_BAY_SEED = _ROOT / "crossfire" / "cmc_bay_seed.json"
 _SKILLS_STALE_SEC = 2 * 3600
 _BASE = "https://pro-api.coinmarketcap.com"
 
@@ -303,6 +304,7 @@ def _skills_overlay(now: float) -> dict[str, Any] | None:
         if k
         not in (
             "updated_at",
+            "bay_as_of",
             "source",
             "note",
             "quotes",
@@ -495,10 +497,48 @@ def fetch_cmc_pack(force: bool = False) -> dict[str, Any]:
         },
         "note": "Live Pro API pack; Mag7 is Dual Book not CMC",
     }
-    if overlay and overlay.get("extra"):
-        cache_out["mcp_extras"] = overlay["extra"]
-        cache_out["mcp_extras_as_of"] = overlay.get("updated_at")
+    # Always load previous cache BEFORE write so bay survives Pro-API refresh
+    try:
+        prev_cache = _load_skills_cache()
+    except Exception:
+        prev_cache = {}
+    if not isinstance(prev_cache, dict):
+        prev_cache = {}
+
+    bay_keep = None
+    bay_as_of_keep = None
+    if isinstance(prev_cache.get("bay"), dict):
+        bay_keep = prev_cache["bay"]
+        bay_as_of_keep = prev_cache.get("bay_as_of") or prev_cache.get("updated_at")
+    if bay_keep is None and _BAY_SEED.is_file():
+        try:
+            seed = json.loads(_BAY_SEED.read_text(encoding="utf-8"))
+            if isinstance(seed.get("bay"), dict):
+                bay_keep = seed["bay"]
+                bay_as_of_keep = seed.get("bay_as_of") or seed.get("updated_at")
+        except Exception:
+            pass
+
+    if overlay and isinstance(overlay.get("extra"), dict):
+        extra = dict(overlay["extra"])
+        if isinstance(extra.get("bay"), dict):
+            bay_keep = extra.pop("bay")
+            bay_as_of_keep = overlay.get("updated_at") or bay_as_of_keep
+        # strip nested mcp_extras noise
+        extra.pop("mcp_extras", None)
+        extra.pop("mcp_extras_as_of", None)
+        if extra:
+            cache_out["mcp_extras"] = extra
+            cache_out["mcp_extras_as_of"] = overlay.get("updated_at")
+
+    if bay_keep is not None:
+        cache_out["bay"] = bay_keep
+        cache_out["bay_as_of"] = bay_as_of_keep
+
     _write_skills_cache(cache_out)
+
+    bay = cache_out.get("bay")
+    bay_as_of = cache_out.get("bay_as_of")
 
     pack = {
         "ok": bool(btc or eth or gm or fear_greed),
@@ -511,10 +551,15 @@ def fetch_cmc_pack(force: bool = False) -> dict[str, Any]:
         "sentiment_pulse": pulse,
         "brief": brief,
         "skills": overlay,
+        "bay": bay,
+        "bay_as_of": bay_as_of,
         "credits": credits,
         "sources": sources or ["cmc:unavailable"],
         "witness": "CMC Witness · Pro API",
         "mag7_note": "Mag7/US names are Dual Book (Bitget), not CMC",
+        "equities_note": (bay or {}).get("equities_note")
+        if isinstance(bay, dict)
+        else "CMC research skills can cover US equities; Mag7 marks stay on Dual Book.",
     }
     if not pack["ok"]:
         pack["error"] = "CMC Pro calls returned no usable quotes/global/F&G"

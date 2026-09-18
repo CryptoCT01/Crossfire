@@ -685,6 +685,23 @@ body::after{
 .cmc-fg span{font-size:8px;letter-spacing:.12em;text-transform:uppercase;margin-left:6px;color:var(--fg3);font-weight:700}
 .cmc-meta{font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg3);margin-top:3px;line-height:1.4}
 
+.cmc-hit{cursor:pointer}
+.cmc-hit:hover{outline:1px solid rgba(62,232,240,.25); outline-offset:2px}
+.cmc-bay{display:flex;flex-direction:column;gap:12px}
+.cmc-bay-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:820px){.cmc-bay-grid{grid-template-columns:1fr}}
+.cmc-card{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,.25)}
+.cmc-card h5{margin:0 0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.cmc-kv{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;line-height:1.45}
+.cmc-kv b{color:var(--fg2);font-weight:700}
+.cmc-read{margin-top:6px;font-size:11px;color:var(--fg2);line-height:1.4}
+.cmc-news a{color:var(--cyan);text-decoration:none}
+.cmc-news a:hover{text-decoration:underline}
+.cmc-news li{margin:0 0 6px;font-size:11px;line-height:1.35}
+.cmc-pill{display:inline-block;padding:2px 7px;border-radius:999px;border:1px solid rgba(62,232,240,.35);font-family:var(--mono);font-size:9px;letter-spacing:.06em;margin:2px 4px 2px 0}
+.cmc-note{font-family:var(--mono);font-size:9px;color:var(--fg3);letter-spacing:.04em;line-height:1.4}
+
+
 @media(max-width:1280px){
   .brain{grid-template-columns:1fr 1.1fr 1.2fr;max-height:none}
   .brain .bp:nth-child(n+4){display:none}
@@ -812,8 +829,8 @@ body::after{
       <div class="bp-body" id="regimeBody"><div class="void mini"><div class="void-s">Warming…</div></div></div>
     </article>
     <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">CMC Witness</div><div class="bp-s">quotes · global · pulse</div></div><button type="button" class="info-btn" data-info="cmc" aria-label="About CMC Witness">i</button></div>
-      <div class="bp-body" id="cmcBody"><div class="void mini"><div class="void-s">No CMC yet</div></div></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">CMC Witness</div><div class="bp-s">quotes · global · pulse · click expand</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="cmc" aria-label="About CMC Witness">i</button><button type="button" class="expand-btn" id="cmcExpand">Expand</button></div></div>
+      <div class="bp-body cmc-hit" id="cmcBody" title="Expand CMC Witness"><div class="void mini"><div class="void-s">No CMC yet</div></div></div>
     </article>
 
     <article class="bp">
@@ -1071,8 +1088,8 @@ const INFO_COPY = {
   },
   cmc: {
     title: 'CMC Witness',
-    body: 'CoinMarketCap Pro: BTC/ETH quotes, global dominance, Fear & Greed pulse. Mag7 stays on Dual Book — CMC has no US names. Fail → unknown, never a fake index.',
-    real: 'Live · /api/cmc · Pro API'
+    body: 'Click Expand for the Witness Bay: live Pro tape plus CMC technicals, derivatives, narratives, BTC news, macro calendar, and BTC↔TradFi correlation. Mag7 marks stay on Dual Book (Bitget). CMC research skills can cover US equities — labeled separately, never mixed into Mag7 marks.',
+    real: 'Live · /api/cmc · Pro + MCP bay cache'
   },
   heat: {
     title: 'Heat map',
@@ -2777,6 +2794,131 @@ function renderCmc(){
     <div class="cmc-meta">BTC.D ${btcD==null?'—':Number(btcD).toFixed(1)+'%'} · mcap <span class="${pctClass(mcap)}">${fmtPct(mcap)}</span>${cred?' · '+escapeHtml(cred):''}</div>`;
 }
 
+
+function cmcBayBody(p){
+  const bay = (p && p.bay) || {};
+  const stale = !!(p && p.skills && p.skills.stale);
+  const asOf = p.bay_as_of || bay.as_of || p.fetched_at_iso || '—';
+  const fg = p.fear_greed || {};
+  const btc = p.btc || {};
+  const eth = p.eth || {};
+  const g = p.global || {};
+  const m = bay.market || {};
+  const d = bay.derivatives || {};
+  const taB = (bay.ta && bay.ta.BTC) || {};
+  const taE = (bay.ta && bay.ta.ETH) || {};
+  const news = Array.isArray(bay.news_btc) ? bay.news_btc : [];
+  const narr = Array.isArray(bay.narratives) ? bay.narratives : [];
+  const macros = Array.isArray(bay.macro_events) ? bay.macro_events : [];
+  const xa = bay.cross_asset || {};
+  const eqNote = p.equities_note || bay.equities_note || bay.stocks_note || p.mag7_note || '';
+  // field aliases (MCP cache variants)
+  if(m.altcoin_season_index==null && m.alt_season!=null) m.altcoin_season_index = m.alt_season;
+  if(taB.rsi14==null && taB.rsi_14!=null) taB.rsi14 = taB.rsi_14;
+  if(taE.rsi14==null && taE.rsi_14!=null) taE.rsi14 = taE.rsi_14;
+  if(xa.as_of_session==null && xa.as_of!=null) xa.as_of_session = xa.as_of;
+
+  const tape = `
+    <div class="cmc-card">
+      <h5>Tape · live Pro</h5>
+      <div class="cmc-kv"><b>F&amp;G</b><span>${fg.value==null?'—':fg.value} ${escapeHtml(String(fg.label||''))}</span></div>
+      <div class="cmc-kv"><b>BTC</b><span class="${pctClass(btc.pct_24h)}">${btc.price!=null?fmtPx(btc.price):'—'} · ${fmtPct(btc.pct_24h)}</span></div>
+      <div class="cmc-kv"><b>ETH</b><span class="${pctClass(eth.pct_24h)}">${eth.price!=null?fmtPx(eth.price):'—'} · ${fmtPct(eth.pct_24h)}</span></div>
+      <div class="cmc-kv"><b>BTC.D</b><span>${g.btc_dominance==null?'—':Number(g.btc_dominance).toFixed(1)+'%'}</span></div>
+      <div class="cmc-note" style="margin-top:6px">as of ${escapeHtml(String(asOf))}${stale?' · bay cache aging':''}</div>
+    </div>`;
+
+  const tech = `
+    <div class="cmc-card">
+      <h5>Technical · BTC / ETH</h5>
+      <div class="cmc-kv"><b>BTC RSI14</b><span>${taB.rsi14==null?'—':taB.rsi14}</span></div>
+      <div class="cmc-kv"><b>BTC MACD hist</b><span>${taB.macd==null?'—':taB.macd}</span></div>
+      <div class="cmc-kv"><b>BTC SMA30 / 200</b><span>${taB.sma30==null?'—':taB.sma30} / ${taB.sma200==null?'—':taB.sma200}</span></div>
+      <div class="cmc-read">${escapeHtml(taB.read||'—')}</div>
+      <div class="cmc-kv" style="margin-top:8px"><b>ETH RSI14</b><span>${taE.rsi14==null?'—':taE.rsi14}</span></div>
+      <div class="cmc-kv"><b>ETH MACD hist</b><span>${taE.macd==null?'—':taE.macd}</span></div>
+      <div class="cmc-read">${escapeHtml(taE.read||'—')}</div>
+    </div>`;
+
+  const structure = `
+    <div class="cmc-card">
+      <h5>Structure · global / derivs</h5>
+      <div class="cmc-kv"><b>Total mcap</b><span>${escapeHtml(String(m.total_mcap||'—'))} <span class="up">${escapeHtml(String(m.mcap_24h||''))}</span></span></div>
+      <div class="cmc-kv"><b>Alt season</b><span>${m.altcoin_season_index==null?'—':m.altcoin_season_index}</span></div>
+      <div class="cmc-kv"><b>BTC / ETH ETF AUM</b><span>${escapeHtml(String(m.btc_etf_aum||'—'))} / ${escapeHtml(String(m.eth_etf_aum||'—'))}</span></div>
+      <div class="cmc-kv"><b>OI total</b><span>${escapeHtml(String(d.oi_total||'—'))} <span class="${String(d.oi_24h||'').startsWith('-')?'dn':'up'}">${escapeHtml(String(d.oi_24h||''))}</span></span></div>
+      <div class="cmc-kv"><b>Funding</b><span>${escapeHtml(String(d.funding||'—'))}</span></div>
+      <div class="cmc-kv"><b>BTC liqs 24h</b><span>${escapeHtml(String(d.btc_liqs_24h||'—'))} · L ${escapeHtml(String(d.btc_liqs_long_24h||'—'))} / S ${escapeHtml(String(d.btc_liqs_short_24h||'—'))}</span></div>
+    </div>`;
+
+  const narrHtml = narr.length
+    ? narr.slice(0,5).map(n => `<span class="cmc-pill">#${n.rank} ${escapeHtml(n.name||'')} ${escapeHtml(n.chg_24h||n.mcap_chg_24h||'')}</span>`).join('')
+    : '<span class="cmc-note">no narratives in bay cache</span>';
+
+  const newsHtml = news.length
+    ? '<ul class="cmc-news" style="margin:0;padding-left:16px">' + news.slice(0,5).map(n => {
+        const t = escapeHtml(n.title||'headline');
+        const u = n.url ? String(n.url) : '';
+        const meta = escapeHtml([n.published||n.published_at, n.quality!=null?('q'+n.quality):''].filter(Boolean).join(' · '));
+        return u ? `<li><a href="${escapeHtml(u)}" target="_blank" rel="noopener">${t}</a><div class="cmc-note">${meta}</div></li>`
+                 : `<li>${t}<div class="cmc-note">${meta}</div></li>`;
+      }).join('') + '</ul>'
+    : '<div class="cmc-note">no BTC news in bay cache</div>';
+
+  const macroHtml = macros.length
+    ? macros.slice(0,6).map(e => `<div class="cmc-kv"><b>${escapeHtml(e.date||'—')}</b><span>${escapeHtml(e.title||'')}</span></div>`).join('')
+    : '<div class="cmc-note">no macro calendar rows</div>';
+
+  const xaRows = Array.isArray(xa.rows) ? xa.rows : [];
+  const xaHtml = `
+    <div class="cmc-card">
+      <h5>Cross-asset · BTC vs TradFi</h5>
+      <div class="cmc-read">${escapeHtml(xa.summary||'—')}</div>
+      ${xaRows.map(r => `<div class="cmc-kv"><b>${escapeHtml(r.asset||'')}</b><span>30d ${r.c30==null?'—':Number(r.c30).toFixed(2)} · 7d ${r.c7==null?'—':Number(r.c7).toFixed(2)} · ${escapeHtml(r.label||'')}</span></div>`).join('')}
+      <div class="cmc-note" style="margin-top:6px">${escapeHtml(xa.source||'CMC skill')} · session ${escapeHtml(String(xa.as_of_session||'—'))}</div>
+    </div>`;
+
+  return `
+  <div class="cmc-bay">
+    <div class="cmc-note">${escapeHtml(eqNote)}</div>
+    <div class="cmc-bay-grid">
+      ${tape}
+      ${tech}
+      ${structure}
+      <div class="cmc-card"><h5>Narratives</h5>${narrHtml}</div>
+      <div class="cmc-card"><h5>BTC news</h5>${newsHtml}</div>
+      <div class="cmc-card"><h5>Macro / catalysts</h5>${macroHtml}</div>
+      ${xaHtml}
+    </div>
+    <div class="ov-note">CMC Witness bay · Pro tape is live via /api/cmc · TA / news / narratives / cross-asset from CMC MCP cache (labeled). Mag7 execution marks stay on Dual Book.</div>
+  </div>`;
+}
+
+async function openCmcWitness(){
+  openOverlay('cmc',
+    'CMC <span class="c">Witness</span> Bay',
+    'Crypto tape · technicals · structure · news — Mag7 stays Dual Book',
+    '<div class="void mini"><div class="void-s">Loading /api/cmc…</div></div>',
+    '<button type="button" class="btn" id="ovCmcClose">Close</button>',
+    'theatre');
+  const cl = $('ovCmcClose'); if(cl) cl.onclick = closeOverlay;
+  let j = S.cmc;
+  try {
+    j = await api('/api/cmc', {timeoutMs: 10000});
+    if(j && typeof j === 'object') S.cmc = j;
+  } catch(e) {
+    j = S.cmc || {_offline:true, error:String(e&&e.message||e)};
+  }
+  if(!j || j._offline || j.ok === false){
+    $('ovBody').innerHTML = voidArt(
+      'CMC UNAVAILABLE',
+      escapeHtml((j && (j.error || j.brief)) || 'no /api/cmc')
+    ) + `<div class="ov-note" style="text-align:center">Witness stays honest — unknown beats a fake dashboard</div>`;
+    return;
+  }
+  $('ovBody').innerHTML = cmcBayBody(j);
+}
+
 function renderRegime(){
   const el = $('regimeBody'); if(!el) return;
   const mag = avgPct(S.booksUs, r => MAG7.has(r.symbol));
@@ -2997,6 +3139,14 @@ function wirePack(){
   if(blotExpand) blotExpand.onclick = openBlotterDesk;
   const eqExpand = $('eqExpand');
   if(eqExpand) eqExpand.onclick = openEquityTheatre;
+  const cmcExpand = $('cmcExpand');
+  if(cmcExpand) cmcExpand.onclick = (e) => { e.stopPropagation(); openCmcWitness(); };
+  const cmcBody = $('cmcBody');
+  if(cmcBody){
+    cmcBody.style.cursor = 'pointer';
+    cmcBody.onclick = () => openCmcWitness();
+  }
+
   const eqToggle = $('eqToggle');
   if(eqToggle){
     applyEqVisibility();

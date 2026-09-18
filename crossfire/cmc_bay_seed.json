@@ -1,0 +1,179 @@
+{
+  "updated_at": "2026-09-18T15:45:17Z",
+  "bay_as_of": "2026-09-18T15:45:16Z",
+  "source": "in-repo CMC Witness bay seed (refresh via MCP when online)",
+  "bay": {
+    "as_of": "2026-09-18T15:44:48Z",
+    "source": "CMC MCP tools \u00b7 Witness bay cache",
+    "equities_note": "CMC research skills include US equity scanners, sector rotation, and calendars. Crossfire Mag7 marks stay on Dual Book (Bitget USDT-M) \u2014 not CMC stock quotes.",
+    "ta": {
+      "BTC": {
+        "rsi14": 51.0,
+        "rsi7": 43.3,
+        "rsi21": 54.6,
+        "macd": -743.43,
+        "macd_line": 878.9,
+        "signal": 1622.33,
+        "sma7": 76801.77,
+        "sma30": 77679.86,
+        "sma200": 70336.83,
+        "ema7": 76805.6,
+        "ema30": 75796.76,
+        "ema200": 74010.68,
+        "read": "RSI14 ~neutral; MACD hist negative (momentum soft vs signal)"
+      },
+      "ETH": {
+        "rsi14": 54.21,
+        "rsi7": 48.24,
+        "rsi21": 57.14,
+        "macd": -24.67,
+        "macd_line": 52.62,
+        "signal": 77.29,
+        "sma7": 2470.63,
+        "sma30": 2455.03,
+        "sma200": 2067.38,
+        "ema7": 2454.19,
+        "ema30": 2383.07,
+        "ema200": 2269.21,
+        "read": "RSI14 mild bullish; price above SMA30/200; MACD hist still soft"
+      }
+    },
+    "market": {
+      "total_mcap": "2.75 T",
+      "mcap_24h": "+5.1%",
+      "mcap_7d": "+5.55%",
+      "volume_24h_total": "101.72 B",
+      "fear_greed": {
+        "index": 73,
+        "label": "Greed",
+        "yesterday": 64
+      },
+      "altcoin_season_index": 43,
+      "btc_dominance": "58.94%",
+      "eth_dominance": "11.45%",
+      "btc_etf_aum": "97.88 B",
+      "eth_etf_aum": "14.61 B"
+    },
+    "derivatives": {
+      "oi_total": "441.08 B",
+      "oi_24h": "-8%",
+      "funding": "0.0075735",
+      "funding_24h": "+73.35%",
+      "btc_liqs_24h": "60.65 M",
+      "btc_liqs_long_24h": "3.48 M",
+      "btc_liqs_short_24h": "57.17 M"
+    },
+    "narratives": [
+      {
+        "rank": 1,
+        "name": "Layer 1",
+        "mcap": "2.26 T",
+        "chg_24h": "+5.97%",
+        "top": [
+          "BTC",
+          "ETH",
+          "BNB"
+        ]
+      },
+      {
+        "rank": 2,
+        "name": "SEC/CFTC Token Taxonomy",
+        "mcap": "2.15 T",
+        "chg_24h": "+6.04%",
+        "top": [
+          "BTC",
+          "ETH",
+          "XRP"
+        ]
+      },
+      {
+        "rank": 3,
+        "name": "SEC/CFTC Digital Commodities",
+        "mcap": "2.15 T",
+        "chg_24h": "+6.04%",
+        "top": [
+          "BTC",
+          "ETH",
+          "XRP"
+        ]
+      }
+    ],
+    "news_btc": [
+      {
+        "title": "Bitcoin Blasts Past $80K and a Fresh Short Squeeze Is On",
+        "url": "https://decrypt.co/378630/bitcoin-blasts-short-squeeze-crypto-liquidations",
+        "published": "18 September 2026",
+        "quality": 8
+      },
+      {
+        "title": "Bitcoin Breakout: $80,000 Return Meets $82,300 Test",
+        "url": "https://cryptonews.com/news/bitcoin-breakout-80000-test/",
+        "published": "18 September 2026",
+        "quality": 7
+      },
+      {
+        "title": "Bitcoin\u2019s Price Rips Past $80K as Short Sellers Get Steamrolled",
+        "url": "https://news.bitcoin.com/bitcoins-price-rips-past-80k-as-short-sellers-get-steamrolled",
+        "published": "18 September 2026",
+        "quality": 8
+      }
+    ],
+    "macro_events": [
+      {
+        "title": "2026 US Midterm Elections",
+        "date": "3 November 2026"
+      },
+      {
+        "title": "FOMC Year-End Meeting with Projections",
+        "date": "8 December 2026"
+      },
+      {
+        "title": "SEC\u2019s Innovation Exemption Takes Effect",
+        "date": "18 September 2026"
+      },
+      {
+        "title": "Full FCA Crypto Regime Takes Effect",
+        "date": "25 October 2027"
+      }
+    ],
+    "cross_asset": {
+      "summary": "BTC strongest 30-session link: Gold 0.58 (moderate+). 7-session: Oil -0.47 (low reliability). NDX/SPX low corr on 30d.",
+      "as_of_session": "2026-09-17",
+      "status": "ok",
+      "source": "CMC skill btc_cross_asset_correlation",
+      "rows": [
+        {
+          "asset": "Nasdaq 100",
+          "c30": 0.18,
+          "c7": 0.29,
+          "label": "low"
+        },
+        {
+          "asset": "S&P 500",
+          "c30": 0.27,
+          "c7": 0.29,
+          "label": "low"
+        },
+        {
+          "asset": "Gold",
+          "c30": 0.58,
+          "c7": -0.1,
+          "label": "moderate+"
+        },
+        {
+          "asset": "Oil",
+          "c30": -0.17,
+          "c7": -0.47,
+          "label": "low"
+        },
+        {
+          "asset": "U.S. Dollar",
+          "c30": -0.5,
+          "c7": 0.14,
+          "label": "moderate-"
+        }
+      ]
+    }
+  },
+  "note": "Seed only \u2014 live Pro tape still from API; Mag7 is Dual Book"
+}
