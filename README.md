@@ -18,7 +18,7 @@ Ordered for what judges ask for — only what Crossfire actually ships:
 - [x] **Decision explainability** — Decision Cinema + `/api/explain/:tickId` + Research Bay
 - [x] **Paper trading (not live min-size)** — paper sleeve, live Bitget marks, live orders blocked
 - [x] **Paper trading log** — append-only JSONL + [docs/PAPER-RUN-RECORDS.md](docs/PAPER-RUN-RECORDS.md) · [docs/paper-trading-fills.jsonl](docs/paper-trading-fills.jsonl)
-- [x] **Compliant X post** — [docs/X-POSTS.md](docs/X-POSTS.md)
+- [x] **Compliant X post** — quote-tweet demo [timeline](docs/X-POSTS.md) · latest https://x.com/CryptoCT01/status/2101148081504817326
 - [x] **Paper scorecard in UI** — Sharpe / max DD / win rate / fills inside Expanded Equity (from real logs)
 
 **Paper record:** competition log is **actively building** (started mid-window; aging continues through the deadline). We don’t claim a finished multi-week backfill — judges can read the live JSONL as it grows.
