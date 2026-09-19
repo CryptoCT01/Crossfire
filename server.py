@@ -186,7 +186,23 @@ class Handler(BaseHTTPRequestHandler):
                 if paper:
                     paper_sleeve.ensure_curve_seed()
                     live = paper_sleeve.account_equity()
-                    series = store.read_jsonl_tail(eq_log, 500)
+                    # Full paper history (downsampled) so Return is vs $10k seed, not last-500 window
+                    series = store.read_jsonl_span(eq_log, 800)
+                    start_eq = float(paper_sleeve.starting_equity())
+                    try:
+                        if series and series[0].get("equity") is not None:
+                            # Prefer actual seed point if present (usually 10000.0)
+                            start_eq = float(series[0]["equity"])
+                    except (TypeError, ValueError):
+                        pass
+                    end_eq = None
+                    try:
+                        end_eq = float((live or {}).get("equity") or (series[-1].get("equity") if series else None))
+                    except (TypeError, ValueError, IndexError, AttributeError):
+                        end_eq = None
+                    ret_pct = None
+                    if end_eq is not None and start_eq > 0:
+                        ret_pct = ((end_eq - start_eq) / start_eq) * 100.0
                     _json(
                         self,
                         200,
@@ -201,6 +217,11 @@ class Handler(BaseHTTPRequestHandler):
                                 "available": live.get("available"),
                                 "paper": True,
                             },
+                            "start_equity": start_eq,
+                            "end_equity": end_eq,
+                            "return_pct": ret_pct,
+                            "series_points": len(series),
+                            "series_total": store.count_jsonl(eq_log),
                             "series": series,
                             "message": live.get("message") or "PAPER sleeve — not live Bitget",
                         },

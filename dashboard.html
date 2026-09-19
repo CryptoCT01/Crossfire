@@ -2678,7 +2678,11 @@ function paperScoreFromSeries(eqPts, ddPts, fills, paper){
   if(eqPts && eqPts.length){
     out.startEq = eqPts[0].value;
     out.endEq = eqPts[eqPts.length-1].value;
-    if(out.startEq > 0) out.retPct = ((out.endEq - out.startEq) / out.startEq) * 100;
+    // Prefer explicit paper baseline (true $10k seed) when caller provides it —
+    // truncated chart windows used to fake ~0.05% returns.
+    const base = (out._baselineEq != null && out._baselineEq > 0) ? out._baselineEq : out.startEq;
+    if(base > 0 && out.endEq != null) out.retPct = ((out.endEq - base) / base) * 100;
+    if(out._baselineEq != null && out._baselineEq > 0) out.startEq = out._baselineEq;
     const t0 = eqPts[0].time, t1 = eqPts[eqPts.length-1].time;
     if(typeof t0 === 'number' && typeof t1 === 'number' && t1 > t0){
       out.windowDays = (t1 - t0) / 86400;
@@ -2831,7 +2835,14 @@ async function openEquityTheatre(){
   const lastDd = ddPts[ddPts.length-1];
   const fills = (fillsJ && !fillsJ._offline && Array.isArray(fillsJ.fills)) ? fillsJ.fills
     : (fillsJ && Array.isArray(fillsJ.fills) ? fillsJ.fills : []);
-  const sc = paperScoreFromSeries(eqPts, ddPts, fills, paper);
+    const sc = paperScoreFromSeries(eqPts, ddPts, fills, paper);
+  if(j.start_equity != null && Number(j.start_equity) > 0){
+    sc._baselineEq = Number(j.start_equity);
+    sc.startEq = Number(j.start_equity);
+    if(sc.endEq != null) sc.retPct = ((sc.endEq - sc.startEq) / sc.startEq) * 100;
+  } else if(j.return_pct != null && Number.isFinite(Number(j.return_pct))){
+    sc.retPct = Number(j.return_pct);
+  }
   if(fillsJ && fillsJ.total != null) sc.nFills = fillsJ.total;
   $('ovBody').innerHTML = `
     <div class="ov-grid">
@@ -2845,7 +2856,7 @@ async function openEquityTheatre(){
       <div><div class="ov-note" style="margin-bottom:4px">Equity curve</div><div id="ovEqChart"></div></div>
       <div><div class="ov-note" style="margin-bottom:4px">Drawdown from peaks %</div><div id="ovDdChart"></div></div>
     </div>
-    <div class="ov-note">Computed client-side from real /api/equity snapshots · scorecard uses the same curve + /api/fills · not simulated</div>`;
+    <div class="ov-note">Paper return is vs the $10k seed (full history), not the last chart window · scorecard uses /api/equity + /api/fills · not simulated</div>`;
   if(typeof LightweightCharts === 'undefined') return;
   const eqEl = $('ovEqChart'), ddEl = $('ovDdChart');
   S.ov.eq = LightweightCharts.createChart(eqEl, chartOpts(eqEl, 220));

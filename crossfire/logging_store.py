@@ -64,6 +64,45 @@ def read_jsonl_tail(name: str, n: int = 50) -> list[dict[str, Any]]:
     return out
 
 
+def read_jsonl_span(name: str, max_points: int = 800) -> list[dict[str, Any]]:
+    """Full-history series, evenly downsampled so charts keep the true start."""
+    path = _path(name)
+    if not path.is_file():
+        return []
+    with _lock:
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            return []
+    rows: list[dict[str, Any]] = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    n = len(rows)
+    cap = max(2, int(max_points))
+    if n <= cap:
+        return rows
+    # always keep first + last; fill evenly between
+    idxs = [0]
+    for i in range(1, cap - 1):
+        idxs.append(int(round(i * (n - 1) / (cap - 1))))
+    idxs.append(n - 1)
+    # de-dupe while preserving order
+    out: list[dict[str, Any]] = []
+    seen: set[int] = set()
+    for i in idxs:
+        if i in seen:
+            continue
+        seen.add(i)
+        out.append(rows[i])
+    return out
+
+
 def read_jsonl_by_id(name: str, tick_id: str) -> dict[str, Any] | None:
     path = _path(name)
     if not path.is_file():
