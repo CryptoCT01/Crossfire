@@ -101,9 +101,9 @@ body::after{
 
 .hunt-rail{flex:0 0 22px;position:relative;overflow:hidden;display:flex;align-items:center;border:1px solid rgba(255,255,255,.08);border-radius:8px;
   background:linear-gradient(90deg,rgba(4,8,16,.4),rgba(232,184,74,.06),rgba(62,232,240,.07),rgba(4,8,16,.4))}
-.hunt-rail::before{content:'';position:absolute;top:0;bottom:0;width:28%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);animation:huntSweep 2.8s ease-in-out infinite;pointer-events:none;z-index:2}
+.hunt-rail::before{content:'';position:absolute;top:0;bottom:0;width:28%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);animation:huntSweep 4s ease-in-out infinite;pointer-events:none;z-index:2}
 @keyframes huntSweep{0%{transform:translateX(-100%)}100%{transform:translateX(420%)}}
-.hunt-track{display:inline-flex;align-items:center;gap:22px;white-space:nowrap;animation:huntMarquee 28s linear infinite;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;padding:0 14px;z-index:1}
+.hunt-track{display:inline-flex;align-items:center;gap:22px;white-space:nowrap;animation:huntMarquee 48s linear infinite;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;padding:0 14px;z-index:1}
 @keyframes huntMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .hunt-track .hu{color:var(--gold);text-shadow:0 0 8px rgba(232,184,74,.35)}
 .hunt-track .hc{color:var(--cyan);text-shadow:0 0 8px rgba(62,232,240,.35)}
