@@ -843,6 +843,8 @@ body::after{
 .pos-card .pos-lev,.ord-card .pos-lev{color:rgba(232,184,74,.9);font-size:11px}
 .pos-card .pos-pnl{margin-left:auto;font-weight:600}
 .pos-card .pos-meta,.ord-card .pos-meta,.fill-card .pos-meta{margin-top:6px;font-size:11px;color:rgba(232,237,244,.55);font-family:'JetBrains Mono',monospace;line-height:1.45}
+.focus-pos .ov-grid{margin-top:4px}
+.focus-pos .ov-note{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--fg3)}
 
 
 </style>
@@ -1893,23 +1895,73 @@ function formatPosCard(p){
   const pnl = Number(p.unrealized_pnl != null ? p.unrealized_pnl : p.unrealizedPL);
   const pnlCls = Number.isFinite(pnl) ? (pnl>=0?'up':'dn') : 'flat';
   const size = p.size != null ? p.size : (p.total != null ? p.total : p.qty);
-  const notion = Number(p.notional_usdt) || (Number(size) * Number(p.mark != null ? p.mark : p.markPrice));
+  const mark = p.mark != null ? p.mark : p.markPrice;
+  const entry = p.entry != null ? p.entry : (p.avgPrice != null ? p.avgPrice : p.openPriceAvg);
+  const notion = Number(p.notional_usdt != null ? p.notional_usdt : p.notionalUsdt)
+    || (Number.isFinite(Number(size)) && Number.isFinite(Number(mark)) ? Number(size) * Number(mark) : NaN);
   const pct = (Number.isFinite(pnl) && Number.isFinite(notion) && notion > 0) ? (pnl / notion) * 100 : null;
   const pnlStr = Number.isFinite(pnl)
-    ? ((pnl>=0?'+':'') + pnl.toFixed(4) + (pct==null ? ' uPnL' : ' (' + (pct>=0?'+':'') + pct.toFixed(2) + '%)'))
+    ? ((pnl>=0?'+':'') + pnl.toFixed(2) + ' USDT' + (pct==null ? '' : ' · ' + (pct>=0?'+':'') + pct.toFixed(2) + '%'))
     : 'uPnL —';
-  const lev = p.leverage != null ? String(p.leverage) + '×' : '';
-  const entry = p.entry != null ? p.entry : p.openPriceAvg;
-  const mark = p.mark != null ? p.mark : p.markPrice;
+  const lev = p.leverage != null ? String(p.leverage).replace(/x$/i,'') + '×' : '';
+  const paper = p.paper ? ' · paper' : '';
   return `<div class="pos-card">
-    <div class="pos-top"><b>${escapeHtml(String(sym))}</b>
-      <span class="${sideCls}">${escapeHtml(side||'—')}</span>
+    <div class="pos-top"><b>${escapeHtml(shortSym(String(sym)))}</b>
+      <span class="${sideCls}">${escapeHtml((side||'—').toUpperCase())}</span>
       ${lev?`<span class="pos-lev">${escapeHtml(lev)}</span>`:''}
       <span class="pos-pnl ${pnlCls}">${escapeHtml(pnlStr)}</span>
     </div>
-    <div class="pos-meta">size ${escapeHtml(String(size??'—'))} · entry ${escapeHtml(fmtNum(entry,4))} · mark ${escapeHtml(fmtNum(mark,4))}</div>
+    <div class="pos-meta">Qty ${escapeHtml(fmtNum(size,4))} · Entry ${escapeHtml(fmtPx(entry))} · Mark ${escapeHtml(fmtPx(mark))}${Number.isFinite(notion)?' · Notional '+escapeHtml(fmtNum(notion,2))+' USDT':''}${escapeHtml(paper)}</div>
   </div>`;
 }
+
+/** Focus Room position panel — human-readable stats, never raw JSON. */
+function formatFocusPosBlock(pos, row){
+  if(!pos){
+    return `<div class="dr-sec"><h3>Position</h3><div class="blot-line">Flat — ${S.sleeve?'no blotter leg on this symbol':'sleeve disconnected · not simulated'}</div></div>`;
+  }
+  const side = String(pos.side || pos.holdSide || '').toLowerCase();
+  const sideCls = (side==='long'||side==='buy') ? 'up' : ((side==='short'||side==='sell') ? 'dn' : '');
+  const size = pos.size != null ? pos.size : (pos.total != null ? pos.total : pos.qty);
+  const entry = pos.entry != null ? pos.entry : (pos.avgPrice != null ? pos.avgPrice : pos.openPriceAvg);
+  const mark = (pos.mark != null ? pos.mark : pos.markPrice);
+  const liveMark = row && row.mark != null ? row.mark : mark;
+  const lev = pos.leverage != null ? String(pos.leverage).replace(/x$/i,'') + '×' : '—';
+  const pnl = Number(pos.unrealized_pnl != null ? pos.unrealized_pnl : pos.unrealizedPL);
+  const notion = Number(pos.notional_usdt != null ? pos.notional_usdt : pos.notionalUsdt);
+  const notionOk = Number.isFinite(notion) ? notion
+    : (Number.isFinite(Number(size)) && Number.isFinite(Number(liveMark)) ? Number(size)*Number(liveMark) : null);
+  const pct = (Number.isFinite(pnl) && notionOk && notionOk > 0) ? (pnl / notionOk) * 100 : null;
+  const pnlCls = Number.isFinite(pnl) ? (pnl>=0?'up':'dn') : '';
+  const pnlTxt = Number.isFinite(pnl)
+    ? ((pnl>=0?'+':'') + pnl.toFixed(2) + ' USDT')
+    : '—';
+  const pctTxt = pct==null ? '—' : ((pct>=0?'+':'') + pct.toFixed(2) + '%');
+  let opened = '—';
+  const ots = pos.opened_ts || pos.open_ts || pos.ts;
+  if(ots){
+    const ms = Number(ots) > 1e12 ? Number(ots) : Number(ots)*1000;
+    if(Number.isFinite(ms)){
+      opened = new Date(ms).toLocaleString('en-GB',{hour12:false, timeZone:'Europe/London'}) + ' London';
+    }
+  }
+  const mode = pos.paper ? 'PAPER' : 'LIVE';
+  return `<div class="dr-sec focus-pos">
+    <h3>Open position · ${escapeHtml(mode)}</h3>
+    <div class="ov-grid">
+      <div class="ov-stat"><div class="l">Side</div><div class="v ${sideCls}">${escapeHtml((side||'—').toUpperCase())}</div></div>
+      <div class="ov-stat"><div class="l">Qty</div><div class="v">${escapeHtml(fmtNum(size,4))}</div></div>
+      <div class="ov-stat"><div class="l">Leverage</div><div class="v">${escapeHtml(lev)}</div></div>
+      <div class="ov-stat"><div class="l">Notional</div><div class="v">${notionOk!=null?escapeHtml(fmtNum(notionOk,2))+' U':'—'}</div></div>
+      <div class="ov-stat"><div class="l">Entry</div><div class="v">${escapeHtml(fmtPx(entry))}</div></div>
+      <div class="ov-stat"><div class="l">Mark</div><div class="v">${escapeHtml(fmtPx(liveMark))}</div></div>
+      <div class="ov-stat"><div class="l">Unrealized</div><div class="v ${pnlCls}">${escapeHtml(pnlTxt)}</div></div>
+      <div class="ov-stat"><div class="l">uPnL %</div><div class="v ${pnlCls}">${escapeHtml(pctTxt)}</div></div>
+    </div>
+    <div class="ov-note" style="margin-top:8px">Opened ${escapeHtml(opened)}${pos.tick_id?(' · tick '+escapeHtml(String(pos.tick_id))):''}</div>
+  </div>`;
+}
+
 function formatOrdCard(o){
   if(!o || typeof o!=='object') return `<div class="blot-line">${escapeHtml(String(o))}</div>`;
   const sym = o.symbol || '?';
@@ -2522,7 +2574,7 @@ async function openFocusRoom(sym){
   S.ov.focusSym = row.symbol;
   const side = row.side==='us' ? 'US contract' : 'Crypto perp';
   const accent = row.side==='us' ? 'g' : 'c';
-  const pos = S.sleeve ? posFor(row.symbol) : null;
+  let pos = posFor(row.symbol);
   const hist = S.hist[row.symbol] || [];
   const stats = `
     <div class="ov-grid">
@@ -2535,9 +2587,9 @@ async function openFocusRoom(sym){
       <div class="ov-stat"><div class="l">Exch max lev</div><div class="v">${row.exchange_max_lev!=null?('≤'+row.exchange_max_lev+'×'):'—'}</div></div>
       <div class="ov-stat"><div class="l">Live buffer</div><div class="v">${hist.length} samples</div></div>
     </div>`;
-  const posBlock = pos
-    ? `<div class="dr-sec"><h3>Blotter position</h3><div class="dr-pre">${escapeHtml(JSON.stringify(pos,null,2))}</div></div>`
-    : `<div class="dr-sec"><h3>Position</h3><div class="blot-line">None — ${S.sleeve?'not in blotter for this symbol':'sleeve disconnected · not simulated'}</div></div>`;
+  // Prefer live book mark on the open pos for uPnL display
+  if(pos && row && row.mark != null) pos = Object.assign({}, pos, { mark: row.mark });
+  const posBlock = formatFocusPosBlock(pos, row);
   const body = `
     ${stats}
     <div id="ovChart" class="tall"><div class="chart-empty" id="ovChartEmpty">Loading chart…</div></div>
