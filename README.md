@@ -23,6 +23,8 @@ Ordered for what judges ask for — only what Crossfire actually ships:
 
 **Paper record:** competition log is **actively building** (started mid-window; aging continues through the deadline). We don’t claim a finished multi-week backfill — judges can read the live JSONL as it grows.
 
+**Honest run note:** we began on a small live sleeve, then moved to paper (live marks) for safer aging. An early paper same-asset re-entry bug (notably MSFT) hurt win rate; Risk Cage held and **logs were not rewritten**. Full write-up: [docs/PAPER-TESTING-NOTES.md](docs/PAPER-TESTING-NOTES.md).
+
 ## Dashboard
 
 ![Crossfire paper sleeve — live marks, Dual Book, Risk Cage](docs/crossfire-dashboard-paper-sleeve.png)

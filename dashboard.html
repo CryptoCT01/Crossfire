@@ -150,7 +150,7 @@ body::after{
   border:1px solid rgba(62,232,240,.4);background:rgba(62,232,240,.1);color:var(--cyan);
   cursor:pointer;white-space:nowrap;line-height:1
 }
-.ab-expand:hover{background:rgba(62,232,240,.18);box-shadow:0 0 10px rgba(62,232,240,.2)}
+.ab-expand:hover{color:var(--gold2);border-color:rgba(232,184,74,.5);background:rgba(232,184,74,.14);box-shadow:0 0 12px rgba(232,184,74,.22)}
 .hs.engine{min-width:92px;border-color:rgba(62,232,240,.28);background:linear-gradient(180deg,rgba(62,232,240,.1),rgba(8,12,20,.82))}
 .hs.engine .hs-l{color:var(--cyan)}
 .hs.engine .hs-v{display:flex;color:var(--cyan);font-size:12px;gap:6px;align-items:center}
@@ -285,7 +285,16 @@ body::after{
 .panel.us:hover{box-shadow:inset 2px 0 0 var(--gold),inset 0 1px 0 rgba(255,255,255,.04),0 0 22px rgba(232,184,74,.06)}
 .panel.cr{border-color:rgba(62,232,240,.28);box-shadow:inset -2px 0 0 var(--cyan),inset 0 1px 0 rgba(255,255,255,.06)}
 .panel.cr:hover{box-shadow:inset -2px 0 0 var(--cyan),inset 0 1px 0 rgba(255,255,255,.04),0 0 22px rgba(62,232,240,.06)}
-.panel.core{border-color:rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(12,16,26,.92),rgba(6,8,14,.95))}
+.panel.core{border-color:rgba(232,184,74,.22);background:linear-gradient(180deg,rgba(12,16,26,.92),rgba(6,8,14,.95));box-shadow:inset 2px 0 0 rgba(232,184,74,.85),inset -2px 0 0 rgba(62,232,240,.85),inset 0 1px 0 rgba(255,255,255,.06),0 0 14px rgba(232,184,74,.05),0 0 16px rgba(62,232,240,.04)}
+.panel.core:hover{box-shadow:inset 2px 0 0 rgba(232,184,74,.95),inset -2px 0 0 rgba(62,232,240,.95),inset 0 1px 0 rgba(255,255,255,.04),0 0 18px rgba(232,184,74,.07),0 0 20px rgba(62,232,240,.06)}
+.panel.cinema{border-color:rgba(183,148,255,.24);box-shadow:inset 2px 0 0 rgba(183,148,255,.9),inset 0 1px 0 rgba(255,255,255,.06),0 0 14px rgba(183,148,255,.06)}
+.panel.cinema:hover{box-shadow:inset 2px 0 0 var(--purple),inset 0 1px 0 rgba(255,255,255,.04),0 0 18px rgba(183,148,255,.09)}
+.panel.cinema .ph-t{color:var(--purple)}
+.panel.blotter{border-color:rgba(240,160,48,.24);box-shadow:inset 2px 0 0 rgba(240,160,48,.9),inset 0 1px 0 rgba(255,255,255,.06),0 0 12px rgba(240,160,48,.05)}
+.panel.blotter:hover{box-shadow:inset 2px 0 0 var(--amber),inset 0 1px 0 rgba(255,255,255,.04),0 0 16px rgba(240,160,48,.08)}
+.panel.blotter .ph-t{color:var(--amber)}
+.panel.cage{border-color:rgba(255,93,108,.28);box-shadow:inset 2px 0 0 rgba(255,93,108,.9),inset 0 1px 0 rgba(255,255,255,.06),0 0 14px rgba(255,93,108,.06)}
+.panel.cage:hover{box-shadow:inset 2px 0 0 #ff5d6c,inset 0 1px 0 rgba(255,255,255,.04),0 0 18px rgba(255,93,108,.1)}
 .ph{display:flex;align-items:center;justify-content:space-between;padding:8px 11px 6px;flex-shrink:0;position:relative;z-index:2}
 .ph-l{display:flex;align-items:center;gap:7px}
 .ph-t{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:-.02em}
@@ -299,9 +308,12 @@ body::after{
 .dot.bad{background:var(--red);box-shadow:0 0 8px var(--red)}
 .chip{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--fg3)}
 .chip.hedge{color:var(--cyan);border-color:rgba(62,232,240,.4);background:rgba(62,232,240,.1)}
-.chip.flat,.chip.hold{color:var(--fg2)}
-.chip.rot{color:var(--gold);border-color:rgba(232,184,74,.4);background:rgba(232,184,74,.1)}
+.chip.hold{color:var(--gold);border-color:rgba(232,184,74,.4);background:rgba(232,184,74,.1)}
+.chip.flat{color:var(--fg2)}
+.chip.rot{color:var(--purple);border-color:rgba(183,148,255,.4);background:rgba(183,148,255,.1)}
 .chip.warn{color:var(--amber);border-color:rgba(240,160,48,.4);background:rgba(240,160,48,.1)}
+.chip.open,.chip.long{color:var(--green);border-color:rgba(61,255,156,.4);background:rgba(61,255,156,.1)}
+.chip.short{color:var(--red);border-color:rgba(255,93,108,.4);background:rgba(255,93,108,.08)}
 .chip.err{color:var(--red);border-color:rgba(255,93,108,.4);background:rgba(255,93,108,.08)}
 
 .book-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:0 8px 6px;flex-shrink:0;position:relative;z-index:2}
@@ -357,10 +369,14 @@ body::after{
 .core-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 10px 8px;gap:6px;overflow:hidden;position:relative;z-index:2}
 .core-status{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .status-word{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.03em;line-height:1}
+.status-word.HOLD{color:var(--gold);text-shadow:0 0 22px rgba(232,184,74,.28)}
+.status-word.REDUCE,.status-word.TRIM,.status-word.SCALE{color:var(--amber);text-shadow:0 0 18px rgba(240,160,48,.28)}
 .status-word.HEDGING,.status-word.HEDGE{color:var(--cyan);text-shadow:0 0 22px rgba(62,232,240,.28)}
-.status-word.HOLD,.status-word.FLAT,.status-word.IDLE{color:var(--fg2)}
-.status-word.ROTATING,.status-word.ROTATE{color:var(--gold);text-shadow:0 0 22px rgba(232,184,74,.25)}
-.status-word.ERROR{color:var(--red)}
+.status-word.ROTATING,.status-word.ROTATE{color:var(--purple);text-shadow:0 0 22px rgba(183,148,255,.28)}
+.status-word.OPEN,.status-word.ENTER,.status-word.LONG,.status-word.BUY{color:var(--green);text-shadow:0 0 22px rgba(61,255,156,.28)}
+.status-word.SHORT,.status-word.SELL{color:var(--red);text-shadow:0 0 22px rgba(255,93,108,.28)}
+.status-word.CLOSE,.status-word.FLAT,.status-word.IDLE{color:var(--fg2)}
+.status-word.ERROR{color:var(--red);text-shadow:0 0 18px rgba(255,93,108,.3)}
 .shock{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);max-width:58%;text-align:right;line-height:1.35}
 .bridge-svg{flex:0 0 64px;width:100%}
 .corr-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
@@ -374,7 +390,7 @@ body::after{
 .leg.us{border-color:rgba(232,184,74,.22)}
 .leg.cr{border-color:rgba(62,232,240,.22)}
 .leg-h{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3);margin-bottom:3px}
-.leg-s{font-family:var(--mono);font-weight:800;font-size:13px}
+.leg-s{font-family:var(--mono);font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;min-width:0}.leg-s .coin-logo{width:16px;height:16px}
 .leg.us .leg-s{color:var(--gold)}.leg.cr .leg-s{color:var(--cyan)}
 .leg-m{font-family:var(--mono);font-size:9px;color:var(--fg2);margin-top:2px;line-height:1.35}
 .thesis{font-size:12px;line-height:1.45;color:var(--fg2);padding:8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--line);min-height:52px;max-height:110px;overflow:auto;scrollbar-gutter:stable}
@@ -481,7 +497,7 @@ body::after{
 .dr-x{border:0;background:transparent;color:var(--fg2);font-size:20px;cursor:pointer}
 .dr-meta{display:flex;flex-wrap:wrap;gap:6px}
 .dr-body{flex:1;overflow:auto;font-size:12px;line-height:1.5;color:var(--fg2)}
-.dr-sec{margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.dr-sec{margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid rgba(232,184,74,.16);background:linear-gradient(135deg,rgba(232,184,74,.05),rgba(8,12,20,.82) 45%)}
 .dr-sec h3{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
 .dr-pre{font-family:var(--mono);font-size:10px;line-height:1.5;white-space:pre-wrap;color:var(--fg2)}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(16px);opacity:0;z-index:80;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
@@ -517,13 +533,14 @@ body::after{
 }
 .info-btn{
   width:18px;height:18px;border-radius:50%;flex-shrink:0;cursor:pointer;
-  border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.05);
-  color:var(--fg2);font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;
+  border:1px solid rgba(62,232,240,.45);background:rgba(62,232,240,.12);
+  color:var(--cyan);font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;
   display:inline-flex;align-items:center;justify-content:center;transition:all .15s;
+  box-shadow:0 0 8px rgba(62,232,240,.1);
 }
 .info-btn:hover,.info-btn[aria-expanded="true"]{
-  color:var(--cyan2);border-color:rgba(62,232,240,.5);background:rgba(62,232,240,.1);
-  box-shadow:0 0 10px rgba(62,232,240,.15);
+  color:var(--gold2);border-color:rgba(232,184,74,.55);background:rgba(232,184,74,.14);
+  box-shadow:0 0 12px rgba(232,184,74,.22);
 }
 .info-pop{
   position:fixed;z-index:90;max-width:min(340px,88vw);padding:12px 14px;border-radius:12px;
@@ -537,7 +554,8 @@ body::after{
 .info-pop .info-real{margin-top:8px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
 .mode-seg{
   display:inline-flex;align-items:center;gap:0;padding:3px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.35);flex-shrink:0;
+  border:1px solid rgba(62,232,240,.32);background:rgba(0,0,0,.4);flex-shrink:0;
+  box-shadow:0 0 0 1px rgba(232,184,74,.12),0 0 14px rgba(62,232,240,.08),inset 0 1px 0 rgba(255,255,255,.06);
 }
 .mode-seg button{
   font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
@@ -597,6 +615,31 @@ body::after{
 .ov-stat{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
 .ov-stat .l{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
 .ov-stat .v{font-family:var(--mono);font-weight:700;font-size:14px;margin-top:3px;letter-spacing:-.02em}
+.ov-stat.tone-gold{border-color:rgba(232,184,74,.28);background:linear-gradient(135deg,rgba(232,184,74,.1),rgba(8,12,20,.85) 50%);box-shadow:inset 0 0 0 1px rgba(232,184,74,.06)}
+.ov-stat.tone-cyan{border-color:rgba(62,232,240,.28);background:linear-gradient(135deg,rgba(62,232,240,.1),rgba(8,12,20,.85) 50%);box-shadow:inset 0 0 0 1px rgba(62,232,240,.06)}
+.ov-stat.tone-purple{border-color:rgba(183,148,255,.3);background:linear-gradient(135deg,rgba(183,148,255,.12),rgba(8,12,20,.85) 50%);box-shadow:inset 0 0 0 1px rgba(183,148,255,.07)}
+.ov-stat.tone-amber{border-color:rgba(240,160,48,.3);background:linear-gradient(135deg,rgba(240,160,48,.1),rgba(8,12,20,.85) 50%);box-shadow:inset 0 0 0 1px rgba(240,160,48,.06)}
+.ov-stat.tone-green{border-color:rgba(61,255,156,.28);background:linear-gradient(135deg,rgba(61,255,156,.1),rgba(8,12,20,.85) 50%)}
+.ov-stat.tone-red{border-color:rgba(255,93,108,.28);background:linear-gradient(135deg,rgba(255,93,108,.1),rgba(8,12,20,.85) 50%)}
+.tok-sym{color:var(--cyan);font-weight:700;letter-spacing:.02em}
+.tok-pct.up{color:var(--green);font-weight:700;text-shadow:0 0 8px rgba(61,255,156,.2)}
+.tok-pct.dn{color:var(--red);font-weight:700;text-shadow:0 0 8px rgba(255,93,108,.2)}
+.tok-pct{font-variant-numeric:tabular-nums}
+.dr-sec{border-color:rgba(232,184,74,.16);background:linear-gradient(135deg,rgba(232,184,74,.05),rgba(8,12,20,.82) 45%)}
+.dr-sec.tone-cyan{border-color:rgba(62,232,240,.2);background:linear-gradient(135deg,rgba(62,232,240,.06),rgba(8,12,20,.85) 45%)}
+.dr-sec.tone-purple{border-color:rgba(183,148,255,.22);background:linear-gradient(135deg,rgba(183,148,255,.07),rgba(8,12,20,.85) 45%)}
+.dr-sec.tone-amber{border-color:rgba(240,160,48,.22);background:linear-gradient(135deg,rgba(240,160,48,.06),rgba(8,12,20,.85) 45%)}
+.bp.bp-heat{border-color:rgba(62,232,240,.22);box-shadow:inset 0 0 0 1px rgba(61,255,156,.06),inset 0 1px 0 rgba(255,255,255,.04)}
+.bp.bp-sig{border-color:rgba(183,148,255,.22);box-shadow:inset 0 0 0 1px rgba(183,148,255,.08),inset 0 1px 0 rgba(255,255,255,.04)}
+.bp.bp-breadth{border-color:rgba(240,160,48,.22);box-shadow:inset 0 0 0 1px rgba(240,160,48,.08),inset 0 1px 0 rgba(255,255,255,.04)}
+.bp.bp-cmc{border-color:rgba(255,93,108,.26);box-shadow:inset 0 0 0 1px rgba(255,93,108,.1),inset 0 1px 0 rgba(255,255,255,.04),0 0 12px rgba(255,93,108,.05)}
+.bp.bp-regime{border-color:rgba(232,184,74,.22);box-shadow:inset 0 0 0 1px rgba(232,184,74,.08),inset 0 1px 0 rgba(255,255,255,.04)}
+.bp.bp-lead{border-color:rgba(62,232,240,.2);box-shadow:inset 0 0 0 1px rgba(62,232,240,.08),inset 0 1px 0 rgba(255,255,255,.04)}
+.bay-timer{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid rgba(232,184,74,.35);background:linear-gradient(135deg,rgba(232,184,74,.12),rgba(62,232,240,.06));position:relative;z-index:1}
+.bay-timer .bay-timer-l{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3)}
+.bay-timer #bayCount,.bay-timer .bay-count{font-family:var(--orb);font-size:18px;font-weight:800;letter-spacing:.06em;color:var(--gold2);text-shadow:0 0 14px rgba(232,184,74,.35)}
+#ovChart .entry-line-overlay{position:absolute;left:0;right:48px;height:0;border-top:1.5px dashed;pointer-events:none;z-index:5;display:flex;align-items:flex-start}
+#ovChart .entry-line-overlay .entry-lbl{transform:translateY(-110%);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-left:8px}
 
 .ov-score{margin:10px 0 8px;padding:10px 12px;border-radius:12px;border:1px solid rgba(62,232,240,.22);background:linear-gradient(135deg,rgba(62,232,240,.06),rgba(232,184,74,.04));}
 .ov-score h4{margin:0 0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
@@ -610,8 +653,8 @@ body::after{
 .ov-tab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--fg3);cursor:pointer;transition:all .15s}
 .ov-tab.on{color:var(--gold);border-color:rgba(232,184,74,.4);background:rgba(232,184,74,.1)}
 .ov-tab.cyan.on{color:var(--cyan);border-color:rgba(62,232,240,.4);background:rgba(62,232,240,.1)}
-.expand-btn{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--fg3);cursor:pointer;transition:all .15s}
-.expand-btn:hover{color:var(--cyan);border-color:rgba(62,232,240,.35);background:rgba(62,232,240,.08)}
+.expand-btn{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid rgba(62,232,240,.42);background:rgba(62,232,240,.1);color:var(--cyan);cursor:pointer;transition:all .15s;box-shadow:0 0 8px rgba(62,232,240,.08)}
+.expand-btn:hover{color:var(--gold2);border-color:rgba(232,184,74,.5);background:rgba(232,184,74,.12);box-shadow:0 0 12px rgba(232,184,74,.18)}
 .inst{cursor:pointer}
 .inst:hover{transform:translateY(-1px)}
 .hunt-rail{cursor:default}
@@ -725,11 +768,17 @@ body::after{
 .regime-pill.mixed{color:var(--amber);border-color:rgba(240,160,48,.35);background:rgba(240,160,48,.08)}
 .regime-meta{font-family:var(--mono);font-size:8px;color:var(--fg3);letter-spacing:.06em;margin-top:5px;line-height:1.45}
 .heat{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
-.heat-cell{aspect-ratio:1;border-radius:3px;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:var(--mono);font-size:6px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);transition:transform .12s,border-color .12s;min-height:14px}
+.heat-cell{aspect-ratio:1;border-radius:4px;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:var(--mono);font-size:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:rgba(255,255,255,.7);transition:transform .12s,border-color .12s,box-shadow .12s;min-height:14px;overflow:hidden;padding:1px}
 .heat-cell:hover{transform:scale(1.12);border-color:rgba(255,255,255,.28);z-index:2;color:#fff}
-.heat-cell.up{background:rgba(61,255,156,.18)}.heat-cell.up.strong{background:rgba(61,255,156,.38)}
-.heat-cell.dn{background:rgba(255,93,108,.18)}.heat-cell.dn.strong{background:rgba(255,93,108,.38)}
+.heat-cell .coin-logo{width:12px;height:12px;border-width:0;box-shadow:none}
+.heat-cell .heat-sym{font-size:5px;letter-spacing:.02em;line-height:1;opacity:.9}
+.heat-cell.up{background:linear-gradient(160deg,rgba(61,255,156,.42),rgba(61,255,156,.12));border-color:rgba(61,255,156,.35);box-shadow:0 0 10px rgba(61,255,156,.18),inset 0 0 8px rgba(61,255,156,.1);color:#d8ffe8}
+.heat-cell.up.strong{background:linear-gradient(160deg,rgba(61,255,156,.72),rgba(61,255,156,.22));border-color:rgba(61,255,156,.55);box-shadow:0 0 16px rgba(61,255,156,.35),inset 0 0 10px rgba(61,255,156,.18);color:#fff}
+.heat-cell.dn{background:linear-gradient(160deg,rgba(255,93,108,.42),rgba(255,93,108,.12));border-color:rgba(255,93,108,.35);box-shadow:0 0 10px rgba(255,93,108,.18),inset 0 0 8px rgba(255,93,108,.1);color:#ffd6db}
+.heat-cell.dn.strong{background:linear-gradient(160deg,rgba(255,93,108,.72),rgba(255,93,108,.22));border-color:rgba(255,93,108,.55);box-shadow:0 0 16px rgba(255,93,108,.35),inset 0 0 10px rgba(255,93,108,.18);color:#fff}
 .heat-cell.na{background:rgba(255,255,255,.03)}
+.heat-cell.lg .coin-logo{width:18px;height:18px}
+.heat-cell.lg .heat-sym{font-size:9px;font-weight:800}
 .lead-row,.sig-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 0;font-family:var(--mono);font-size:9px;cursor:pointer;border-radius:4px}
 .lead-row:hover,.sig-row:hover{background:rgba(255,255,255,.04)}
 .lead-row .sym.g,.sig-row .sym.g{color:var(--gold)}.lead-row .sym.c,.sig-row .sym.c{color:var(--cyan)}
@@ -953,29 +1002,29 @@ body::after{
   <div class="sess" id="sessRow" hidden></div>
 
   <section class="brain" id="brainRow" aria-label="Market brain">
-    <article class="bp">
+    <article class="bp bp-regime">
       <div class="bp-h"><div><div class="bp-t" style="color:var(--gold)">Regime</div><div class="bp-s">Mag7 vs BTC/ETH</div></div><button type="button" class="info-btn" data-info="regime" aria-label="About Regime">i</button></div>
       <div class="bp-body" id="regimeBody"><div class="void mini"><div class="void-s">Warming…</div></div></div>
     </article>
-    <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">CMC Witness</div><div class="bp-s">quotes · global · pulse · click expand</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="cmc" aria-label="About CMC Witness">i</button><button type="button" class="expand-btn" id="cmcExpand">Expand</button></div></div>
+    <article class="bp bp-cmc">
+      <div class="bp-h"><div><div class="bp-t" style="color:#ff8a94">CMC Witness</div><div class="bp-s">quotes · global · pulse · click expand</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="cmc" aria-label="About CMC Witness">i</button><button type="button" class="expand-btn" id="cmcExpand">Expand</button></div></div>
       <div class="bp-body cmc-hit" id="cmcBody" title="Expand CMC Witness"><div class="void mini"><div class="void-s">No CMC yet</div></div></div>
     </article>
 
-    <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--fg)">Heat map</div><div class="bp-s">24h% · click → focus</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="heat" aria-label="About Heat map">i</button><button type="button" class="expand-btn" id="heatExpand">Expand</button></div></div>
+    <article class="bp bp-heat">
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Heat map</div><div class="bp-s">24h% · click → focus</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="heat" aria-label="About Heat map">i</button><button type="button" class="expand-btn" id="heatExpand">Expand</button></div></div>
       <div class="bp-body" id="heatBody"></div>
     </article>
-    <article class="bp">
+    <article class="bp bp-lead">
       <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Lead / lag</div><div class="bp-s">buffered marks</div></div><button type="button" class="info-btn" data-info="lead" aria-label="About Lead lag">i</button></div>
       <div class="bp-body" id="leadBody"><div class="void mini"><div class="void-s">Warming up…</div></div></div>
     </article>
-    <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--fg)">Signal stack</div><div class="bp-s">computed · local buffer</div></div><button type="button" class="info-btn" data-info="signal" aria-label="About Signal stack">i</button></div>
+    <article class="bp bp-sig">
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--purple)">Signal stack</div><div class="bp-s">computed · local buffer</div></div><button type="button" class="info-btn" data-info="signal" aria-label="About Signal stack">i</button></div>
       <div class="bp-body" id="sigBody"><div class="void mini"><div class="void-s">Need more samples…</div></div></div>
     </article>
-    <article class="bp">
-      <div class="bp-h"><div><div class="bp-t" style="color:#e8edf4">Breadth</div><div class="bp-s">% green 24h</div></div><button type="button" class="info-btn" data-info="breadth" aria-label="About Breadth">i</button></div>
+    <article class="bp bp-breadth">
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--amber)">Breadth</div><div class="bp-s">% green 24h</div></div><button type="button" class="info-btn" data-info="breadth" aria-label="About Breadth">i</button></div>
       <div class="bp-body" id="breadthBody"></div>
     </article>
   </section>
@@ -998,7 +1047,7 @@ body::after{
 
     <article class="panel core">
       <div class="ph">
-        <div class="ph-l"><span class="dot ok" id="coreDot"></span><div><div class="ph-t" style="color:var(--fg)">Bridge core</div><div class="ph-s">Last real decision · dual-book overlay</div></div></div>
+        <div class="ph-l"><span class="dot ok" id="coreDot"></span><div><div class="ph-t" style="background:linear-gradient(90deg,var(--gold),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent">Bridge core</div><div class="ph-s">Last real decision · dual-book overlay</div></div></div>
         <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="bridge" aria-label="About Bridge core">i</button><span class="chip" id="coreChip">—</span></div>
       </div>
       <div class="core-body">
@@ -1028,8 +1077,8 @@ body::after{
           <button type="button" class="info-btn" data-info="bridge_corr" aria-label="About bridge correlation" style="width:14px;height:14px;font-size:8px">i</button>
         </div>
         <div class="legs">
-          <div class="leg us"><div class="leg-h">US focus</div><div class="leg-s" id="legUs">AAPL</div><div class="leg-m" id="legUSm">Awaiting books</div></div>
-          <div class="leg cr"><div class="leg-h">Crypto focus</div><div class="leg-s" id="legCr">BTC</div><div class="leg-m" id="legCRm">Awaiting books</div></div>
+          <div class="leg us"><div class="leg-h">US focus</div><div class="leg-s" id="legUs"><span class="coin-logo ph">A</span><span>AAPL</span></div><div class="leg-m" id="legUSm">Awaiting books</div></div>
+          <div class="leg cr"><div class="leg-h">Crypto focus</div><div class="leg-s" id="legCr"><span class="coin-logo ph">B</span><span>BTC</span></div><div class="leg-m" id="legCRm">Awaiting books</div></div>
         </div>
         <div class="thesis" id="thesisBox"><b>THESIS</b><br>Waiting for first heartbeat…</div>
         <div class="ctx-line" id="ctxLine" hidden></div>
@@ -1068,15 +1117,15 @@ body::after{
   <section class="lower">
     <article class="panel cinema">
       <div class="ph">
-        <div class="ph-l"><span class="dot ok"></span><div><div class="ph-t" style="color:var(--fg)">Decision cinema</div><div class="ph-s">JSONL ticks · click a card → Decision Court</div></div></div>
+        <div class="ph-l"><span class="dot ok"></span><div><div class="ph-t">Decision cinema</div><div class="ph-s">JSONL ticks · click a card → Decision Court</div></div></div>
         <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="cinema" aria-label="About Decision cinema">i</button><span class="chip" id="cineCount">0</span></div>
       </div>
       <div class="cin-body" id="cinema"></div>
     </article>
 
-    <article class="panel">
+    <article class="panel blotter">
       <div class="ph">
-        <div class="ph-l"><span class="dot bad" id="blotDot"></span><div><div class="ph-t" style="color:var(--fg)">Blotter</div><div class="ph-s">Positions · orders · fills</div></div></div>
+        <div class="ph-l"><span class="dot bad" id="blotDot"></span><div><div class="ph-t">Blotter</div><div class="ph-s">Positions · orders · fills</div></div></div>
         <div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="blotter" aria-label="About Blotter">i</button><button type="button" class="expand-btn" id="blotExpand">Expand desk</button><span class="chip warn" id="blotChip">—</span></div>
       </div>
       <div class="blotter-body" id="blotter"></div>
@@ -1334,12 +1383,19 @@ const TV_LOGO_SLUG = {
   AAPL:'apple', TSLA:'tesla', NVDA:'nvidia', META:'meta-platforms',
   AMZN:'amazon', MSFT:'microsoft', GOOGL:'alphabet', GOOG:'alphabet',
   NFLX:'netflix', AMD:'advanced-micro-devices', COIN:'coinbase', MSTR:'microstrategy',
-  SPY:'spdr-s-and-p-500-etf-trust', QQQ:'invesco'
+  SPY:'state-street', QQQ:'invesco', IWM:'ishares', DIA:'spdr'
 };
 function logoUrl(sym){
   const s = shortSym(sym).toUpperCase();
   if(CMC_LOGO_ID[s]) return 'https://s2.coinmarketcap.com/static/img/coins/64x64/' + CMC_LOGO_ID[s] + '.png';
   if(TV_LOGO_SLUG[s]) return 'https://s3-symbol-logo.tradingview.com/' + TV_LOGO_SLUG[s] + '.svg';
+  // Equities / ETFs without a TV slug — Parqet brand marks
+  if(/^[A-Z]{1,5}$/.test(s)) return 'https://assets.parqet.com/logos/symbol/' + s;
+  return '';
+}
+function logoFallbackUrl(sym){
+  const s = shortSym(sym).toUpperCase();
+  if(CMC_LOGO_ID[s] || TV_LOGO_SLUG[s]) return 'https://assets.parqet.com/logos/symbol/' + s;
   return '';
 }
 function logoHtml(sym){
@@ -1347,8 +1403,21 @@ function logoHtml(sym){
   const letter = escapeHtml((s||'?').slice(0,1));
   const u = logoUrl(sym);
   if(!u) return `<span class="coin-logo ph" title="${escapeHtml(s)}">${letter}</span>`;
-  const kind = TV_LOGO_SLUG[s] ? ' stock' : '';
-  return `<img class="coin-logo${kind}" src="${escapeHtml(u)}" alt="" data-letter="${letter}" width="18" height="18" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;const s=document.createElement('span');s.className='coin-logo ph';s.textContent=this.dataset.letter||'?';this.replaceWith(s);"/>`;
+  const kind = (TV_LOGO_SLUG[s] || !CMC_LOGO_ID[s]) ? ' stock' : '';
+  const fb = logoFallbackUrl(sym);
+  const onerr = fb
+    ? `this.onerror=null;if(this.dataset.fb){this.src=this.dataset.fb;this.removeAttribute('data-fb');return;}const s=document.createElement('span');s.className='coin-logo ph';s.textContent=this.dataset.letter||'?';this.replaceWith(s);`
+    : `this.onerror=null;const s=document.createElement('span');s.className='coin-logo ph';s.textContent=this.dataset.letter||'?';this.replaceWith(s);`;
+  const fbAttr = fb ? ` data-fb="${escapeHtml(fb)}"` : '';
+  return `<img class="coin-logo${kind}" src="${escapeHtml(u)}" alt="" data-letter="${letter}"${fbAttr} width="18" height="18" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="${onerr}"/>`;
+}
+
+
+function setLegLabel(el, sym, text){
+  if(!el) return;
+  const label = (text!=null && String(text).trim()) ? String(text).trim() : shortSym(sym);
+  // Prefer logo for primary focus symbol; keep readable label beside it
+  el.innerHTML = logoHtml(sym || label) + '<span>' + escapeHtml(label) + '</span>';
 }
 
 function flash(el){
@@ -1413,7 +1482,11 @@ function actionClass(a){
   if(/HEDGE/.test(x)) return 'hedge';
   if(/ROTAT/.test(x)) return 'rot';
   if(/ERROR/.test(x)) return 'err';
-  if(/HOLD|FLAT|IDLE/.test(x)) return 'hold';
+  if(/REDUCE|TRIM|SCALE/.test(x)) return 'warn';
+  if(/OPEN|ENTER|LONG|BUY/.test(x)) return 'open';
+  if(/SHORT|SELL/.test(x)) return 'short';
+  if(/CLOSE|FLAT|IDLE/.test(x)) return 'flat';
+  if(/HOLD/.test(x)) return 'hold';
   return '';
 }
 function voidArt(title, sub){
@@ -1770,8 +1843,8 @@ function renderState(st){
     $('mMag').textContent = '—';
     $('mBtc').textContent = '—';
     $('mDiv').textContent = '—';
-    $('legUs').textContent = shortSym(S.focusUs);
-    $('legCr').textContent = shortSym(S.focusCr);
+    setLegLabel($('legUs'), S.focusUs);
+    setLegLabel($('legCr'), S.focusCr);
     $('legUSm').innerHTML = 'Default focus · no named US leg';
     $('legCRm').innerHTML = 'Default focus · no named crypto leg';
     return;
@@ -1790,12 +1863,16 @@ function renderState(st){
   const legs = d.legs || [];
   const usL = legs.filter(x => x.book==='us');
   const crL = legs.filter(x => x.book==='crypto');
-  $('legUs').textContent = usL.length
-    ? usL.map(x => ((x.intent||'') + ' ' + shortSym(x.symbol||x.basket||'')).trim()).join(' · ')
-    : shortSym(S.focusUs);
-  $('legCr').textContent = crL.length
-    ? crL.map(x => ((x.intent||'') + ' ' + shortSym(x.symbol||x.basket||'')).trim()).join(' · ')
-    : shortSym(S.focusCr);
+  if(usL.length){
+    const u0 = usL[0];
+    setLegLabel($('legUs'), u0.symbol||u0.basket||S.focusUs,
+      usL.map(x => ((x.intent||'') + ' ' + shortSym(x.symbol||x.basket||'')).trim()).join(' · '));
+  } else setLegLabel($('legUs'), S.focusUs);
+  if(crL.length){
+    const c0 = crL[0];
+    setLegLabel($('legCr'), c0.symbol||c0.basket||S.focusCr,
+      crL.map(x => ((x.intent||'') + ' ' + shortSym(x.symbol||x.basket||'')).trim()).join(' · '));
+  } else setLegLabel($('legCr'), S.focusCr);
   const usRow = S.booksUs.find(r => r.symbol===S.focusUs);
   const crRow = S.booksCr.find(r => r.symbol===S.focusCr);
   $('legUSm').innerHTML = usL.length
@@ -1946,17 +2023,17 @@ function formatFocusPosBlock(pos, row){
     }
   }
   const mode = pos.paper ? 'PAPER' : 'LIVE';
-  return `<div class="dr-sec focus-pos">
+  return `<div class="dr-sec focus-pos tone-amber">
     <h3>Open position · ${escapeHtml(mode)}</h3>
     <div class="ov-grid">
-      <div class="ov-stat"><div class="l">Side</div><div class="v ${sideCls}">${escapeHtml((side||'—').toUpperCase())}</div></div>
-      <div class="ov-stat"><div class="l">Qty</div><div class="v">${escapeHtml(fmtNum(size,4))}</div></div>
-      <div class="ov-stat"><div class="l">Leverage</div><div class="v">${escapeHtml(lev)}</div></div>
-      <div class="ov-stat"><div class="l">Notional</div><div class="v">${notionOk!=null?escapeHtml(fmtNum(notionOk,2))+' U':'—'}</div></div>
-      <div class="ov-stat"><div class="l">Entry</div><div class="v">${escapeHtml(fmtPx(entry))}</div></div>
-      <div class="ov-stat"><div class="l">Mark</div><div class="v">${escapeHtml(fmtPx(liveMark))}</div></div>
-      <div class="ov-stat"><div class="l">Unrealized</div><div class="v ${pnlCls}">${escapeHtml(pnlTxt)}</div></div>
-      <div class="ov-stat"><div class="l">uPnL %</div><div class="v ${pnlCls}">${escapeHtml(pctTxt)}</div></div>
+      <div class="ov-stat tone-purple"><div class="l">Side</div><div class="v ${sideCls}">${escapeHtml((side||'—').toUpperCase())}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Qty</div><div class="v">${escapeHtml(fmtNum(size,4))}</div></div>
+      <div class="ov-stat tone-amber"><div class="l">Leverage</div><div class="v">${escapeHtml(lev)}</div></div>
+      <div class="ov-stat tone-gold"><div class="l">Notional</div><div class="v">${notionOk!=null?escapeHtml(fmtNum(notionOk,2))+' U':'—'}</div></div>
+      <div class="ov-stat tone-gold"><div class="l">Entry</div><div class="v">${escapeHtml(fmtPx(entry))}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Mark</div><div class="v">${escapeHtml(fmtPx(liveMark))}</div></div>
+      <div class="ov-stat tone-green"><div class="l">Unrealized</div><div class="v ${pnlCls}">${escapeHtml(pnlTxt)}</div></div>
+      <div class="ov-stat tone-green"><div class="l">uPnL %</div><div class="v ${pnlCls}">${escapeHtml(pctTxt)}</div></div>
     </div>
     <div class="ov-note" style="margin-top:8px">Opened ${escapeHtml(opened)}${pos.tick_id?(' · tick '+escapeHtml(String(pos.tick_id))):''}</div>
   </div>`;
@@ -2445,24 +2522,26 @@ function tickClock(){
   const clk = $('clock'); if(clk) clk.textContent = now.toLocaleTimeString('en-GB',{hour12:false, timeZone:'Europe/London'});
   const clkz = $('clockz'); if(clkz) clkz.textContent = now.toLocaleDateString('en-GB',{weekday:'short', timeZone:'Europe/London'}) + ' · London';
   const abCount = $('abCount');
+  const bayCount = $('bayCount');
   const beacon = $('agentBeacon');
+  const setCounts = (v) => { if(abCount) abCount.textContent = v; if(bayCount) bayCount.textContent = v; };
   if(S.agentEnabled === false){
-    if(abCount) abCount.textContent = '—';
+    setCounts('—');
     if(beacon) beacon.classList.remove('urgent');
   } else if(S.nextHb){
     const rem = Math.max(0, Math.floor(S.nextHb - Date.now()/1000));
     // Guard absurd parked schedules
     if(rem > (S.hbSec || 300) * 3){
-      if(abCount) abCount.textContent = '—';
+      setCounts('—');
       if(beacon) beacon.classList.remove('urgent');
     } else {
       const m = Math.floor(rem/60), s = rem%60;
       const mmss = m + ':' + String(s).padStart(2,'0');
-      if(abCount) abCount.textContent = mmss;
+      setCounts(mmss);
       if(beacon) beacon.classList.toggle('urgent', rem <= 15);
     }
   } else {
-    if(abCount) abCount.textContent = '—';
+    setCounts('—');
     if(beacon) beacon.classList.remove('urgent');
   }
   updateAgentBeacon();
@@ -2578,14 +2657,14 @@ async function openFocusRoom(sym){
   const hist = S.hist[row.symbol] || [];
   const stats = `
     <div class="ov-grid">
-      <div class="ov-stat"><div class="l">Mark</div><div class="v">${fmtPx(row.mark)}</div></div>
-      <div class="ov-stat"><div class="l">Bid</div><div class="v">${fmtPx(row.bid)}</div></div>
-      <div class="ov-stat"><div class="l">Ask</div><div class="v">${fmtPx(row.ask)}</div></div>
-      <div class="ov-stat"><div class="l">24h</div><div class="v ${pctClass(row.change24h_pct)}">${fmtPct(row.change24h_pct)}</div></div>
-      <div class="ov-stat"><div class="l">Range 24h</div><div class="v">${fmtPx(row.low24h)} – ${fmtPx(row.high24h)}</div></div>
-      <div class="ov-stat"><div class="l">Funding</div><div class="v ${row.funding_rate==null?'na':pctClass(Number(row.funding_rate)*100)}">${row.funding_rate==null?'—':((Number(row.funding_rate)>=0?'+':'')+(Number(row.funding_rate)*100).toFixed(4)+'%')}</div></div>
-      <div class="ov-stat"><div class="l">Exch max lev</div><div class="v">${row.exchange_max_lev!=null?('≤'+row.exchange_max_lev+'×'):'—'}</div></div>
-      <div class="ov-stat"><div class="l">Live buffer</div><div class="v">${hist.length} samples</div></div>
+      <div class="ov-stat tone-gold"><div class="l">Mark</div><div class="v">${fmtPx(row.mark)}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Bid</div><div class="v">${fmtPx(row.bid)}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Ask</div><div class="v">${fmtPx(row.ask)}</div></div>
+      <div class="ov-stat tone-amber"><div class="l">24h</div><div class="v ${pctClass(row.change24h_pct)}">${fmtPct(row.change24h_pct)}</div></div>
+      <div class="ov-stat tone-purple"><div class="l">Range 24h</div><div class="v">${fmtPx(row.low24h)} – ${fmtPx(row.high24h)}</div></div>
+      <div class="ov-stat tone-amber"><div class="l">Funding</div><div class="v ${row.funding_rate==null?'na':pctClass(Number(row.funding_rate)*100)}">${row.funding_rate==null?'—':((Number(row.funding_rate)>=0?'+':'')+(Number(row.funding_rate)*100).toFixed(4)+'%')}</div></div>
+      <div class="ov-stat tone-gold"><div class="l">Exch max lev</div><div class="v">${row.exchange_max_lev!=null?('≤'+row.exchange_max_lev+'×'):'—'}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Live buffer</div><div class="v">${hist.length} samples</div></div>
     </div>`;
   // Prefer live book mark on the open pos for uPnL display
   if(pos && row && row.mark != null) pos = Object.assign({}, pos, { mark: row.mark });
@@ -2599,7 +2678,7 @@ async function openFocusRoom(sym){
     <button type="button" class="btn tick" id="ovWatchBridge">Watch in Bridge</button>
     <button type="button" class="btn" id="ovFocusClose">Close</button>`;
   openOverlay('focus',
-    `<span class="${accent}">${escapeHtml(shortSym(row.symbol))}</span> Focus Room`,
+    `${logoHtml(row.symbol)} <span class="${accent}">${escapeHtml(shortSym(row.symbol))}</span> Focus Room`,
     side + ' · Bitget USDT-FUTURES · real marks only',
     body, acts, '');
   $('ovWatchBridge').onclick = () => {
@@ -2610,10 +2689,10 @@ async function openFocusRoom(sym){
     toast('Bridge focus → ' + shortSym(S.focusUs) + ' · ' + shortSym(S.focusCr));
   };
   $('ovFocusClose').onclick = closeOverlay;
-  await paintFocusChart(row.symbol);
+  await paintFocusChart(row.symbol, pos);
 }
 
-async function paintFocusChart(sym){
+async function paintFocusChart(sym, pos){
   const el = $('ovChart');
   const empty = $('ovChartEmpty');
   const note = $('ovChartNote');
@@ -2664,6 +2743,76 @@ async function paintFocusChart(sym){
     if(S.ov.chart && el) S.ov.chart.applyOptions({ width: el.clientWidth, height: 340 });
   });
   ro.observe(el);
+
+  // Entry price line when an open position exists for this symbol
+  try{
+    const p = pos || posFor(sym);
+    if(p){
+      const entry = Number(p.entry != null ? p.entry : (p.avgPrice != null ? p.avgPrice : p.openPriceAvg));
+      if(Number.isFinite(entry) && entry > 0){
+        const mark = Number(p.mark != null ? p.mark : (p.markPrice != null ? p.markPrice : (findRow(sym)||{}).mark));
+        const pnl = Number(p.unrealized_pnl != null ? p.unrealized_pnl : p.unrealizedPL);
+        const notion = Number(p.notional_usdt != null ? p.notional_usdt : p.notionalUsdt);
+        const size = Number(p.size != null ? p.size : (p.total != null ? p.total : p.qty));
+        const notionOk = Number.isFinite(notion) ? notion
+          : (Number.isFinite(size) && Number.isFinite(mark) ? size * mark : null);
+        let pct = (Number.isFinite(pnl) && notionOk && notionOk > 0) ? (pnl / notionOk) * 100 : null;
+        if(pct == null && Number.isFinite(mark) && mark > 0){
+          pct = ((mark - entry) / entry) * 100;
+          const side = String(p.side || p.holdSide || '').toLowerCase();
+          if(side === 'short' || side === 'sell') pct = -pct;
+        }
+        const up = (pct == null) ? (Number.isFinite(pnl) ? pnl >= 0 : true) : pct >= 0;
+        const col = up ? '#3dff9c' : '#ff5d6c';
+        const pctTxt = pct == null ? '' : (' · ' + (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%');
+        const title = 'ENTRY ' + (entry >= 1000 ? entry.toFixed(0) : fmtPx(entry)) + pctTxt;
+        const series = S.ov.candle || S.ov.series;
+        let drawn = false;
+        if(series && typeof series.createPriceLine === 'function'){
+          series.createPriceLine({
+            price: entry,
+            color: col,
+            lineWidth: 2,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: title
+          });
+          drawn = true;
+        }
+        if(!drawn && series && S.ov.chart){
+          const ov = document.createElement('div');
+          ov.className = 'entry-line-overlay';
+          ov.style.borderColor = col;
+          ov.innerHTML = '<span class="entry-lbl" style="background:rgba(3,5,10,.85);color:' + col + ';border:1px solid ' + col + '">' + escapeHtml(title) + '</span>';
+          el.appendChild(ov);
+          const place = () => {
+            try{
+              const y = series.priceToCoordinate(entry);
+              if(y == null || !Number.isFinite(y)){ ov.style.display = 'none'; return; }
+              ov.style.display = 'flex';
+              ov.style.top = y + 'px';
+            }catch(e){ ov.style.display = 'none'; }
+          };
+          place();
+          S.ov.chart.timeScale().subscribeVisibleLogicalRangeChange(place);
+          new ResizeObserver(place).observe(el);
+        }
+      }
+    }
+  }catch(e){ /* entry line best-effort */ }
+
+}
+
+
+function highlightThesis(text){
+  let s = escapeHtml(String(text == null ? '' : text));
+  const tickers = 'BTC|ETH|SOL|XRP|DOGE|BNB|ADA|AVAX|LINK|DOT|MATIC|NEAR|ATOM|OP|ARB|APT|SUI|PEPE|WIF|BONK|AAPL|MSFT|NVDA|TSLA|AMZN|GOOGL|GOOG|META|AMD|COIN|MSTR|NFLX|SPY|QQQ|MAG7|USDT|USDC';
+  s = s.replace(new RegExp('\\b(' + tickers + ')\\b', 'gi'), m => '<span class="tok-sym">' + m + '</span>');
+  s = s.replace(/([+-]?\d+(?:\.\d+)?%)/g, (m) => {
+    const cls = m.trim().startsWith('-') ? 'dn' : (m.trim().startsWith('+') ? 'up' : '');
+    return '<span class="tok-pct' + (cls ? ' ' + cls : '') + '">' + m + '</span>';
+  });
+  return s;
 }
 
 async function openDecisionCourt(tickId){
@@ -2689,15 +2838,15 @@ async function openDecisionCourt(tickId){
   const snap = t.session || {};
   $('ovBody').innerHTML = `
     <div class="ov-grid">
-      <div class="ov-stat"><div class="l">Time</div><div class="v" style="font-size:12px">${escapeHtml(tm)}</div></div>
-      <div class="ov-stat"><div class="l">Action</div><div class="v ${actionClass(t.action)}">${escapeHtml(t.action||'—')}</div></div>
-      <div class="ov-stat"><div class="l">Engine</div><div class="v">${escapeHtml(t.engine||'—')}</div></div>
-      <div class="ov-stat"><div class="l">Trigger</div><div class="v">${escapeHtml(t.trigger||'—')}</div></div>
-      <div class="ov-stat"><div class="l">Confidence</div><div class="v">${t.confidence==null?'—':t.confidence}</div></div>
-      <div class="ov-stat"><div class="l">Tick id</div><div class="v" style="font-size:10px">${escapeHtml(tickId)}</div></div>
+      <div class="ov-stat tone-gold"><div class="l">Time</div><div class="v" style="font-size:12px">${escapeHtml(tm)}</div></div>
+      <div class="ov-stat tone-purple"><div class="l">Action</div><div class="v ${actionClass(t.action)}">${escapeHtml(t.action||'—')}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Engine</div><div class="v">${escapeHtml(String(t.engine||'—').toUpperCase())}</div></div>
+      <div class="ov-stat tone-amber"><div class="l">Trigger</div><div class="v">${escapeHtml(t.trigger||'—')}</div></div>
+      <div class="ov-stat tone-gold"><div class="l">Confidence</div><div class="v">${t.confidence==null?'—':t.confidence}</div></div>
+      <div class="ov-stat tone-cyan"><div class="l">Tick id</div><div class="v" style="font-size:10px">${escapeHtml(tickId)}</div></div>
     </div>
-    <div class="dr-sec"><h3>Thesis</h3><div>${escapeHtml(t.thesis||'—')}</div></div>
-    <div class="dr-sec"><h3>Market snapshot</h3>
+    <div class="dr-sec tone-purple"><h3>Thesis</h3><div>${highlightThesis(t.thesis||'—')}</div></div>
+    <div class="dr-sec tone-cyan"><h3>Market snapshot</h3>
       Mag7 <span class="${pctClass(t.mag7_24h_pct)}">${escapeHtml(fmtPct(t.mag7_24h_pct))}</span> · BTC <span class="${pctClass(t.btc_24h_pct)}">${escapeHtml(fmtPct(t.btc_24h_pct))}</span> · Div <span class="${pctClass(t.divergence_pct)}">${escapeHtml(fmtPct(t.divergence_pct))}</span>
       · threshold ±${t.threshold_pct==null?'—':t.threshold_pct}%
       ${snap.us_cash_status?(' · US cash '+escapeHtml(snap.us_cash_status)) : ''}
@@ -3054,6 +3203,7 @@ function researchBayBody(){
   <div class="bay-grid">
     <div class="bay-card">
       <h5>Operator · DeepSeek V4.1</h5>
+      <div class="bay-timer" title="Next heartbeat from S.nextHb"><span class="bay-timer-l">Next pulse</span><span id="bayCount" class="bay-count">${countdown}</span></div>
       <div class="bay-desk">
         <div class="bay-glow"></div>
         <svg class="bay-bot" viewBox="0 0 48 48" fill="none" aria-hidden="true">
@@ -3387,7 +3537,8 @@ function renderHeat(){
   el.innerHTML = `<div class="heat">${rows.map(r => {
     const cls = heatClass(r.change24h_pct);
     const tip = shortSym(r.symbol)+' '+fmtPct(r.change24h_pct);
-    return `<div class="heat-cell ${cls}" data-sym="${escapeHtml(r.symbol)}" title="${escapeHtml(tip)}">${escapeHtml(shortSym(r.symbol).slice(0,3))}</div>`;
+    const ss = shortSym(r.symbol);
+    return `<div class="heat-cell ${cls}" data-sym="${escapeHtml(r.symbol)}" title="${escapeHtml(tip)}">${logoHtml(r.symbol)}<span class="heat-sym">${escapeHtml(ss.slice(0,4))}</span></div>`;
   }).join('')}</div>`;
   el.querySelectorAll('.heat-cell').forEach(c => {
     c.onclick = () => openFocusRoom(c.getAttribute('data-sym'));
@@ -3509,9 +3660,9 @@ function openHeatExpand(){
     '24h% grid · US × crypto · click cell → Focus Room',
     `<div class="heat" style="grid-template-columns:repeat(8,1fr);gap:4px">${rows.map(r => {
       const cls = heatClass(r.change24h_pct);
-      return `<div class="heat-cell ${cls}" data-sym="${escapeHtml(r.symbol)}" style="min-height:36px;font-size:9px;flex-direction:column;gap:2px"
+      return `<div class="heat-cell lg ${cls}" data-sym="${escapeHtml(r.symbol)}" style="min-height:44px;font-size:9px"
         title="${escapeHtml(shortSym(r.symbol)+' '+fmtPct(r.change24h_pct))}">
-        <b>${escapeHtml(shortSym(r.symbol))}</b><span class="${pctClass(r.change24h_pct)}">${fmtPct(r.change24h_pct)}</span></div>`;
+        ${logoHtml(r.symbol)}<span class="heat-sym"><b>${escapeHtml(shortSym(r.symbol))}</b></span><span class="${pctClass(r.change24h_pct)}">${fmtPct(r.change24h_pct)}</span></div>`;
     }).join('')}</div>
     <div class="ov-note">Green = up 24h · Red = down · Strong = |Δ|≥1% · Real Bitget change24h only</div>`,
     '<button type="button" class="btn" id="ovHeatClose">Close</button>',
