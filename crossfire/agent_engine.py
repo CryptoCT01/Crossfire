@@ -294,6 +294,27 @@ def risk_cage_check(decision: dict[str, Any], sleeve: dict[str, Any], sized: dic
         exec_allowed = False
         reason = "HOLD — no execution"
 
+    # Closing an open leg is management, not new risk. Caps, confidence, and
+    # day-DD block HEDGE/ROTATE only — they must not trap a FLAT/REDUCE.
+    if decision.get("management_close") and str(decision.get("action") or "").upper() in ("FLAT", "REDUCE"):
+        can_close = bool(sized and sized.get("executable")) and (
+            config.paper_mode() or config.sleeve_connected()
+        )
+        checks.append(
+            {
+                "rule": "management_close",
+                "pass": can_close,
+                "detail": "reduce-only close of open legs; empty model legs filled from the book",
+            }
+        )
+        if can_close:
+            exec_allowed = True
+            ok = True
+            reason = "management_close_cleared"
+        else:
+            exec_allowed = False
+            reason = "FLAT/REDUCE — no open leg to close"
+
     return {
         "ok": ok,
         "exec_allowed": exec_allowed,
@@ -385,58 +406,53 @@ def policy_decide(books: dict[str, Any]) -> dict[str, Any]:
                 f"(divergence {divergence:+.2f}%, threshold ±{thr:.2f}%). No action."
             )
 
+    # Policy observes divergence. It must not open. A 24h print is not an entry.
+    suppressed = action if action in ("HEDGE", "ROTATE") else None
+    if suppressed:
+        thesis = (
+            f"POLICY HOLD [{mode.upper()}]: Mag7 24h avg {mag7:+.2f}% vs BTC {btc:+.2f}% "
+            f"(divergence {divergence:+.2f}%, threshold ±{thr:.2f}%). "
+            f"Would have been {suppressed}; policy does not open risk. "
+            f"LLM must pass Rules 2–10. Thesis is rule-based, not LLM."
+        )
+        action = "HOLD"
+        legs = []
     return {
         "engine": "policy",
         "model": None,
-        "action": action,
+        "action": "HOLD" if suppressed else action,
         "thesis": thesis,
         "mag7_24h_pct": mag7,
         "btc_24h_pct": btc,
         "divergence_pct": divergence,
         "threshold_pct": thr,
         "agent_mode": mode,
-        "legs": legs,
-        "confidence": 0.55 if action in ("HEDGE", "ROTATE") else 0.7,
+        "legs": [] if suppressed else legs,
+        "confidence": 0.7,
         "profile_label": prof.get("label"),
+        "note": "policy_open_blocked" if suppressed else None,
+        "suppressed_action": suppressed,
     }
 
 
 def paper_seed_hedge(books: dict[str, Any], sess: dict[str, Any], derived: dict[str, Any]) -> dict[str, Any]:
-    """Overnight / closed-cash cross-hedge so the paper book is not stuck HOLD."""
+    """Disabled. A flat book stays flat until the LLM passes Rules 2–10."""
+    del books, sess
     mag7 = derived.get("mag7_24h_pct")
     btc = derived.get("btc_24h_pct")
-    try:
-        div = float(mag7) - float(btc) if mag7 is not None and btc is not None else 0.0
-    except (TypeError, ValueError):
-        div = 0.0
-    cash_closed = not bool(sess.get("us_cash_rth_open"))
-    if div >= 0:
-        legs = [
-            {"book": "us", "intent": "REDUCE_OR_SHORT", "basket": "Mag7", "symbol": "NVDAUSDT", "note": "paper_seed"},
-            {"book": "crypto", "intent": "LONG_HEDGE", "symbol": "BTCUSDT", "note": "paper_seed"},
-        ]
-        why = "US leading or flat vs BTC — short NVDA / long BTC overnight hedge"
-    else:
-        legs = [
-            {"book": "crypto", "intent": "REDUCE_OR_SHORT", "symbol": "BTCUSDT", "note": "paper_seed"},
-            {"book": "us", "intent": "LONG_HEDGE", "basket": "Mag7", "symbol": "NVDAUSDT", "note": "paper_seed"},
-        ]
-        why = "BTC leading US — short BTC / long NVDA overnight hedge"
-    mag7_s = f"{float(mag7):+.2f}%" if mag7 is not None else "n/a"
-    btc_s = f"{float(btc):+.2f}%" if btc is not None else "n/a"
-    thesis = (
-        f"PAPER HEDGE: R1 session={'CLOSED' if cash_closed else 'OPEN'} Bitget US 24/7. "
-        f"R4 Mag7 {mag7_s} vs BTC {btc_s} (div {div:+.2f}%). {why}. "
-        f"Virtual fills only — live Bitget untouched."
-    )
+    div = derived.get("divergence_pct")
     return {
         "engine": "policy",
         "model": None,
-        "action": "HEDGE",
-        "thesis": thesis,
-        "legs": legs,
-        "confidence": 0.8,
-        "paper_seed": True,
+        "action": "HOLD",
+        "thesis": (
+            "POLICY HOLD: paper-seed hedge disabled. Flat book stays flat until the LLM "
+            f"passes Rules 2–10 (Mag7 {mag7} vs BTC {btc}, div {div})."
+        ),
+        "legs": [],
+        "confidence": 0.7,
+        "paper_seed": False,
+        "note": "paper_seed_disabled",
         "divergence_pct": div,
         "mag7_24h_pct": mag7,
         "btc_24h_pct": btc,
@@ -789,6 +805,91 @@ def llm_decide(
     return None
 
 
+_US_BOOK = {
+    "AAPLUSDT", "TSLAUSDT", "NVDAUSDT", "METAUSDT", "AMZNUSDT", "MSFTUSDT",
+    "GOOGLUSDT", "NFLXUSDT", "AMDUSDT", "COINUSDT", "MSTRUSDT", "SPYUSDT",
+}
+
+
+def _sym_usdt(raw: str) -> str:
+    sym = str(raw or "").upper()
+    if sym and not sym.endswith("USDT"):
+        sym += "USDT"
+    return sym
+
+
+def _management_close_legs(
+    positions: list[dict[str, Any]],
+    marks: dict[str, float],
+    raw_legs: list[dict[str, Any]] | None,
+    action: str,
+) -> list[dict[str, Any]]:
+    """Build reduce-only closes from the open book. Never size a new leg.
+
+    FLAT, or REDUCE with no named symbol, closes every open leg at its real
+    size. REDUCE that names symbols closes only those that are actually open.
+    """
+    open_rows: list[tuple[str, str, float, dict[str, Any]]] = []
+    for pos in positions or []:
+        if not isinstance(pos, dict):
+            continue
+        sym = _sym_usdt(str(pos.get("symbol") or pos.get("symbolName") or ""))
+        try:
+            size = float(pos.get("size") or pos.get("total") or 0)
+        except (TypeError, ValueError):
+            size = 0.0
+        side = str(pos.get("side") or pos.get("holdSide") or "").lower()
+        if side in ("buy", "long", "open_long"):
+            side = "long"
+        elif side in ("sell", "short", "open_short"):
+            side = "short"
+        if not sym or size <= 0 or side not in ("long", "short"):
+            continue
+        open_rows.append((sym, side, size, pos))
+
+    named: set[str] = set()
+    for leg in raw_legs or []:
+        if not isinstance(leg, dict):
+            continue
+        sym = _sym_usdt(str(leg.get("symbol") or ""))
+        if not sym and str(leg.get("basket") or "").upper() in ("MAG7", "NVDA"):
+            sym = "NVDAUSDT"
+        if sym:
+            named.add(sym)
+
+    if action == "REDUCE" and named:
+        targets = [row for row in open_rows if row[0] in named]
+    else:
+        targets = open_rows
+
+    legs: list[dict[str, Any]] = []
+    for sym, side, size, pos in targets:
+        mark = marks.get(sym)
+        if mark is None:
+            try:
+                mark = float(pos.get("mark") or pos.get("entry") or 0)
+            except (TypeError, ValueError):
+                mark = 0.0
+        if not mark or float(mark) <= 0:
+            continue
+        close_side = "sell" if side == "long" else "buy"
+        legs.append(
+            {
+                "symbol": sym,
+                "side": close_side,
+                "size": size,
+                "mark": float(mark),
+                "notional_usdt": round(abs(size * float(mark)), 4),
+                "leverage": float(pos.get("leverage") or 10),
+                "reduceOnly": True,
+                "reduce_only": True,
+                "intent": "CLOSE" if action == "FLAT" else "REDUCE",
+                "book": "us" if sym in _US_BOOK else "crypto",
+                "note": "management_close",
+            }
+        )
+    return legs
+
 
 def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
     """Full pipeline tick. Always real marks; never fake fills/positions."""
@@ -843,17 +944,41 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
             decision = policy_decide(books)
 
         sleeve = bitget_private.positions()
-        open_n = len(sleeve.get("positions") or [])
-        cash_closed = not bool(sess.get("us_cash_rth_open"))
-        if config.paper_mode() and open_n == 0 and str(decision.get("action") or "HOLD").upper() in ("HOLD",):
-            if cash_closed or abs(float(derived.get("divergence_pct") or 0)) >= float(pol.get("divergence_threshold_pct") or 0.4):
-                decision = paper_seed_hedge(books, sess, derived)
+        action_u = str(decision.get("action") or "HOLD").upper()
+        if action_u in ("FLAT", "REDUCE"):
+            close_legs = _management_close_legs(
+                sleeve.get("positions") or [],
+                marks,
+                decision.get("legs"),
+                action_u,
+            )
+            decision = dict(decision)
+            decision["action"] = action_u
+            decision["management_close"] = True
+            decision["legs"] = close_legs
+            if not close_legs:
+                decision["note"] = (
+                    (str(decision.get("note") or "") + " | no open leg to close").strip(" |")
+                )
 
-        # Wallet-aware sizing BEFORE Risk Cage — never send unsized Mag7 intents live
+        # Wallet-aware sizing BEFORE Risk Cage — never send unsized Mag7 intents live.
+        # FLAT/REDUCE skips the new-risk sizer so a close cannot flip into a fresh leg.
         eq_snap = bitget_private.account_equity()
         available = float(eq_snap.get("available") or 0.0) if eq_snap.get("ok") else 0.0
-        marks_for_size = bitget_public.marks_map(books)
-        sized = sizing.normalize_executable_legs(decision, marks_for_size, available)
+        if decision.get("management_close"):
+            close_legs = list(decision.get("legs") or [])
+            spent = round(sum(float(leg.get("notional_usdt") or 0) for leg in close_legs), 4)
+            sized = {
+                "ok": bool(close_legs),
+                "executable": bool(close_legs),
+                "legs": close_legs,
+                "caps": sizing.effective_caps(available),
+                "spent_notional_usdt": spent,
+                "message": "reduce-only close of open legs" if close_legs else "no open leg to close",
+            }
+        else:
+            marks_for_size = bitget_public.marks_map(books)
+            sized = sizing.normalize_executable_legs(decision, marks_for_size, available)
         if sized.get("executable"):
             decision = dict(decision)
             decision["legs"] = sized["legs"]
