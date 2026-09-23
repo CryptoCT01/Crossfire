@@ -933,6 +933,10 @@ def run_tick(trigger: str = "heartbeat") -> dict[str, Any]:
                     execution["filled"] = True
                     execution["fills"].append(fl)
 
+        for _k in ("mag7_24h_pct", "btc_24h_pct", "divergence_pct", "threshold_pct"):
+            if decision.get(_k) is None and derived.get(_k) is not None:
+                decision[_k] = derived[_k]
+
         elapsed_ms = int((time.time() - t0) * 1000)
         record = {
             "tick_id": tick_id,
