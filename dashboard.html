@@ -787,6 +787,32 @@ body::after{
 .heat-cell.na{background:rgba(255,255,255,.03)}
 .heat-cell.lg .coin-logo{width:18px;height:18px}
 .heat-cell.lg .heat-sym{font-size:9px;font-weight:800}
+.bubble-stage{position:relative;height:min(68vh,640px);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.07);
+  background-color:#070b12;
+  background-image:radial-gradient(circle at 50% 42%, rgba(62,232,240,.08), transparent 42%),radial-gradient(circle at 16% 80%, rgba(232,184,74,.07), transparent 30%),radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size:auto,auto,22px 22px;
+  box-shadow:inset 0 0 90px rgba(0,0,0,.4)}
+.bubble{position:absolute;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:0;margin:0;appearance:none;-webkit-appearance:none;font:inherit;color:#fff;line-height:1;overflow:hidden;border:1px solid rgba(255,255,255,.28);
+  box-shadow:inset 0 -28px 36px rgba(0,0,0,.48),inset 0 16px 22px rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.16),0 16px 28px rgba(0,0,0,.42);
+  animation:bubbleDrift 7.5s ease-in-out infinite;will-change:translate}
+.bubble::before{content:'';position:absolute;left:12%;top:6%;width:54%;height:36%;border-radius:50%;background:radial-gradient(ellipse at 42% 38%, rgba(255,255,255,.92), rgba(255,255,255,.22) 42%, transparent 70%);pointer-events:none;z-index:2;filter:blur(.3px)}
+.bubble::after{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 120%, rgba(0,0,0,.55), transparent 48%),radial-gradient(circle at 72% 78%, rgba(255,255,255,.08), transparent 22%);pointer-events:none;z-index:1}
+.bubble:hover{z-index:6;scale:1.07;filter:brightness(1.08);animation-play-state:paused}
+.bubble.us{box-shadow:inset 0 -28px 36px rgba(0,0,0,.48),inset 0 16px 22px rgba(255,255,255,.22),0 0 0 1.5px rgba(232,184,74,.72),0 16px 28px rgba(0,0,0,.42),0 0 18px rgba(232,184,74,.12)}
+.bubble.cr{box-shadow:inset 0 -28px 36px rgba(0,0,0,.48),inset 0 16px 22px rgba(255,255,255,.22),0 0 0 1.5px rgba(62,232,240,.55),0 16px 28px rgba(0,0,0,.42),0 0 18px rgba(62,232,240,.1)}
+.bubble.up{background:radial-gradient(circle at 38% 32%, #d8ffe8 0%, #3dff9c 18%, #14945a 46%, #0a3d28 78%, #04140e 100%)}
+.bubble.dn{background:radial-gradient(circle at 38% 32%, #ffd6db 0%, #ff8a94 16%, #e23a4c 42%, #7a1824 74%, #2a060c 100%)}
+.bubble.na{background:radial-gradient(circle at 38% 32%, #e8edf4 0%, #8b97a8 22%, #3a4454 58%, #121820 100%)}
+.bubble.strong{filter:saturate(1.12)}
+.bubble .b-in{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;max-width:78%}
+.bubble .b-logo{display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;flex:0 0 auto;background:rgba(0,0,0,.18);box-shadow:0 3px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.35)}
+.bubble .b-logo .coin-logo{width:100%;height:100%;border:0;box-shadow:none;object-fit:cover}
+.bubble .b-sym{font-family:var(--display);font-weight:800;letter-spacing:-.03em;line-height:1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65),0 0 8px rgba(0,0,0,.35)}
+.bubble .b-pct{font-family:var(--mono);font-weight:800;font-variant-numeric:tabular-nums;line-height:1;margin-top:1px;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.bubble-legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg3)}
+.bubble-legend b{font-weight:800}
+.bubble-legend .up{color:var(--green)}.bubble-legend .dn{color:var(--red)}.bubble-legend .us{color:var(--gold)}.bubble-legend .cr{color:var(--cyan)}
+@keyframes bubbleDrift{0%,100%{translate:0 0}50%{translate:0 -5px}}
 .lead-row,.sig-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 0;font-family:var(--mono);font-size:9px;cursor:pointer;border-radius:4px}
 .lead-row:hover,.sig-row:hover{background:rgba(255,255,255,.04)}
 .lead-row .sym.g,.sig-row .sym.g{color:var(--gold)}.lead-row .sym.c,.sig-row .sym.c{color:var(--cyan)}
@@ -1020,7 +1046,7 @@ body::after{
     </article>
 
     <article class="bp bp-heat">
-      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Heat map</div><div class="bp-s">24h% · click → focus</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="heat" aria-label="About Heat map">i</button><button type="button" class="expand-btn" id="heatExpand">Expand</button></div></div>
+      <div class="bp-h"><div><div class="bp-t" style="color:var(--cyan)">Heat map</div><div class="bp-s">24h% · expand → bubbles</div></div><div style="display:flex;gap:6px;align-items:center"><button type="button" class="info-btn" data-info="heat" aria-label="About Heat map">i</button><button type="button" class="expand-btn" id="heatExpand">Expand</button></div></div>
       <div class="bp-body" id="heatBody"></div>
     </article>
     <article class="bp bp-lead">
@@ -1273,12 +1299,12 @@ const INFO_COPY = {
   },
   cmc: {
     title: 'CMC Witness',
-    body: 'Click Expand for the Witness Bay: live Pro tape plus CMC technicals, derivatives, narratives, BTC news, macro calendar, and BTC↔TradFi correlation. Mag7 marks stay on Dual Book (Bitget). CMC research skills can cover US equities — labeled separately, never mixed into Mag7 marks.',
+    body: 'Expand is a live CoinMarketCap bay: tape, daily technicals, category moves, altcoin season, Bitcoin liquidations, open interest, and funding. Headlines are CoinDesk because CMC news is not on this plan. ETF size, the macro calendar, and the TradFi correlation rows stay dated — there is no live call for those. Mag7 marks stay on Dual Book.',
     real: 'Live · /api/cmc · Pro + MCP bay cache'
   },
   heat: {
     title: 'Heat map',
-    body: 'Universe 24h% intensity grid. Click a cell to focus that symbol in the Dual Book and Bridge. Colour is magnitude, not prediction.',
+    body: 'Compact grid on the desk. Expand opens a bubble field: colour is the 24h direction, size is how big that move is. Not market cap — we do not invent one. Gold ring is US, cyan ring is crypto. Click a bubble to focus that name.',
     real: 'Real 24h% from Bitget'
   },
   lead: {
@@ -2505,6 +2531,7 @@ async function refreshAll(){
   ]);
   S.cmc = cmc && typeof cmc === 'object' ? cmc : {ok:false, error:'no /api/cmc'};
   if(typeof renderCmc === 'function') renderCmc();
+  if(S.ov && S.ov.kind === 'cmc' && S.cmc && S.cmc.ok && $('ovBody')) $('ovBody').innerHTML = cmcBayBody(S.cmc);
   if(risk && risk.risk) state.risk = state.risk || risk.risk;
   if(risk && risk.policy) state.policy = state.policy || risk.policy;
   if(risk && risk.agent_mode) state.agent_mode = state.agent_mode || risk.agent_mode;
@@ -3412,18 +3439,21 @@ function renderCmc(){
 
 function cmcBayBody(p){
   const bay = (p && p.bay) || {};
-  const stale = !!(p && p.skills && p.skills.stale);
-  const asOf = p.bay_as_of || bay.as_of || p.fetched_at_iso || '—';
+  const bayStamp = bay.as_of || p.bay_as_of || '—';
+  const tapeAsOf = p.fetched_at_iso || '—';
   const fg = p.fear_greed || {};
   const btc = p.btc || {};
   const eth = p.eth || {};
   const g = p.global || {};
   const m = bay.market || {};
   const d = bay.derivatives || {};
-  const taB = (bay.ta && bay.ta.BTC) || {};
-  const taE = (bay.ta && bay.ta.ETH) || {};
+  const liveTa = p.ta || {};
+  const taB = liveTa.BTC || (bay.ta && bay.ta.BTC) || {};
+  const taE = liveTa.ETH || (bay.ta && bay.ta.ETH) || {};
+  const taLive = !!(liveTa.BTC && liveTa.BTC.rsi14 != null);
   const news = Array.isArray(bay.news_btc) ? bay.news_btc : [];
-  const narr = Array.isArray(bay.narratives) ? bay.narratives : [];
+  const narr = Array.isArray(p.narratives) && p.narratives.length ? p.narratives : (Array.isArray(bay.narratives) ? bay.narratives : []);
+  const narrLive = Array.isArray(p.narratives) && p.narratives.length > 0;
   const macros = Array.isArray(bay.macro_events) ? bay.macro_events : [];
   const xa = bay.cross_asset || {};
   const eqNote = p.equities_note || bay.equities_note || bay.stocks_note || p.mag7_note || '';
@@ -3469,7 +3499,7 @@ function cmcBayBody(p){
       <div class="cmc-kv"><b>BTC</b><span class="${pctClass(btc.pct_24h)}">${btc.price!=null?fmtPx(btc.price):'—'} · ${fmtPct(btc.pct_24h)}</span></div>
       <div class="cmc-kv"><b>ETH</b><span class="${pctClass(eth.pct_24h)}">${eth.price!=null?fmtPx(eth.price):'—'} · ${fmtPct(eth.pct_24h)}</span></div>
       <div class="cmc-kv"><b>BTC.D</b><span>${g.btc_dominance==null?'—':Number(g.btc_dominance).toFixed(1)+'%'}</span></div>
-      <div class="cmc-note" style="margin-top:8px">as of ${escapeHtml(String(asOf))}${stale?' · bay cache aging':''}</div>
+      <div class="cmc-note" style="margin-top:8px">live · ${escapeHtml(String(tapeAsOf))}</div>
     </div>`;
 
   const tech = `
@@ -3484,17 +3514,28 @@ function cmcBayBody(p){
       <div class="cmc-meter rsi"><i style="--w:${rsiW(taE.rsi14)}%"></i></div>
       <div class="cmc-kv"><b>ETH MACD hist</b><span class="${Number(taE.macd)<0?'dn':(Number(taE.macd)>0?'up':'')}">${taE.macd==null?'—':taE.macd}</span></div>
       <div class="cmc-read">${escapeHtml(taE.read||'—')}</div>
+      <div class="cmc-note" style="margin-top:8px">${taLive ? 'live · daily CMC candles' : ('snapshot ' + escapeHtml(String(bayStamp)) + ' · not live')}</div>
     </div>`;
 
+  const alt = p.altcoin_season || {};
+  const liq = p.liquidations_btc || {};
+  const mcapLive = g.total_market_cap;
+  const mcapPct = g.total_market_cap_yesterday_percentage_change;
+  const mcapLabel = mcapLive==null ? '—' : (Math.abs(Number(mcapLive))>=1e12 ? '$'+(Number(mcapLive)/1e12).toFixed(2)+'T' : '$'+(Number(mcapLive)/1e9).toFixed(2)+'B');
+  const deriv = p.derivatives_live || {};
+  const oiLabel = deriv.oi_label || d.oi_total || '—';
+  const fundLabel = deriv.funding_label || d.funding || '—';
   const structure = `
     <div class="cmc-card tone-green">
-      <h5><span class="dot"></span>Structure · global / derivs</h5>
-      <div class="cmc-kv"><b>Total mcap</b><span>${escapeHtml(String(m.total_mcap||'—'))} <span class="up">${escapeHtml(String(m.mcap_24h||''))}</span></span></div>
-      <div class="cmc-kv"><b>Alt season</b><span>${m.altcoin_season_index==null?'—':m.altcoin_season_index}</span></div>
-      <div class="cmc-kv"><b>BTC / ETH ETF AUM</b><span>${escapeHtml(String(m.btc_etf_aum||'—'))} / ${escapeHtml(String(m.eth_etf_aum||'—'))}</span></div>
-      <div class="cmc-kv"><b>OI total</b><span>${escapeHtml(String(d.oi_total||'—'))} <span class="${String(d.oi_24h||'').startsWith('-')?'dn':'up'}">${escapeHtml(String(d.oi_24h||''))}</span></span></div>
-      <div class="cmc-kv"><b>Funding</b><span>${escapeHtml(String(d.funding||'—'))}</span></div>
-      <div class="cmc-kv"><b>BTC liqs 24h</b><span>${escapeHtml(String(d.btc_liqs_24h||'—'))} · <span class="up">L ${escapeHtml(String(d.btc_liqs_long_24h||'—'))}</span> / <span class="dn">S ${escapeHtml(String(d.btc_liqs_short_24h||'—'))}</span></span></div>
+      <h5><span class="dot"></span>Structure · live / snapshot</h5>
+      <div class="cmc-kv"><b>Total mcap</b><span>${mcapLabel} <span class="${pctClass(mcapPct)}">${fmtPct(mcapPct)}</span></span></div>
+      <div class="cmc-kv"><b>Alt season</b><span>${alt.altcoin_index==null?'—':alt.altcoin_index}</span></div>
+      <div class="cmc-kv"><b>BTC liqs 24h</b><span>${escapeHtml(liq.total_24h_label||'—')} · <span class="up">L ${escapeHtml(liq.long_24h_label||'—')}</span> / <span class="dn">S ${escapeHtml(liq.short_24h_label||'—')}</span></span></div>
+      <div class="cmc-kv"><b>BTC perp OI</b><span>${escapeHtml(String(oiLabel))}</span></div>
+      <div class="cmc-kv"><b>Funding</b><span>${escapeHtml(String(fundLabel))}</span></div>
+      <div class="cmc-note">mcap · alt season · liquidations · OI · funding are live</div>
+      <div class="cmc-kv" style="margin-top:8px"><b>BTC / ETH ETF AUM</b><span>${escapeHtml(String(m.btc_etf_aum||'—'))} / ${escapeHtml(String(m.eth_etf_aum||'—'))}</span></div>
+      <div class="cmc-note">ETF AUM · snapshot ${escapeHtml(String(bayStamp))} · no live call</div>
     </div>`;
 
   const narrHtml = narr.length
@@ -3505,15 +3546,22 @@ function cmcBayBody(p){
       }).join('')
     : '<span class="cmc-note">no narratives in bay cache</span>';
 
-  const newsHtml = news.length
-    ? '<ul class="cmc-news">' + news.slice(0,5).map(n => {
+  const liveNews = (p.news && Array.isArray(p.news.items)) ? p.news.items : [];
+  const newsRows = liveNews.length ? liveNews : news;
+  const newsLive = liveNews.length > 0;
+  const newsTitle = newsLive ? ((p.news.scope==='btc') ? 'BTC headlines · live' : 'Headlines · live') : 'BTC news · snapshot';
+  const newsHtml = newsRows.length
+    ? '<ul class="cmc-news">' + newsRows.slice(0,5).map(n => {
         const t = escapeHtml(n.title||'headline');
         const u = n.url ? String(n.url) : '';
-        const meta = escapeHtml([n.published||n.published_at, n.quality!=null?('q'+n.quality):''].filter(Boolean).join(' · '));
+        const meta = escapeHtml([n.published||n.published_at, newsLive ? (p.news.source||'') : 'snapshot'].filter(Boolean).join(' · '));
         return u ? `<li><a href="${escapeHtml(u)}" target="_blank" rel="noopener">${t}</a><div class="cmc-note">${meta}</div></li>`
                  : `<li>${t}<div class="cmc-note">${meta}</div></li>`;
       }).join('') + '</ul>'
-    : '<div class="cmc-note">no BTC news in bay cache</div>';
+    : '<div class="cmc-note">no headlines</div>';
+  const newsFoot = newsLive
+    ? escapeHtml(p.news.note || 'live')
+    : 'snapshot ' + escapeHtml(String(bayStamp)) + ' · not live';
 
   const macroHtml = macros.length
     ? macros.slice(0,6).map(e => `<div class="cmc-kv"><b>${escapeHtml(e.date||'—')}</b><span>${escapeHtml(e.title||'')}</span></div>`).join('')
@@ -3523,7 +3571,7 @@ function cmcBayBody(p){
   const xaHtml = `
     <div class="cmc-card tone-purple tone-wide">
       <h5><span class="dot"></span>Cross-asset · BTC vs TradFi</h5>
-      <div class="cmc-read">${escapeHtml(xa.summary||'—')}</div>
+      <div class="cmc-read">${liveTa.btc_eth_corr_30d==null?'':('BTC/ETH 30d corr '+Number(liveTa.btc_eth_corr_30d).toFixed(2)+' · live. ')}${escapeHtml(xa.summary||'—')}</div>
       <div class="cmc-xa-row" style="color:var(--fg3);font-size:8px;letter-spacing:.1em;text-transform:uppercase"><span>Asset</span><span>30d</span><span>7d</span><span>|corr|</span></div>
       ${xaRows.map(r => {
         const c30 = r.c30==null?'—':Number(r.c30).toFixed(2);
@@ -3535,7 +3583,7 @@ function cmcBayBody(p){
           <div class="cmc-xa-bar" title="${escapeHtml(r.label||'')}"><i style="width:${corrBar(r.c30)}%"></i></div>
         </div>`;
       }).join('')}
-      <div class="cmc-note" style="margin-top:8px">${escapeHtml(xa.source||'CMC skill')} · session ${escapeHtml(String(xa.as_of_session||'—'))}</div>
+      <div class="cmc-note" style="margin-top:8px">${escapeHtml(xa.source||'CMC skill')} · session ${escapeHtml(String(xa.as_of_session||bayStamp))} · snapshot, not live</div>
     </div>`;
 
   return `
@@ -3546,12 +3594,12 @@ function cmcBayBody(p){
       ${tape}
       ${tech}
       ${structure}
-      <div class="cmc-card tone-purple"><h5><span class="dot"></span>Narratives</h5>${narrHtml}</div>
-      <div class="cmc-card tone-amber"><h5><span class="dot"></span>BTC news</h5>${newsHtml}</div>
-      <div class="cmc-card tone-red"><h5><span class="dot"></span>Macro / catalysts</h5>${macroHtml}</div>
+      <div class="cmc-card tone-purple"><h5><span class="dot"></span>Narratives</h5>${narrHtml}<div class="cmc-note" style="margin-top:8px">${narrLive ? 'live · category market-cap change' : ('snapshot ' + escapeHtml(String(bayStamp)) + ' · not live')}</div></div>
+      <div class="cmc-card tone-amber"><h5><span class="dot"></span>${newsTitle}</h5>${newsHtml}<div class="cmc-note" style="margin-top:8px">${newsFoot}</div></div>
+      <div class="cmc-card tone-red"><h5><span class="dot"></span>Macro / catalysts</h5>${macroHtml}<div class="cmc-note" style="margin-top:8px">snapshot ${escapeHtml(String(bayStamp))} · not live</div></div>
       ${xaHtml}
     </div>
-    <div class="ov-note">CMC Witness bay · Pro tape live via /api/cmc · TA / news / narratives / cross-asset from CMC MCP cache (labeled). Mag7 execution marks stay on Dual Book.</div>
+    <div class="ov-note">Tape, technicals, narratives, alt season, liquidations, open interest, and funding are live CoinMarketCap. Headlines are CoinDesk — their news endpoint is not on this plan. ETF size, the macro calendar, and the TradFi correlation table have no live call, so those stay dated.</div>
   </div>`;
 }
 
@@ -3621,6 +3669,7 @@ function renderHeat(){
   el.querySelectorAll('.heat-cell').forEach(c => {
     c.onclick = () => openFocusRoom(c.getAttribute('data-sym'));
   });
+  if(S.ov && S.ov.kind === 'heat') paintHeatBubbles(false);
 }
 
 function movePct(hist, n){
@@ -3731,24 +3780,126 @@ function renderBrain(){
   S.brainReady = true;
 }
 
+function heatBubbleRadii(rows, w, h){
+  const abs = rows.map(r => Math.abs(Number(r.change24h_pct) || 0));
+  const max = Math.max(0.35, ...abs, 0);
+  const n = Math.max(1, rows.length);
+  const avg = Math.sqrt((w * h * 0.46) / (n * Math.PI));
+  const minR = Math.max(20, Math.round(avg * 0.48));
+  const maxR = Math.min(118, Math.round(avg * 1.72));
+  return rows.map(r => {
+    const t = Math.sqrt((Math.abs(Number(r.change24h_pct) || 0)) / max);
+    return Math.round(minR + t * (maxR - minR));
+  });
+}
+function packHeatBubbles(items, w, h){
+  const pad = 12, gap = 6;
+  function packOnce(sized){
+    const placed = [];
+    let failed = 0;
+    function hits(x, y, r){
+      if(x - r < pad || y - r < pad || x + r > w - pad || y + r > h - pad) return true;
+      for(const p of placed){
+        const dx = p.x - x, dy = p.y - y, min = p.r + r + gap;
+        if(dx*dx + dy*dy < min*min) return true;
+      }
+      return false;
+    }
+    sized.forEach((n, i) => {
+      if(!placed.length){ placed.push({...n, x:w/2, y:h/2}); return; }
+      let best = null;
+      for(const p of placed){
+        const minD = p.r + n.r + gap, steps = 40;
+        for(let s = 0; s < steps; s++){
+          const ang = (s / steps) * Math.PI * 2 + i * 0.41;
+          const x = p.x + Math.cos(ang) * minD;
+          const y = p.y + Math.sin(ang) * minD;
+          if(hits(x, y, n.r)) continue;
+          const dx = x - w/2, dy = y - h/2, score = dx*dx + dy*dy;
+          if(!best || score < best.score) best = {x, y, score};
+        }
+      }
+      if(!best){
+        failed += 1;
+        placed.push({...n, x:w/2, y:h/2});
+        return;
+      }
+      placed.push({...n, x:best.x, y:best.y});
+    });
+    return {placed, failed};
+  }
+  let scale = 1, last = null;
+  for(let attempt = 0; attempt < 8; attempt++){
+    const sized = items.slice().sort((a,b) => b.r - a.r || String(a.symbol).localeCompare(String(b.symbol)))
+      .map(n => ({...n, r: Math.max(16, Math.round(n.r * scale))}));
+    last = packOnce(sized);
+    if(last.failed === 0) break;
+    scale *= 0.86;
+  }
+  const placed = last.placed;
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  placed.forEach(p => {
+    minX = Math.min(minX, p.x - p.r); minY = Math.min(minY, p.y - p.r);
+    maxX = Math.max(maxX, p.x + p.r); maxY = Math.max(maxY, p.y + p.r);
+  });
+  const dx = (w - (minX + maxX)) / 2, dy = (h - (minY + maxY)) / 2;
+  return placed.map(p => ({...p, x: p.x + dx, y: p.y + dy}));
+}
+function heatBubbleHtml(p, row, i){
+  const cls = heatClass(row.change24h_pct);
+  const side = row.side === 'us' ? 'us' : 'cr';
+  const fs = Math.max(10, Math.round(p.r * 0.24));
+  const showPct = p.r >= 36;
+  const ls = Math.round(Math.min(52, Math.max(28, p.r * 0.48)));
+  const logo = p.r >= 28 ? `<span class="b-logo" style="width:${ls}px;height:${ls}px">${logoHtml(p.symbol)}</span>` : '';
+  return `<button type="button" class="bubble ${side} ${cls}" data-sym="${escapeHtml(p.symbol)}" title="${escapeHtml(shortSym(p.symbol)+' '+fmtPct(row.change24h_pct))}" style="left:${p.x}px;top:${p.y}px;width:${p.r*2}px;height:${p.r*2}px;animation-delay:${(i%9)*-0.45}s"><span class="b-in">${logo}<span class="b-sym" style="font-size:${fs}px">${escapeHtml(shortSym(p.symbol))}</span>${showPct ? `<span class="b-pct ${pctClass(row.change24h_pct)}" style="font-size:${Math.max(9, fs-2)}px">${fmtPct(row.change24h_pct)}</span>` : ''}</span></button>`;
+}
+function paintHeatBubbles(force){
+  const stage = $('heatBubbleStage');
+  if(!stage) return;
+  const rows = [...S.booksUs, ...S.booksCr].filter(r => r && r.symbol);
+  const legend = $('heatBubbleLegend');
+  if(legend){
+    const up = rows.filter(r => Number(r.change24h_pct) > 0).length;
+    const dn = rows.filter(r => Number(r.change24h_pct) < 0).length;
+    legend.querySelector('[data-up]').textContent = up;
+    legend.querySelector('[data-dn]').textContent = dn;
+  }
+  const w = stage.clientWidth || 980;
+  const h = stage.clientHeight || 560;
+  const key = rows.map(r => r.symbol).sort().join('|') + ':' + w + 'x' + h;
+  if(!force && stage.dataset.packKey === key && stage.querySelector('.bubble')){
+    rows.forEach(r => {
+      const el = stage.querySelector('.bubble[data-sym="'+r.symbol+'"]');
+      if(!el) return;
+      el.className = 'bubble ' + (r.side==='us'?'us':'cr') + ' ' + heatClass(r.change24h_pct);
+      const pct = el.querySelector('.b-pct');
+      if(pct){ pct.className = 'b-pct ' + pctClass(r.change24h_pct); pct.textContent = fmtPct(r.change24h_pct); }
+      el.title = shortSym(r.symbol)+' '+fmtPct(r.change24h_pct);
+    });
+    return;
+  }
+  const radii = heatBubbleRadii(rows, w, h);
+  const packed = packHeatBubbles(rows.map((r, i) => ({
+    symbol: r.symbol, side: r.side, r: radii[i]
+  })), w, h);
+  const bySym = Object.fromEntries(rows.map(r => [r.symbol, r]));
+  stage.dataset.packKey = key;
+  stage.innerHTML = packed.map((p, i) => heatBubbleHtml(p, bySym[p.symbol] || {}, i)).join('');
+  stage.querySelectorAll('.bubble').forEach(el => {
+    el.onclick = () => openFocusRoom(el.getAttribute('data-sym'));
+  });
+}
 function openHeatExpand(){
-  const rows = [...S.booksUs, ...S.booksCr];
   openOverlay('heat',
-    'Cross-asset <span class="c">Heat</span>',
-    '24h% grid · US × crypto · click cell → Focus Room',
-    `<div class="heat" style="grid-template-columns:repeat(8,1fr);gap:4px">${rows.map(r => {
-      const cls = heatClass(r.change24h_pct);
-      return `<div class="heat-cell lg ${cls}" data-sym="${escapeHtml(r.symbol)}" style="min-height:44px;font-size:9px"
-        title="${escapeHtml(shortSym(r.symbol)+' '+fmtPct(r.change24h_pct))}">
-        ${logoHtml(r.symbol)}<span class="heat-sym"><b>${escapeHtml(shortSym(r.symbol))}</b></span><span class="${pctClass(r.change24h_pct)}">${fmtPct(r.change24h_pct)}</span></div>`;
-    }).join('')}</div>
-    <div class="ov-note">Green = up 24h · Red = down · Strong = |Δ|≥1% · Real Bitget change24h only</div>`,
+    'Cross-asset <span class="c">Bubbles</span>',
+    '24h direction · size is the move, not market cap · click a bubble → Focus Room',
+    `<div class="bubble-stage" id="heatBubbleStage"></div>
+     <div class="bubble-legend" id="heatBubbleLegend"><span class="up"><b data-up>0</b> up</span><span class="dn"><b data-dn>0</b> down</span><span>Size · |24h %| · not market cap</span><span class="us">Gold ring · US</span><span class="cr">Cyan ring · crypto</span></div>`,
     '<button type="button" class="btn" id="ovHeatClose">Close</button>',
     'theatre');
   $('ovHeatClose').onclick = closeOverlay;
-  $('ovBody').querySelectorAll('.heat-cell').forEach(c => {
-    c.onclick = () => openFocusRoom(c.getAttribute('data-sym'));
-  });
+  requestAnimationFrame(() => paintHeatBubbles(true));
 }
 
 /* Wire Pack A/B interactions (idempotent-ish) */

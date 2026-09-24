@@ -12,6 +12,7 @@ import os
 import time
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,18 @@ _CREDITS_TTL = 900.0  # key/info is observational; don't spend every pack
 _SKILLS_CACHE = _ROOT / "logs" / "cmc_skills_cache.json"
 _BAY_SEED = _ROOT / "crossfire" / "cmc_bay_seed.json"
 _SKILLS_STALE_SEC = 2 * 3600
+_NEWS_TTL = 300.0
+_SLOW_TTL = 600.0
+_FAST_TTL = 300.0
+_TA_TTL = 1800.0
+_SLOW: dict[str, Any] = {
+    "news_ts": 0.0, "news": None,
+    "alt_ts": 0.0, "alt": None,
+    "liq_ts": 0.0, "liq": None,
+    "ta_ts": 0.0, "ta": None,
+    "narr_ts": 0.0, "narr": None,
+    "deriv_ts": 0.0, "deriv": None,
+}
 _BASE = "https://pro-api.coinmarketcap.com"
 
 
@@ -86,6 +99,398 @@ def _get(path: str, params: dict[str, str] | None = None, timeout: float = 18.0)
         return {"ok": True, "data": raw.get("data"), "status": st}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+def _fmt_usd(n: float | None) -> str | None:
+    if n is None:
+        return None
+    v = float(n)
+    a = abs(v)
+    sign = "-" if v < 0 else ""
+    if a >= 1e12:
+        return f"{sign}${a/1e12:.2f}T"
+    if a >= 1e9:
+        return f"{sign}${a/1e9:.2f}B"
+    if a >= 1e6:
+        return f"{sign}${a/1e6:.2f}M"
+    if a >= 1e3:
+        return f"{sign}${a/1e3:.1f}K"
+    return f"{sign}${a:.0f}"
+
+
+def _live_headlines(now: float) -> dict[str, Any]:
+    """CoinDesk RSS. CMC /v1/content/latest is not on this Pro plan."""
+    cached = _SLOW.get("news")
+    if cached and now - float(_SLOW["news_ts"]) < _NEWS_TTL:
+        return cached
+    items: list[dict[str, Any]] = []
+    err = None
+    try:
+        req = urllib.request.Request(
+            "https://www.coindesk.com/arc/outboundfeeds/rss/",
+            headers={"User-Agent": "Crossfire/0.3", "Accept": "application/rss+xml"},
+        )
+        with urllib.request.urlopen(req, timeout=12, context=_ssl()) as resp:
+            root = ET.fromstring(resp.read())
+        for item in root.findall(".//item"):
+            title = (item.findtext("title") or "").strip()
+            if not title:
+                continue
+            items.append(
+                {
+                    "title": title,
+                    "url": (item.findtext("link") or "").strip() or None,
+                    "published": (item.findtext("pubDate") or "").strip() or None,
+                }
+            )
+            if len(items) >= 12:
+                break
+    except Exception as e:
+        err = f"{type(e).__name__}: {e}"
+    btc = [n for n in items if any(w in n["title"].lower() for w in ("bitcoin", "btc"))]
+    scope = "btc" if len(btc) >= 2 else "crypto"
+    rows = (btc if scope == "btc" else items)[:5]
+    pack = {
+        "items": rows,
+        "scope": scope,
+        "source": "coindesk_rss",
+        "note": "CMC content/latest is not on this plan. Headlines are CoinDesk, live.",
+        "error": err,
+        "fetched_at_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)),
+    }
+    if rows:
+        _SLOW["news"] = pack
+        _SLOW["news_ts"] = now
+    return pack
+
+
+def _altcoin_season(now: float) -> dict[str, Any] | None:
+    cached = _SLOW.get("alt")
+    if cached and now - float(_SLOW["alt_ts"]) < _SLOW_TTL:
+        return cached
+    req = urllib.request.Request(
+        f"{_BASE}/public-api/v1/altcoin-season-index/latest",
+        headers={"Accept": "application/json", "User-Agent": "Crossfire/0.3"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=12, context=_ssl()) as resp:
+            raw = json.loads(resp.read().decode("utf-8"))
+    except Exception:
+        return cached if isinstance(cached, dict) else None
+    d = raw.get("data") if isinstance(raw.get("data"), dict) else {}
+    idx = d.get("altcoin_index")
+    if idx is None:
+        return cached if isinstance(cached, dict) else None
+    pack = {
+        "altcoin_index": idx,
+        "altcoin_marketcap": _f(d.get("altcoin_marketcap")),
+        "snapshot_time": d.get("snapshot_time"),
+        "source": "cmc_altcoin_season_index",
+    }
+    _SLOW["alt"] = pack
+    _SLOW["alt_ts"] = now
+    return pack
+
+
+def _btc_liquidations(now: float) -> dict[str, Any] | None:
+    """1 credit per call. Cached 10 minutes — do not attach this to the 90s quote pack."""
+    cached = _SLOW.get("liq")
+    if cached and now - float(_SLOW["liq_ts"]) < _FAST_TTL:
+        return cached
+    res = _get(
+        "/v5/derivatives/liquidations/cryptocurrency/list/latest",
+        {"crypto_id": "1", "limit": "1"},
+    )
+    if not res.get("ok"):
+        return cached if isinstance(cached, dict) else None
+    raw_data = res.get("data")
+    data = raw_data if isinstance(raw_data, dict) else {}
+    coins = data.get("cryptocurrencies") or []
+    if not coins:
+        return cached if isinstance(cached, dict) else None
+    quotes = coins[0].get("quotes") or []
+    q = quotes[0] if quotes else {}
+    total = _f(q.get("total_liquidations_24h"))
+    long_v = _f(q.get("long_liquidations_24h"))
+    short_v = _f(q.get("short_liquidations_24h"))
+    pack = {
+        "total_24h": total,
+        "long_24h": long_v,
+        "short_24h": short_v,
+        "total_24h_label": _fmt_usd(total),
+        "long_24h_label": _fmt_usd(long_v),
+        "short_24h_label": _fmt_usd(short_v),
+        "last_updated": q.get("last_updated"),
+        "source": "cmc_pro_liquidations_btc",
+    }
+    _SLOW["liq"] = pack
+    _SLOW["liq_ts"] = now
+    return pack
+
+
+def _closes_from_ohlcv(node: Any) -> list[float]:
+    if not isinstance(node, dict):
+        return []
+    out: list[float] = []
+    for q in node.get("quotes") or []:
+        if not isinstance(q, dict):
+            continue
+        usd = ((q.get("quote") or {}).get("USD")) or {}
+        c = _f(usd.get("close"))
+        if c is not None:
+            out.append(c)
+    return out
+
+
+def _rsi(vals: list[float], period: int = 14) -> float | None:
+    if len(vals) < period + 1:
+        return None
+    gains = losses = 0.0
+    for i in range(1, period + 1):
+        d = vals[i] - vals[i - 1]
+        if d >= 0:
+            gains += d
+        else:
+            losses -= d
+    avg_g = gains / period
+    avg_l = losses / period
+    for i in range(period + 1, len(vals)):
+        d = vals[i] - vals[i - 1]
+        g = d if d > 0 else 0.0
+        l = -d if d < 0 else 0.0
+        avg_g = (avg_g * (period - 1) + g) / period
+        avg_l = (avg_l * (period - 1) + l) / period
+    if avg_l == 0:
+        return 100.0
+    rs = avg_g / avg_l
+    return 100.0 - (100.0 / (1.0 + rs))
+
+
+def _ema_last(vals: list[float], period: int) -> float | None:
+    if len(vals) < period:
+        return None
+    k = 2.0 / (period + 1)
+    e = sum(vals[:period]) / period
+    for v in vals[period:]:
+        e = v * k + e * (1.0 - k)
+    return e
+
+
+def _macd_hist(vals: list[float]) -> float | None:
+    if len(vals) < 40:
+        return None
+    k12 = 2.0 / 13
+    k26 = 2.0 / 27
+    e12 = sum(vals[:12]) / 12
+    e26 = sum(vals[:26]) / 26
+    macd: list[float] = []
+    for i, v in enumerate(vals):
+        if i >= 12:
+            e12 = v * k12 + e12 * (1.0 - k12)
+        if i >= 26:
+            e26 = v * k26 + e26 * (1.0 - k26)
+        if i >= 26:
+            macd.append(e12 - e26)
+    sig = _ema_last(macd, 9)
+    if sig is None or not macd:
+        return None
+    return macd[-1] - sig
+
+
+def _sma(vals: list[float], n: int) -> float | None:
+    if len(vals) < n:
+        return None
+    return sum(vals[-n:]) / n
+
+
+def _corr(a: list[float], b: list[float], n: int = 30) -> float | None:
+    if len(a) < n or len(b) < n:
+        return None
+    xs, ys = a[-n:], b[-n:]
+    rx = [xs[i] / xs[i - 1] - 1 for i in range(1, n) if xs[i - 1]]
+    ry = [ys[i] / ys[i - 1] - 1 for i in range(1, n) if ys[i - 1]]
+    m = min(len(rx), len(ry))
+    if m < 8:
+        return None
+    rx, ry = rx[-m:], ry[-m:]
+    mx = sum(rx) / m
+    my = sum(ry) / m
+    num = sum((x - mx) * (y - my) for x, y in zip(rx, ry))
+    dx = sum((x - mx) ** 2 for x in rx) ** 0.5
+    dy = sum((y - my) ** 2 for y in ry) ** 0.5
+    if not dx or not dy:
+        return None
+    return num / (dx * dy)
+
+
+def _ta_read(rsi: float | None, macd: float | None, price: float | None, sma30: float | None) -> str:
+    bits = []
+    if rsi is None:
+        bits.append("RSI —")
+    elif rsi >= 70:
+        bits.append(f"RSI14 {rsi:.0f} hot")
+    elif rsi <= 30:
+        bits.append(f"RSI14 {rsi:.0f} washed")
+    else:
+        bits.append(f"RSI14 {rsi:.0f} neutral")
+    if macd is not None:
+        bits.append("MACD hist " + ("positive" if macd > 0 else "negative"))
+    if price is not None and sma30 is not None:
+        bits.append("price " + ("above" if price > sma30 else "below") + " SMA30")
+    return "; ".join(bits)
+
+
+def _ta_leg(closes: list[float]) -> dict[str, Any]:
+    rsi = _rsi(closes, 14)
+    macd = _macd_hist(closes)
+    sma30 = _sma(closes, 30)
+    sma200 = _sma(closes, 200)
+    price = closes[-1] if closes else None
+    return {
+        "rsi14": round(rsi, 1) if rsi is not None else None,
+        "macd": round(macd, 2) if macd is not None else None,
+        "sma30": round(sma30, 2) if sma30 is not None else None,
+        "sma200": round(sma200, 2) if sma200 is not None else None,
+        "read": _ta_read(rsi, macd, price, sma30),
+    }
+
+
+def _live_ta(now: float) -> dict[str, Any] | None:
+    cached = _SLOW.get("ta")
+    if isinstance(cached, dict) and now - float(_SLOW["ta_ts"]) < _TA_TTL:
+        return cached
+    res = _get(
+        "/v2/cryptocurrency/ohlcv/historical",
+        {"id": "1,1027", "time_period": "daily", "count": "210", "convert": "USD"},
+    )
+    if not res.get("ok") or not isinstance(res.get("data"), dict):
+        return cached if isinstance(cached, dict) else None
+    data = res["data"]
+    btc = _closes_from_ohlcv(data.get("1") or data.get(1))
+    eth = _closes_from_ohlcv(data.get("1027") or data.get(1027))
+    if len(btc) < 30:
+        return cached if isinstance(cached, dict) else None
+    pack = {
+        "BTC": _ta_leg(btc),
+        "ETH": _ta_leg(eth),
+        "btc_eth_corr_30d": round(c, 2) if (c := _corr(btc, eth, 30)) is not None else None,
+        "bars": len(btc),
+        "source": "cmc_ohlcv_daily",
+        "fetched_at_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)),
+    }
+    _SLOW["ta"] = pack
+    _SLOW["ta_ts"] = now
+    return pack
+
+
+def _live_narratives(now: float) -> list[dict[str, Any]] | None:
+    cached = _SLOW.get("narr")
+    if isinstance(cached, list) and now - float(_SLOW["narr_ts"]) < _SLOW_TTL:
+        return cached
+    res = _get("/v1/cryptocurrency/categories", {"limit": "100"})
+    if not res.get("ok") or not isinstance(res.get("data"), list):
+        return cached if isinstance(cached, list) else None
+    rows = []
+    for r in res["data"]:
+        if not isinstance(r, dict):
+            continue
+        name = str(r.get("name") or "")
+        if "Portfolio" in name:
+            continue
+        cap = _f(r.get("market_cap")) or 0.0
+        chg = _f(r.get("market_cap_change"))
+        if chg is None or cap < 2e9 or cap > 8e11:
+            continue
+        rows.append((abs(chg), name, cap, chg))
+    rows.sort(reverse=True)
+    if len(rows) < 3:
+        rows = []
+        for r in res["data"]:
+            if not isinstance(r, dict) or "Portfolio" in str(r.get("name") or ""):
+                continue
+            chg = _f(r.get("market_cap_change"))
+            cap = _f(r.get("market_cap")) or 0.0
+            if chg is None:
+                continue
+            rows.append((abs(chg), str(r.get("name") or ""), cap, chg))
+        rows.sort(reverse=True)
+    out = []
+    for i, (_a, name, cap, chg) in enumerate(rows[:5], start=1):
+        sign = "+" if chg >= 0 else ""
+        out.append(
+            {
+                "rank": i,
+                "name": name,
+                "mcap": _fmt_usd(cap),
+                "chg_24h": f"{sign}{chg:.2f}%",
+            }
+        )
+    if not out:
+        return cached if isinstance(cached, list) else None
+    _SLOW["narr"] = out
+    _SLOW["narr_ts"] = now
+    return out
+
+
+def _live_derivatives(now: float) -> dict[str, Any] | None:
+    cached = _SLOW.get("deriv")
+    if isinstance(cached, dict) and now - float(_SLOW["deriv_ts"]) < _FAST_TTL:
+        return cached
+    res = _get(
+        "/v5/cryptocurrency/derivatives/market-pairs/list/latest",
+        {
+            "crypto_id": "1",
+            "category": "perpetual",
+            "limit": "200",
+            "sort": "volume_24h_strict",
+            "sort_dir": "desc",
+        },
+    )
+    if not res.get("ok") or not isinstance(res.get("data"), dict):
+        return cached if isinstance(cached, dict) else None
+    pairs = res["data"].get("market_pairs") or []
+    oi = 0.0
+    wfund = 0.0
+    wvol = 0.0
+    n = 0
+    for p in pairs:
+        if not isinstance(p, dict):
+            continue
+        reported = p.get("exchange_reported_quotes") or []
+        er = reported[0] if reported else {}
+        if not isinstance(er, dict):
+            continue
+        oi_raw = float(er.get("open_interest") or 0)
+        # One venue has reported ~$10T. That is not Bitcoin open interest.
+        if 0 < oi_raw < 80e9:
+            oi += oi_raw
+        vol = float(er.get("volume_24h_quote") or 0)
+        fr = _f(er.get("funding_rate"))
+        if fr is not None and vol > 0:
+            wfund += fr * vol
+            wvol += vol
+        n += 1
+    if not n:
+        return cached if isinstance(cached, dict) else None
+    fund = (wfund / wvol) if wvol else None
+    pack = {
+        "oi_label": _fmt_usd(oi),
+        "funding_label": None if fund is None else f"{fund * 100:.4f}%",
+        "pairs": n,
+        "tracked": res["data"].get("num_market_pairs"),
+        "source": "cmc_btc_perps",
+        "fetched_at_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)),
+    }
+    _SLOW["deriv"] = pack
+    _SLOW["deriv_ts"] = now
+    return pack
+
+
+def _bay_content_stamp(bay: Any, fallback: str | None) -> str | None:
+    """The snapshot's own clock. Never the file rewrite time."""
+    if isinstance(bay, dict) and bay.get("as_of"):
+        return str(bay["as_of"])
+    return fallback
 
 
 def _load_skills_cache() -> dict[str, Any]:
@@ -470,6 +875,25 @@ def fetch_cmc_pack(force: bool = False) -> dict[str, Any]:
             _CREDITS["ts"] = now
             _CREDITS["credits"] = credits
 
+    headlines = _live_headlines(now)
+    if headlines.get("items"):
+        sources.append("coindesk_rss")
+    alt = _altcoin_season(now)
+    if alt:
+        sources.append("cmc.altcoin_season")
+    liq = _btc_liquidations(now)
+    if liq:
+        sources.append("cmc.liquidations_btc")
+    ta = _live_ta(now)
+    if ta:
+        sources.append("cmc.ohlcv_ta")
+    narr_live = _live_narratives(now)
+    if narr_live:
+        sources.append("cmc.categories")
+    deriv = _live_derivatives(now)
+    if deriv:
+        sources.append("cmc.btc_perps")
+
     brief = _build_brief(btc, eth, gm, fear_greed, pulse)
     iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
 
@@ -533,7 +957,7 @@ def fetch_cmc_pack(force: bool = False) -> dict[str, Any]:
 
     if bay_keep is not None:
         cache_out["bay"] = bay_keep
-        cache_out["bay_as_of"] = bay_as_of_keep
+        cache_out["bay_as_of"] = _bay_content_stamp(bay_keep, bay_as_of_keep)
 
     _write_skills_cache(cache_out)
 
@@ -552,7 +976,13 @@ def fetch_cmc_pack(force: bool = False) -> dict[str, Any]:
         "brief": brief,
         "skills": overlay,
         "bay": bay,
-        "bay_as_of": bay_as_of,
+        "bay_as_of": _bay_content_stamp(bay, bay_as_of),
+        "news": headlines,
+        "altcoin_season": alt,
+        "liquidations_btc": liq,
+        "ta": ta,
+        "narratives": narr_live,
+        "derivatives_live": deriv,
         "credits": credits,
         "sources": sources or ["cmc:unavailable"],
         "witness": "CMC Witness · Pro API",
