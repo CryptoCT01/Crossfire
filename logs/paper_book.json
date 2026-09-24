@@ -1,23 +1,36 @@
 {
-  "cash": 10128.587270000016,
-  "equity": 10132.09582,
-  "available": 10089.313835,
-  "realized_pnl": 128.58727000001585,
+  "cash": 10123.129160000017,
+  "equity": 10123.70116,
+  "available": 10043.75033,
+  "realized_pnl": 123.12916000001591,
   "positions": [
     {
-      "symbol": "BTCUSDT",
+      "symbol": "NVDAUSDT",
       "side": "short",
-      "size": 0.0047,
-      "entry": 84307.0,
-      "mark": 83560.5,
+      "size": 1.79,
+      "entry": 222.45,
+      "mark": 222.63,
       "leverage": 10.0,
-      "opened_ts": 1790197848.686593,
-      "tick_id": "t_1790197815214_7047492a",
+      "opened_ts": 1790260096.316066,
+      "tick_id": "t_1790260055425_b41b8307",
       "paper": true,
-      "unrealized_pnl": 3.50855,
-      "notional_usdt": 392.7344
+      "unrealized_pnl": -0.3222,
+      "notional_usdt": 398.5077
+    },
+    {
+      "symbol": "SOLUSDT",
+      "side": "long",
+      "size": 3.4,
+      "entry": 115.996,
+      "mark": 116.259,
+      "leverage": 10.0,
+      "opened_ts": 1790265110.98484,
+      "tick_id": "t_1790264917372_f3f51b5e",
+      "paper": true,
+      "unrealized_pnl": 0.8942,
+      "notional_usdt": 395.2806
     }
   ],
-  "updated_ts": 1790254798.515188,
-  "unrealized_pnl": 3.50855
+  "updated_ts": 1790265435.52104,
+  "unrealized_pnl": 0.572
 }
