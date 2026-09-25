@@ -20,6 +20,8 @@ HANDOVER.md
 SUBMISSION-DRAFT.md
 logs/
 *.jsonl
+!docs/paper-trading-fills.jsonl
+!docs/paper-trading-decisions.jsonl
 __pycache__/
 .venv/
 _design_ref/
