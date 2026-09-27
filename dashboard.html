@@ -754,6 +754,15 @@ body::after{
 .bay-status .live{color:var(--green)}.bay-status .idle{color:var(--amber)}
 .bay-caption{grid-column:1/-1;font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--fg2);padding:10px 12px;border-radius:10px;border:1px solid rgba(232,184,74,.22);background:rgba(232,184,74,.05);position:relative;z-index:1}
 .bay-caption strong{color:var(--gold2)}
+.bay-rail{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 0;position:relative;z-index:1}
+.bay-step{font-family:var(--mono);font-size:8px;letter-spacing:.08em;padding:3px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.1);color:var(--fg3);background:rgba(255,255,255,.03)}
+.bay-step.on{color:var(--gold2);border-color:rgba(232,184,74,.4);background:rgba(232,184,74,.1)}
+.bay-step.stop{color:var(--red);border-color:rgba(255,93,108,.4);background:rgba(255,93,108,.08)}
+.bay-titles{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.bay-titles li{font-family:var(--mono);font-size:9px;line-height:1.35;color:var(--fg2);padding:4px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.2)}
+.bay-titles a{color:var(--cyan2);text-decoration:none}
+.bay-titles a:hover{color:#fff;text-decoration:underline}
+.th-chip.why{border-color:rgba(232,184,74,.35);color:var(--gold2);max-width:100%}
 @media (max-width:900px){.bay-grid{grid-template-columns:1fr;min-height:0}.bay-desk,.bay-world{height:200px}.bay-chip{font-size:6px;padding:2px 5px}}
 
 /* Equity dual chart in theatre */
@@ -1332,7 +1341,7 @@ const INFO_COPY = {
     body: 'Share of available US and crypto symbols printing green on 24h%. A market-width dial from live Bitget change24h — observational only, never a fabricated breadth score.',
     real: 'Computed from live /api/books'
   },
-  agent_beacon: { title: 'Agent beacon', body: 'Use Expand (or click the beacon) to open Research Bay — cinematic view of the agent scanning Dual Book marks and Rule-2 world context. Status lines are real; news/geo stay unknown until wired.', real: 'Beacon · /api/agent/state · perception context' },
+  agent_beacon: { title: 'Agent beacon', body: 'Use Expand (or click the beacon) to open Research Bay — Dual Book marks, Rule-2 world context, news titles, geopolitics RSS, and the R1–R13 rail. Status lines are real; empty feeds stay unknown.', real: 'Beacon · /api/agent/state · perception context' },
   session: {
     title: 'Session strip',
     body: 'US cash RTH / weekend context plus Bitget US-contract and crypto 24/7 reminders. Sleeve chip reflects keys/hooks honesty — not simulated portfolio state.',
@@ -1853,12 +1862,15 @@ function renderThesisChips(d, nums){
     manage = 'Manage, don\'t churn';
   }
   const divTxt = nums.div==null ? '—' : fmtPct(nums.div);
-  $('thChips').innerHTML = [
+  const chips = [
     ['Session', session],
     ['Divergence', divTxt],
     ['Managing', manage],
     ['Action', action]
-  ].map(([k,v]) => '<span class="th-chip"><b>'+escapeHtml(k)+'</b>'+escapeHtml(String(v))+'</span>').join('');
+  ];
+  const why = whyFlatLine(d);
+  if(why) chips.push(['Why', why]);
+  $('thChips').innerHTML = chips.map(([k,v]) => '<span class="th-chip'+(k==='Why'?' why':'')+'"><b>'+escapeHtml(k)+'</b>'+escapeHtml(String(v))+'</span>').join('');
   INFO_COPY.thesis.body = d.thesis || 'No thesis on this tick.';
   INFO_COPY.thesis.real = (d.engine||'tick') + ' · ' + (d.tick_id||'last tick');
 }
@@ -1905,6 +1917,7 @@ function renderContextLine(d, st){
 
 function renderState(st){
   const d = st.last_decision;
+  if(d) S.lastDecision = d;
   const action = String((d && d.action) || st.status || 'IDLE').toUpperCase();
   const sw = $('statusWord');
   sw.textContent = action;
@@ -3252,6 +3265,43 @@ function paintBlotterDesk(j){
 
 
 /* ===== Agent Research Bay ===== */
+function whyFlatLine(d){
+  if(!d) return '';
+  const action = String(d.action||'').toUpperCase();
+  if(action!=='HOLD' && action!=='FLAT') return '';
+  const sess = d.session || {};
+  const th = String(d.thesis||'');
+  const bits = [];
+  if(sess.weekend || sess.us_cash_rth_open===false) bits.push('R1 cash closed');
+  if(/R5/i.test(th) && /no new-risk|no setup|no clear impulse/i.test(th)) bits.push('R5 no setup');
+  if(/R4/i.test(th) && /not a true|correlated|no split/i.test(th)) bits.push('R4 no split');
+  if(!bits.length) bits.push(action);
+  return bits.join(' · ');
+}
+function ruleRailHtml(thesis){
+  const th = String(thesis||'');
+  const cited = new Set();
+  const re = /\bR(\d{1,2})\b/gi;
+  let m;
+  while((m = re.exec(th))) cited.add(Number(m[1]));
+  const stop = /R1 fail|R3 fail|STOP/i.test(th);
+  return '<div class="bay-rail">' + Array.from({length:13}, (_,i) => {
+    const n = i+1;
+    const cls = (stop && n===1) ? 'stop' : (cited.has(n) ? 'on' : '');
+    return '<span class="bay-step '+cls+'">R'+n+'</span>';
+  }).join('') + '</div>';
+}
+function bayTitleList(items, empty){
+  const rows = (items||[]).filter(it => it && it.title).slice(0,4);
+  if(!rows.length) return '<div class="bay-line warn">'+escapeHtml(empty)+'</div>';
+  return '<ul class="bay-titles">' + rows.map(it => {
+    const t = escapeHtml(String(it.title).slice(0,110));
+    const href = it.url ? String(it.url) : '';
+    const src = it.source ? '<b>'+escapeHtml(String(it.source))+'</b> · ' : '';
+    if(href && /^https?:/i.test(href)) return '<li>'+src+'<a href="'+escapeHtml(href)+'" target="_blank" rel="noopener">'+t+'</a></li>';
+    return '<li>'+src+t+'</li>';
+  }).join('') + '</ul>';
+}
 function researchBayBody(){
   const on = S.agentEnabled !== false;
   const llm = !!S.llmOn;
@@ -3282,7 +3332,7 @@ function researchBayBody(){
     {lab:'breadth', cls: (sent!=='unknown'||has('breadth'))?'on':'warn'},
     {lab:'yahoo', cls: (has('yahoo')||has('cross_asset')||has('mag7'))?'on':'off'},
     {lab:'news', cls: newsN?'on':'off'},
-    {lab:'geo', cls: geo!=='unknown'?'on':'off'}
+    {lab:'geo', cls: (geo!=='unknown' && Array.isArray((ctx.geopolitics||{}).items) && ctx.geopolitics.items.length)?'on':(geo!=='unknown'?'warn':'off')}
   ];
   const chipHtml = chips.map((c,i) =>
     `<span class="bay-chip c${i+1} ${c.cls}" style="animation-delay:${0.05+i*0.05}s">${escapeHtml(c.lab)}</span>`
@@ -3296,12 +3346,21 @@ function researchBayBody(){
   lines.push(`<div class="bay-line"><b>SENTIMENT</b> · <span class="${sent==='risk_on'?'up':(sent==='risk_off'?'dn':'flat')}">${escapeHtml(sent)}</span> · from breadth + funding</div>`);
   const cmcLine = cmcOk ? String(ctx.cmc_brief || ctx.cmc.brief || 'cmc ok').slice(0,90) : 'unknown · no invent';
   lines.push(`<div class="bay-line ${cmcOk?'on':'warn'}"><b>CMC</b> · ${highlightThesis(cmcLine)}</div>`);
-  lines.push(`<div class="bay-line ${newsN?'on':'warn'}"><b>NEWS</b> · ${newsN?newsN+' headlines': 'none wired · Rule 2 stays cautious'}</div>`);
-  lines.push(`<div class="bay-line ${geo==='unknown'?'warn':'on'}"><b>GEOPOLITICS</b> · ${escapeHtml(geo)} · never invented</div>`);
-  lines.push(`<div class="bay-line"><b>RULES</b> · R1→R13 checklist every tick · next pulse ${countdown}</div>`);
+  const newsItems = Array.isArray(ctx.news) ? ctx.news : [];
+  lines.push(`<div class="bay-line ${newsN?'on':'warn'}"><b>NEWS</b> · ${newsN?newsN+' CoinDesk': 'none wired · Rule 2 stays cautious'}</div>`);
+  if(newsN) lines.push(bayTitleList(newsItems, 'news []'));
+  const geoObj = ctx.geopolitics || {};
+  const geoItems = Array.isArray(geoObj.items) ? geoObj.items : [];
+  const geoChipOn = geo!=='unknown' && geoItems.length;
+  lines.push(`<div class="bay-line ${geoChipOn?'on':'warn'}"><b>GEOPOLITICS</b> · ${escapeHtml(geo)}${geoObj.notes?' · '+escapeHtml(String(geoObj.notes).slice(0,60)):''}</div>`);
+  lines.push(bayTitleList(geoItems, 'geo unknown · no invent'));
+  const lastD = S.lastDecision || {};
+  const why = whyFlatLine(lastD);
+  lines.push(`<div class="bay-line"><b>RULES</b> · R1→R13 · next pulse ${countdown}${why?' · '+escapeHtml(why):''}</div>`);
+  lines.push(ruleRailHtml(lastD.thesis));
   const macroShort = macro.length>110 ? macro.slice(0,107)+'…' : macro;
   const caption = on
-    ? `<strong>What it’s doing:</strong> Crossfire’s agent (DeepSeek V4.1) is scanning live Bitget marks across US stock contracts and crypto perps, reading session + perception context (${escapeHtml(sources)}), then walking the mandatory rules before any action. Macro note: ${highlightThesis(macroShort)}`
+    ? `<strong>What it’s doing:</strong> ${why?escapeHtml(why)+' · ':''}DeepSeek V4.1 scanning Dual Book, then R1→R13. Macro: ${highlightThesis(macroShort)}`
     : `<strong>What it’s doing:</strong> Agent loop is off — dashboard still shows live marks, but no heartbeat / LLM spend until you arm it.`;
 
   return `
@@ -3356,7 +3415,7 @@ JSON decision…</div></div>
     </div>
     <div class="bay-caption">${caption}</div>
   </div>
-  <div class="ov-note" style="margin-top:10px">Cinematic chrome · status lines + fetch chips are real Crossfire state (marks, DeepSeek V4.1, Rule-2 context). News/geopolitics stay unknown until a feed is wired — we don’t invent headlines. Restore: cp dashboard.html.bak-research-bay dashboard.html</div>`;
+  <div class="ov-note" style="margin-top:10px">Cinematic chrome · chips and titles are live Rule-2 state. Empty news/geo stay unknown. Restore: cp dashboard.html.bak-bay-geo-20260927-2216 dashboard.html</div>`;
 }
 
 function openResearchBay(){

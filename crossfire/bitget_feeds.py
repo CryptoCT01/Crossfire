@@ -62,6 +62,78 @@ def _fear_greed() -> dict[str, Any] | None:
         return {"error": f"{type(e).__name__}: {e}", "source": "alternative.me/fng"}
 
 
+_GEO_FEEDS = (
+    ("bbc_world", "https://feeds.bbci.co.uk/news/world/rss.xml"),
+    ("nyt_world", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"),
+)
+_GEO_ELEVATED = (
+    "invasion",
+    "airstrike",
+    "air strike",
+    "missile",
+    "nuclear",
+    "assassination",
+    "coup",
+    "martial law",
+    "blockade",
+    "embargo",
+    "hostage",
+    "terrorism",
+    "terrorist",
+)
+
+
+def _rss_items(url: str, source: str, limit: int) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    xml = _get(url).decode("utf-8", "replace")
+    root = ET.fromstring(xml)
+    for item in root.findall(".//item")[:limit]:
+        title = (item.findtext("title") or "").strip()
+        link = (item.findtext("link") or "").strip()
+        pub = (item.findtext("pubDate") or "").strip()
+        if title:
+            out.append(
+                {
+                    "title": title,
+                    "url": link or None,
+                    "published": pub or None,
+                    "source": source,
+                }
+            )
+    return out
+
+
+def _geopolitics(limit: int = 4) -> dict[str, Any]:
+    """World RSS only. Never invents a tension score without headlines."""
+    errors: list[str] = []
+    items: list[dict[str, Any]] = []
+    used = ""
+    for name, url in _GEO_FEEDS:
+        try:
+            got = _rss_items(url, name, limit)
+            if got:
+                items = got
+                used = name
+                break
+        except Exception as e:
+            errors.append(f"{name}:{type(e).__name__}")
+    if not items:
+        return {
+            "level": "unknown",
+            "notes": "no geopolitics feed wired" if not errors else "geo fetch failed: " + "; ".join(errors),
+            "items": [],
+            "source": None,
+        }
+    blob = " ".join(str(it.get("title") or "") for it in items).lower()
+    elevated = any(k in blob for k in _GEO_ELEVATED)
+    return {
+        "level": "elevated" if elevated else "watch",
+        "notes": ("shock words in world RSS" if elevated else "world headlines present") + f" · {used}",
+        "items": items[:limit],
+        "source": used,
+    }
+
+
 def _coindesk_news(limit: int = 5) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     try:
@@ -123,6 +195,9 @@ def fetch_toolkit_pack(force: bool = False) -> dict[str, Any]:
     news = _coindesk_news(5)
     if any("title" in n for n in news):
         sources.append("coindesk_rss")
+    geo = _geopolitics(4)
+    if geo.get("items"):
+        sources.append("geopolitics:" + str(geo.get("source") or "rss"))
 
     cross = {
         "ndx": _yahoo_last("^NDX"),
@@ -147,6 +222,7 @@ def fetch_toolkit_pack(force: bool = False) -> dict[str, Any]:
         "fetched_at": now,
         "fear_greed": fng,
         "news": [n for n in news if n.get("title")],
+        "geopolitics": geo,
         "cross_asset": cross,
         "mag7_cash": mag7_cash,
         "sources": sources or ["toolkit_feeds:unavailable"],

@@ -9,12 +9,13 @@ Determinism (documented):
       * session.us_cash_status / us_cash_rth_open
       * optional derived Mag7/BTC averages (or recomputed here)
       * optional public Bitget open-interest for BTC (best-effort; fail → omit)
-      * bitget_feeds toolkit pack (Fear&Greed, CoinDesk RSS, Yahoo NDX/DXY/Mag7)
+      * bitget_feeds toolkit pack (Fear&Greed, CoinDesk RSS, Yahoo NDX/DXY/Mag7,
+        BBC/NYT world RSS for geopolitics)
         — public mirrors of Bitget S2 MCP/signal skills; never invented
       * cmc_feeds Witness pack (BTC/ETH quotes, global dominance, F&G pulse)
         — CoinMarketCap Pro; Mag7 is Dual Book, not CMC
   - news comes from CoinDesk RSS when reachable; else []
-  - geopolitics stays level=unknown (no geopolitics feed wired)
+  - geopolitics comes from BBC World RSS (NYT World fallback); else level=unknown
   - If books are empty / not ok / insufficient marks → macro/sentiment/us_tape
     become "unknown" so Rule 2 biases HOLD / no new US risk.
 """
@@ -374,8 +375,26 @@ def build_context(
         sources.append("cmc:unavailable")
     cmc_ctx = cmc_feeds.compact_for_context(cmc)
 
-    geopolitics = {"level": "unknown", "notes": "no geopolitics feed wired"}
-    sources.append("geopolitics:none")
+    raw_geo = toolkit.get("geopolitics")
+    geopolitics: dict[str, Any] = raw_geo if isinstance(raw_geo, dict) else {}
+    geo_items = [it for it in (geopolitics.get("items") or []) if isinstance(it, dict) and it.get("title")]
+    if geo_items:
+        geopolitics = {
+            "level": geopolitics.get("level") or "watch",
+            "notes": geopolitics.get("notes") or "",
+            "items": geo_items[:4],
+            "source": geopolitics.get("source"),
+        }
+        src_tag = "geopolitics:" + str(geopolitics.get("source") or "rss")
+        if src_tag not in sources:
+            sources.append(src_tag)
+    else:
+        geopolitics = {
+            "level": "unknown",
+            "notes": geopolitics.get("notes") or "no geopolitics feed wired",
+            "items": [],
+        }
+        sources.append("geopolitics:none")
 
     usable = us_b.get("n", 0) > 0 or cr_b.get("n", 0) > 0
     if not usable:
