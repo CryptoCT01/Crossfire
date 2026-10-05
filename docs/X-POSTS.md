@@ -1,6 +1,6 @@
 # Crossfire — Base Camp Hackathon S2 · X timeline
 
-Build-in-public arc from kickoff → compliant quote-tweet demo.  
+Build-in-public arc from kickoff → compliant quote-tweet demo → judges update video.  
 Tags used across the run: `#BitgetHackathon` · `@Bitget_AI`
 
 **Official Bitget promo to quote:**  
@@ -10,7 +10,13 @@ https://x.com/Bitget_AI/status/2100519318824055159
 
 ## Form / compliance link (current)
 
-**Use this URL** for the Google Form X field (and any form-owner update):
+**Judges update video (latest — use this for the timeline / showcase):**
+
+https://x.com/CryptoCT01/status/2106289579137409061
+
+Crossfire update video for judges · Hackathon S2 Final Showcase · Dual Book · Risk Cage · Decision Cinema · paper honesty.
+
+**Quote-tweet demo (Bitget promo compliance):**
 
 https://x.com/CryptoCT01/status/2101148081504817326
 
@@ -40,15 +46,21 @@ https://x.com/CryptoCT01/status/2100919996838773084
 
 Build update before the finale cut.
 
-### 5 · Demo video + official quote (latest)
+### 5 · Demo video + official quote
 https://x.com/CryptoCT01/status/2101148081504817326
 
 Judge-tour video · quotes Bitget’s required promo post · `#BitgetHackathon` · `@Bitget_AI`.
+
+### 6 · Crossfire update video for judges · 3 Oct 2026 (latest)
+https://x.com/CryptoCT01/status/2106289579137409061
+
+**Crossfire update video for judges** · Hackathon S2 Final Showcase · problem → Dual Book + heartbeat → Risk Cage + Decision Cinema → paper-log honesty · `#BitgetHackathon` · `#AgenticUEX`.
 
 ---
 
 ## Notes
 
-- Prefer **#5** anywhere organizers ask for the promotional / engagement X link.
+- Prefer **#6** for the judges timeline / final showcase update video.
+- Prefer **#5** anywhere organizers specifically ask for the Bitget promo quote-tweet / engagement X link.
 - Earlier posts stay in this file so judges can see beginning → now without inventing history.
 - Repo URL is intentionally **not** blasted on the finale tweet (last-minute copy risk); GitHub remains the submission artifact.
