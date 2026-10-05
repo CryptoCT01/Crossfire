@@ -35,9 +35,9 @@ Related X update video for judges: https://x.com/CryptoCT01/status/2106289579137
 
 ## Dashboard
 
-![Crossfire paper sleeve — live marks, Dual Book, Risk Cage](docs/crossfire-dashboard-paper-sleeve.png)
+![Crossfire paper sleeve — ~$10,124.76 equity, aggressive, 5 Oct 2026](docs/screenshots/2026-10-05-desk.png)
 
-*Paper sleeve · live Bitget marks · agent hunting · Decision Cinema / Blotter / Equity Cage.*
+*Paper sleeve · ~$10,124.76 equity · aggressive · 5 Oct 2026 · live Bitget marks · Dual Book / Risk Cage / Decision Cinema.*
 
 ## Run
 
