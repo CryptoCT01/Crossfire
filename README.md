@@ -25,6 +25,14 @@ Ordered for what judges ask for — only what Crossfire actually ships:
 
 **Honest run note:** we began on a small live sleeve, then moved to paper (live marks) for safer aging. An early paper same-asset re-entry bug (notably MSFT) hurt win rate; Risk Cage held and **logs were not rewritten**. Full write-up: [docs/PAPER-TESTING-NOTES.md](docs/PAPER-TESTING-NOTES.md).
 
+## Demo clip
+
+~7s walkthrough: Crossfire desk → cross-asset **Bubbles** → **NEAR Focus Room**.
+
+[docs/demo-clip-bubbles-near-focus.mov](docs/demo-clip-bubbles-near-focus.mov)
+
+Related X update video for judges: https://x.com/CryptoCT01/status/2106289579137409061 · full timeline in [docs/X-POSTS.md](docs/X-POSTS.md).
+
 ## Dashboard
 
 ![Crossfire paper sleeve — live marks, Dual Book, Risk Cage](docs/crossfire-dashboard-paper-sleeve.png)

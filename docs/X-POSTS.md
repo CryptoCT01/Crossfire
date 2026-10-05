@@ -64,3 +64,4 @@ https://x.com/CryptoCT01/status/2106289579137409061
 - Prefer **#5** anywhere organizers specifically ask for the Bitget promo quote-tweet / engagement X link.
 - Earlier posts stay in this file so judges can see beginning → now without inventing history.
 - Repo URL is intentionally **not** blasted on the finale tweet (last-minute copy risk); GitHub remains the submission artifact.
+- A short desk clip (Bubbles → NEAR Focus Room) is also in the repo: [docs/demo-clip-bubbles-near-focus.mov](demo-clip-bubbles-near-focus.mov).
